@@ -1,13 +1,10 @@
-const commonConfig = require("common-display-module");
+const database = require("./db/lokijs/database"),
+  messaging = require("./messaging");
 
-commonConfig.receiveMessages("local-storage").then((receiver) => {
-
-  receiver.on("message", (message) => {
-    switch(message.topic) {
-      case "watch":
-        console.log(`watch message received! ${message.data}`);
-        break;
-    }
+database.start()
+  .then(messaging.init)
+  .catch((err)=>{
+    console.log(err);
   });
 
-});
+
