@@ -1,0 +1,6 @@
+node_modules/
+build-temp/
+private-keys/
+build/
+*.zip
+npm-debug.log
