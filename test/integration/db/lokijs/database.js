@@ -1,14 +1,15 @@
-const assert = require("assert"),
-  database = require("../../../../src/db/lokijs/database"),
-  path = require("path"),
-  {platform} = require("rise-common-electron"),
-  simple = require("simple-mock");
+/* eslint-env mocha */
+const assert = require("assert");
+const database = require("../../../../src/db/lokijs/database");
+const path = require("path");
+const {platform} = require("rise-common-electron");
+const os = require("os");
+const simple = require("simple-mock");
+const timeoutDelay = 5000;
 
 describe("lokijs - integration", ()=>{
-
   afterEach(()=>{
     simple.restore();
-
   });
 
   after(()=>{
@@ -17,18 +18,16 @@ describe("lokijs - integration", ()=>{
   });
 
   it("creates local-storage.db file", (done)=>{
-    let filePath = path.join(platform.getHomeDir(), "test_dir");
-    platform.mkdirRecursively(filePath)
-      .then(()=>{
-        return database.start(path.join(platform.getHomeDir(), "test_dir"))
-      })
-      .then(()=>{
-        return setTimeout(()=>{
-          assert(platform.fileExists(path.join(platform.getHomeDir(), "test_dir", "local-storage.db")));
-          done();
-        },5000);
-      });
-
+    const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
+    platform.mkdirRecursively(tempDBPath)
+    .then(()=>{
+      return database.start(tempDBPath);
+    })
+    .then(()=>{
+      return setTimeout(()=>{
+        assert(platform.fileExists(path.join(tempDBPath, "local-storage.db")));
+        done();
+      }, timeoutDelay);
+    });
   });
-
 });
