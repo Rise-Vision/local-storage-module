@@ -1,10 +1,19 @@
-const assert = require("assert"),
-  database = require("../../../../src/db/lokijs/database"),
-  simple = require("simple-mock");
+/* eslint-env mocha */
+const assert = require("assert");
+const database = require("../../../../src/db/lokijs/database");
+const simple = require("simple-mock");
+const commonConfig = require("common-display-module");
+const path = require("path");
+const tempDir = path.join(require("os").tmpdir(), "lokijs_temp_dir");
 
 describe("lokijs", ()=>{
   afterEach(()=>{
     simple.restore();
+  });
+
+  before(()=>{
+    simple.mock(commonConfig, "getModulePath").returnWith(tempDir)
+    return database.start();
   });
 
   after(()=>{
@@ -12,13 +21,8 @@ describe("lokijs", ()=>{
   });
 
   it("adds all required collections", ()=>{
-    // giving path that doesn't exists defaults to memory persistence
-    database.start("test_dir")
-      .then(()=>{
-        assert(database.getCollection("metadata"));
-        assert(database.getCollection("owners"));
-        assert(database.getCollection("watchlist"));
-      });
+    assert(database.getCollection("metadata"));
+    assert(database.getCollection("owners"));
+    assert(database.getCollection("watchlist"));
   });
-
 });
