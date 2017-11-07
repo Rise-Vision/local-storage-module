@@ -35,7 +35,6 @@
     "zip-webpack-plugin": "^2.0.0"
   },
   "dependencies": {
-    "common-display-module": "git://github.com/Rise-Vision/common-display-module.git#v1.3.4",
-    "node-ipc": "^9.1.1"
+    "common-display-module": "git://github.com/Rise-Vision/common-display-module.git#v1.3.4"
   }
 }
