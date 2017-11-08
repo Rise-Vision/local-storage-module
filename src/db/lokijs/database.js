@@ -16,8 +16,7 @@ function initCollections() {
 
     if (!collection) {
       db.addCollection(collName, {
-        unique: ["url"],
-        autoupdate: true
+        unique: ["filePath"]
       });
     }
   });
