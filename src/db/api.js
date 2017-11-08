@@ -1,6 +1,6 @@
 /* eslint-disable max-statements */
 
-const database = require("./db/lokijs/database");
+const database = require("./lokijs/database");
 
 module.exports = {
   fileMetadata: {
@@ -27,7 +27,6 @@ module.exports = {
         item.status = entry.status;
         item.version = entry.version;
         item.token = entry.token;
-        item.ospath = entry.ospath;
 
         try {
           metadata.update(item);
@@ -48,7 +47,7 @@ module.exports = {
 
       return field ? item[field] : item;
     },
-    put(entry) {
+    addToSet(entry) {
       if (!entry) {throw Error("missing params");}
 
       return new Promise((res, rej)=>{
@@ -97,9 +96,6 @@ module.exports = {
         if (!item) {
           item = watchlist.insert({filePath: entry.filePath});
         }
-
-        const list = new Set(item.owners);
-        list.add(entry.owner);
 
         item.version = entry.version;
 
