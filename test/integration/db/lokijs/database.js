@@ -5,7 +5,7 @@ const path = require("path");
 const {platform} = require("rise-common-electron");
 const os = require("os");
 const simple = require("simple-mock");
-const timeoutDelay = 5000;
+const dbSaveInterval = 5;
 
 describe("lokijs - integration", ()=>{
   afterEach(()=>{
@@ -21,13 +21,13 @@ describe("lokijs - integration", ()=>{
     const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
     platform.mkdirRecursively(tempDBPath)
     .then(()=>{
-      return database.start(tempDBPath);
+      return database.start(tempDBPath, dbSaveInterval);
     })
     .then(()=>{
       return setTimeout(()=>{
         assert(platform.fileExists(path.join(tempDBPath, "local-storage.db")));
         done();
-      }, timeoutDelay);
+      }, dbSaveInterval * dbSaveInterval);
     });
   });
 });

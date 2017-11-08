@@ -6,6 +6,8 @@ const commonConfig = require("common-display-module"),
   loki = require("lokijs"),
   path = require("path");
 
+const defaultSaveInterval = 4000;
+
 let db = null;
 
 function initCollections() {
@@ -32,7 +34,7 @@ module.exports = {
       db.deleteDatabase(cb);
     }
   },
-  start(dirPath = null) {
+  start(dirPath = null, saveInterval = defaultSaveInterval) {
     return new Promise((res, rej)=>{
       try {
         const dbPath = path.join(dirPath || commonConfig.getModulePath("local-storage"), "local-storage.db");
@@ -44,7 +46,7 @@ module.exports = {
             res();
           },
           autosave: true,
-          autosaveInterval: 4000,
+          autosaveInterval: saveInterval,
           env: "NODEJS"
         });
       } catch (err) {
