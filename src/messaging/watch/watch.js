@@ -1,3 +1,5 @@
+/* eslint-disable no-warning-comments */
+
 const db = require("../../db/api");
 const entry = require("./entry");
 const messaging = require("../messaging");
@@ -7,23 +9,17 @@ module.exports = {
     const {data, from} = message;
 
     if (!entry.validate({filePath: data.filePath, owner: from})) {
-      return Promise.reject("Invalid watch message");
+      return Promise.reject(new Error("Invalid watch message"));
     }
 
     const isWatched = db.watchlist.get(data.filePath);
     const status = db.fileMetadata.get(data.filePath, "status");
 
-    if (!isWatched) {
-      if (!status) {
-        // TODO: file is new
-      } else if (status === "UNKNOWN") {
-        // TODO: file exists but not being watched
-      }
-    } else {
+    if (isWatched) {
       // status is known and file is being watched
       db.owners.put({filePath: data.filePath, owner: from})
         .then(()=>{
-          let metadata = db.fileMetadata.get(data.filePath);
+          const metadata = db.fileMetadata.get(data.filePath);
 
           messaging.broadcast("FILEUPDATE", {
             filePath: data.filePath,
@@ -34,6 +30,14 @@ module.exports = {
 
           return Promise.resolve();
         });
+    } else {
+      if (status === "UNKNOWN") {
+        // TODO: file exists but not being watched
+      }
+
+      if (!status) {
+        // TODO: file is new
+      }
     }
 
   }

@@ -25,8 +25,8 @@ module.exports = {
   broadcast(topic, data = {}) {
     commonConfig.broadcastMessage({
       from: "local-storage",
-      topic: topic,
-      data: data
+      topic,
+      data
     });
   },
   init() {

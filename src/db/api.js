@@ -1,24 +1,27 @@
+/* eslint-disable max-statements */
+
 const database = require("./db/lokijs/database");
 
 module.exports = {
   fileMetadata: {
     get(filePath, field = "") {
-      if (!filePath) { throw Error("missing params"); }
+      if (!filePath) {throw Error("missing params");}
 
-      let metadata = database.getCollection("metadata"),
-        item = metadata.by("filePath", filePath);
+      const metadata = database.getCollection("metadata");
+      const item = metadata.by("filePath", filePath);
 
-      return (!field) ? item : item[field];
+      return field ? item[field] : item;
     },
     put(entry) {
-      if (!entry) { throw Error("missing params"); }
+      if (!entry) {throw Error("missing params");}
 
       return new Promise((res, rej)=>{
-        let metadata = database.getCollection("metadata"),
-          item = metadata.by("filePath", entry.filePath);
+        const metadata = database.getCollection("metadata");
 
-        if(!item) {
-          item = metadata.insert({ filePath: entry.filePath });
+        let item = metadata.by("filePath", entry.filePath);
+
+        if (!item) {
+          item = metadata.insert({filePath: entry.filePath});
         }
 
         item.status = entry.status;
@@ -28,7 +31,7 @@ module.exports = {
 
         try {
           metadata.update(item);
-        } catch(err) {
+        } catch (err) {
           rej(err);
         }
 
@@ -38,34 +41,34 @@ module.exports = {
   },
   owners: {
     get(filePath, field = "") {
-      if (!filePath) { throw Error("missing params"); }
+      if (!filePath) {throw Error("missing params");}
 
-      let owners = database.getCollection("owners"),
-        item = owners.by("filePath", filePath);
+      const owners = database.getCollection("owners");
+      const item = owners.by("filePath", filePath);
 
-      return (!field) ? item : item[field];
+      return field ? item[field] : item;
     },
     put(entry) {
-      if (!entry) { throw Error("missing params"); }
+      if (!entry) {throw Error("missing params");}
 
       return new Promise((res, rej)=>{
-        let owners = database.getCollection("owners"),
-          item = owners.by("filePath", entry.filePath),
-          list;
+        const owners = database.getCollection("owners");
 
-        if(!item) {
-          item = owners.insert({ filePath: entry.filePath });
+        let item = owners.by("filePath", entry.filePath);
+
+        if (!item) {
+          item = owners.insert({filePath: entry.filePath});
           item.owners = [];
         }
 
-        list = new Set(item.owners);
+        const list = new Set(item.owners);
         list.add(entry.owner);
 
         item.owners = Array.from(list);
 
         try {
           owners.update(item);
-        } catch(err) {
+        } catch (err) {
           rej(err);
         }
 
@@ -76,33 +79,33 @@ module.exports = {
   },
   watchlist: {
     get(filePath, field = "") {
-      if (!filePath) { throw Error("missing params"); }
+      if (!filePath) {throw Error("missing params");}
 
-      let watchlist = database.getCollection("watchlist"),
-        item = watchlist.by("filePath", filePath);
+      const watchlist = database.getCollection("watchlist");
+      const item = watchlist.by("filePath", filePath);
 
-      return (!field) ? item : item && item[field];
+      return field ? item && item[field] : item;
     },
     put(entry) {
-      if (!entry) { throw Error("missing params"); }
+      if (!entry) {throw Error("missing params");}
 
       return new Promise((res, rej)=>{
-        let watchlist = database.getCollection("watchlist"),
-          item = watchlist.by("filePath", entry.filePath),
-          list;
+        const watchlist = database.getCollection("watchlist");
 
-        if(!item) {
-          item = watchlist.insert({ filePath: entry.filePath });
+        let item = watchlist.by("filePath", entry.filePath);
+
+        if (!item) {
+          item = watchlist.insert({filePath: entry.filePath});
         }
 
-        list = new Set(item.owners);
+        const list = new Set(item.owners);
         list.add(entry.owner);
 
         item.version = entry.version;
 
         try {
           watchlist.update(item);
-        } catch(err) {
+        } catch (err) {
           rej(err);
         }
 
