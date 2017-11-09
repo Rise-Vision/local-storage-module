@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  "test_unit":
+  "test":
     docker: &DOCKERIMAGE
       - image: jenkinsrise/cci-v2-launcher-electron:0.0.5
     steps:
@@ -67,11 +67,11 @@ workflows:
   version: 2
   workflow1:
     jobs:
-      - "test_unit"
+      - "test"
       - "version"
       - "build":
           requires:
-            - test_unit
+            - test
             - version
           filters:
             branches:
