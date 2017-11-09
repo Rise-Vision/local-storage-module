@@ -10,7 +10,7 @@ module.exports = {
       const metadata = database.getCollection("metadata");
       const item = metadata.by("filePath", filePath);
 
-      return field ? item[field] : item;
+      return field ? item && item[field] : item;
     },
     put(entry) {
       if (!entry) {throw Error("missing params");}
@@ -39,13 +39,13 @@ module.exports = {
     }
   },
   owners: {
-    get(filePath, field = "") {
+    get(filePath) {
       if (!filePath) {throw Error("missing params");}
 
       const owners = database.getCollection("owners");
       const item = owners.by("filePath", filePath);
 
-      return field ? item[field] : item;
+      return item;
     },
     addToSet(entry) {
       if (!entry) {throw Error("missing params");}
