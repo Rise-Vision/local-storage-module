@@ -26,7 +26,10 @@ module.exports = {
 
         item.status = entry.status;
         item.version = entry.version;
-        item.token = entry.token;
+
+        if (entry.token) {
+          item.token = entry.token;
+        }
 
         try {
           metadata.update(item);
