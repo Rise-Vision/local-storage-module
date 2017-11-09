@@ -1,17 +1,20 @@
 const commonConfig = require("common-display-module");
-const ms = require("./messaging-service.js");
+const watch = require("./watch/watch");
 
 function messageReceiveHandler(message) {
-  const forceRemoteWatchForNow = true;
+  if (!message) {return;}
+  if (!message.topic) {return;}
 
-  switch (message.topic) {
-    case "watch":
-      console.log(`watch message received! ${JSON.stringify(message.data)}`);
-
-      if (forceRemoteWatchForNow) {ms.watch();}
-      break;
-    default:
-      break;
+  if (message.topic.toUpperCase() === "WATCH") {
+    return watch.process(message)
+    .catch((err) => {
+      console.log(err);
+    });
+  } else if (message.topic.toUpperCase() === "WATCH-RESULT") {
+    return watch.msResult(message)
+    .catch((err) => {
+      console.log(err);
+    });
   }
 }
 
