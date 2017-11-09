@@ -1,6 +1,6 @@
 const db = require("../../db/api");
 const entry = require("./entry");
-const messaging = require("../messaging");
+const broadcastIPC = require("../broadcast-ipc.js");
 const commonConfig = require("common-display-module");
 const path = require("path");
 
@@ -17,7 +17,7 @@ module.exports = {
     if (metaData.status && metaData.status !== "UNKNOWN") {
       return db.owners.addToSet({filePath: data.filePath, owner: from})
       .then(()=>{
-        messaging.broadcast("FILEUPDATE", {
+        broadcastIPC.broadcast("FILE-UPDATE", {
           filePath: data.filePath,
           ospath: osPath(data.filePath),
           status: metaData.status,
@@ -35,6 +35,14 @@ module.exports = {
 
     return db.fileMetadata.put({filePath, version, status, token})
     .then(db.watchlist.put({filePath, version}))
+    .then(()=>{
+      broadcastIPC.broadcast("FILE-UPDATE", {
+        filePath,
+        status,
+        version,
+        ospath: osPath(filePath)
+      });
+    });
   }
 };
 

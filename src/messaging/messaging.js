@@ -19,13 +19,6 @@ function messageReceiveHandler(message) {
 }
 
 module.exports = {
-  broadcast(topic, data = {}) {
-    commonConfig.broadcastMessage({
-      from: "local-storage",
-      topic,
-      data
-    });
-  },
   init() {
     return commonConfig.receiveMessages("local-storage").then((receiver) => {
       receiver.on("message", messageReceiveHandler);
