@@ -11,8 +11,13 @@ global.log = {file: ()=>{}};
 describe("WATCH: Integration", function() {
   describe("Connected to Messaging Service through Local Messaging", ()=>{
     before(()=>{
+      simple.mock(commonConfig, "getDisplaySettingsSync").returnWith({
+        displayid: "ls-test-id", displayId: "ls-test-id"
+      });
+
       return localMessagingModule.start()
       .then(()=>database.start(os.tmpdir()))
+      .then(()=>database.destroy())
       .then(messaging.init);
     });
 
@@ -39,7 +44,7 @@ describe("WATCH: Integration", function() {
       commonConfig.broadcastMessage({
         from: "test",
         topic: "watch",
-        data: {version: "0", displayId: "ls-test", filePath}
+        filePath
       });
 
       return new Promise(res=>{

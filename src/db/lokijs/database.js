@@ -28,7 +28,7 @@ module.exports = {
       db.close(cb);
     }
   },
-  destroy(cb) {
+  destroy(cb = ()=>{}) {
     if (db) {
       db.deleteDatabase(cb);
     }
