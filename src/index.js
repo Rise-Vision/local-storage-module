@@ -6,5 +6,3 @@ database.start()
   .catch((err)=>{
     console.log(err);
   });
-
-

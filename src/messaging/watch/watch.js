@@ -1,8 +1,8 @@
-/* eslint-disable no-warning-comments */
-
 const db = require("../../db/api");
 const entry = require("./entry");
 const messaging = require("../messaging");
+const commonConfig = require("common-display-module");
+const path = require("path");
 
 module.exports = {
   process(message) {
@@ -12,33 +12,32 @@ module.exports = {
       return Promise.reject(new Error("Invalid watch message"));
     }
 
-    const isWatched = db.watchlist.get(data.filePath);
-    const status = db.fileMetadata.get(data.filePath, "status");
+    const metaData = db.fileMetadata.get(data.filePath) || {};
 
-    if (isWatched) {
-      // status is known and file is being watched
-      db.owners.put({filePath: data.filePath, owner: from})
-        .then(()=>{
-          const metadata = db.fileMetadata.get(data.filePath);
-
-          messaging.broadcast("FILEUPDATE", {
-            filePath: data.filePath,
-            ospath: metadata.ospath,
-            status: metadata.status,
-            version: metadata.version
-          });
-
-          return Promise.resolve();
+    if (metaData.status && metaData.status !== "UNKNOWN") {
+      return db.owners.addToSet({filePath: data.filePath, owner: from})
+      .then(()=>{
+        messaging.broadcast("FILEUPDATE", {
+          filePath: data.filePath,
+          ospath: osPath(data.filePath),
+          status: metaData.status,
+          version: metaData.version
         });
-    } else {
-      if (status === "UNKNOWN") {
-        // TODO: file exists but not being watched
-      }
-
-      if (!status) {
-        // TODO: file is new
-      }
+      });
     }
 
+    const msMessage = Object.assign({}, message, {version: metaData.version});
+    return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
+  },
+  msResult(message) {
+    const {filePath, version, token} = message;
+    const status = token ? "STALE" : "CURRENT";
+
+    return db.fileMetadata.put({filePath, version, status, token})
+    .then(db.watchlist.put({filePath, version}))
   }
 };
+
+function osPath(filePath) {
+  return path.join(commonConfig.getLocalStoragePath(), `create-dir-structure-for-${filePath}`);
+}
