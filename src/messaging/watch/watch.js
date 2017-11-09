@@ -6,20 +6,20 @@ const path = require("path");
 
 module.exports = {
   process(message) {
-    const {data, from} = message;
+    const {filePath, from} = message;
 
-    if (!entry.validate({filePath: data.filePath, owner: from})) {
+    if (!entry.validate({filePath, owner: from})) {
       return Promise.reject(new Error("Invalid watch message"));
     }
 
-    const metaData = db.fileMetadata.get(data.filePath) || {};
+    const metaData = db.fileMetadata.get(filePath) || {};
 
     if (metaData.status && metaData.status !== "UNKNOWN") {
-      return db.owners.addToSet({filePath: data.filePath, owner: from})
+      return db.owners.addToSet({filePath, owner: from})
       .then(()=>{
         broadcastIPC.broadcast("FILE-UPDATE", {
-          filePath: data.filePath,
-          ospath: osPath(data.filePath),
+          filePath,
+          ospath: osPath(filePath),
           status: metaData.status,
           version: metaData.version
         });

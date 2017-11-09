@@ -46,21 +46,19 @@ describe("Messaging", ()=>{
       const msg = {
         topic: "watch",
         from: "test-module",
-        data: {
-          filePath: "test-bucket/test-file"
-        }
+        filePath: "test-bucket/test-file"
       };
 
       return messageReceiveHandler(msg)
         .then(()=>{
           assert(db.owners.addToSet.called);
-          assert.deepEqual(db.owners.addToSet.lastCall.args[0], {filePath: msg.data.filePath, owner: msg.from});
+          assert.deepEqual(db.owners.addToSet.lastCall.args[0], {filePath: msg.filePath, owner: msg.from});
 
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
           assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
-            filePath: msg.data.filePath,
-            ospath: `create-dir-structure-for-${msg.data.filePath}`,
+            filePath: msg.filePath,
+            ospath: `create-dir-structure-for-${msg.filePath}`,
             status: mockMetadata.status,
             version: mockMetadata.version
           });
@@ -82,21 +80,19 @@ describe("Messaging", ()=>{
       const msg = {
         topic: "watch",
         from: "test-module",
-        data: {
-          filePath: "test-bucket/test-file"
-        }
+        filePath: "test-bucket/test-file"
       };
 
       return messageReceiveHandler(msg)
         .then(()=>{
           assert(db.owners.addToSet.called);
-          assert.deepEqual(db.owners.addToSet.lastCall.args[0], {filePath: msg.data.filePath, owner: msg.from});
+          assert.deepEqual(db.owners.addToSet.lastCall.args[0], {filePath: msg.filePath, owner: msg.from});
 
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
           assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
-            filePath: msg.data.filePath,
-            ospath: `create-dir-structure-for-${msg.data.filePath}`,
+            filePath: msg.filePath,
+            ospath: `create-dir-structure-for-${msg.filePath}`,
             status: mockMetadata.status,
             version: mockMetadata.version
           });
@@ -113,9 +109,7 @@ describe("Messaging", ()=>{
       const msg = {
         topic: "watch",
         from: "test-module",
-        data: {
-          filePath: "test-bucket/test-file"
-        }
+        filePath: "test-bucket/test-file"
       };
 
       messageReceiveHandler(msg);
@@ -132,10 +126,7 @@ describe("Messaging", ()=>{
       const msg = {
         topic: "watch",
         from: "test-module",
-        data: {
-          filePath: "test-bucket/test-file"
-        }
-
+        filePath: "test-bucket/test-file"
       };
 
       messageReceiveHandler(msg);
