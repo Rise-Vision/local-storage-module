@@ -1,8 +1,8 @@
-const db = require("../../db/api");
-const entry = require("./entry");
 const broadcastIPC = require("../broadcast-ipc.js");
 const commonConfig = require("common-display-module");
-const path = require("path");
+const db = require("../../db/api");
+const fileSystem = require("../../files/file-system");
+const entry = require("./entry");
 
 module.exports = {
   process(message) {
@@ -19,7 +19,7 @@ module.exports = {
       .then(()=>{
         broadcastIPC.broadcast("FILE-UPDATE", {
           filePath,
-          ospath: osPath(filePath),
+          ospath: fileSystem.osPath(filePath),
           status: metaData.status,
           version: metaData.version
         });
@@ -40,12 +40,8 @@ module.exports = {
         filePath,
         status,
         version,
-        ospath: osPath(filePath)
+        ospath: fileSystem.osPath(filePath)
       });
     });
   }
 };
-
-function osPath(filePath) {
-  return path.join(commonConfig.getLocalStoragePath(), `create-dir-structure-for-${filePath}`);
-}
