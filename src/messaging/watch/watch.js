@@ -26,7 +26,7 @@ module.exports = {
       });
     }
 
-    const msMessage = Object.assign({}, message, {version: metaData.version});
+    const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
     return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
   },
   msResult(message) {
