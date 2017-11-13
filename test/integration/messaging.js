@@ -69,17 +69,29 @@ describe("WATCH: Integration", function() {
       });
     });
 
-    it("MS sends GCSUPDATE", function(done) {
+    it("should receive MSFILEUPDATE from MS and update DB", function(done) {
       // confirm db state
       assert(api.fileMetadata.get(filePath).version);
       assert.equal(api.fileMetadata.get(filePath).status, "STALE");
       assert(api.fileMetadata.get(filePath).token);
       assert(api.watchlist.get(filePath).version);
 
+      const token = {
+        hash: "abc123",
+        data: {
+          displayId: "ls-test-id",
+          date: Date.now(),
+          filePath
+        }
+      };
+
       console.log("Broadcasting message through LM to LS");
       commonConfig.broadcastMessage({
-        topic: "gcsupdate",
-        files: [{filePath, version: "test-version-updated", token: "test-token-updated"}]
+        topic: "msfileupdate",
+        type: "update",
+        filePath,
+        version: "test-version-updated",
+        token
       });
 
       const delay = 200;
@@ -87,7 +99,7 @@ describe("WATCH: Integration", function() {
       setTimeout(()=>{
         assert.equal(api.fileMetadata.get(filePath).version, "test-version-updated");
         assert.equal(api.fileMetadata.get(filePath).status, "STALE");
-        assert.equal(api.fileMetadata.get(filePath).token, "test-token-updated");
+        assert.deepEqual(api.fileMetadata.get(filePath).token, token);
 
         assert.equal(api.watchlist.get(filePath).version, "test-version-updated");
         done();

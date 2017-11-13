@@ -36,55 +36,39 @@ describe("Messaging", ()=>{
 
     it("updates file(s) in fileMetadata -> updates file(s) in watchlist", ()=>{
       const msg = {
-        topic: "gcsupdate",
+        topic: "msfileupdate",
+        type: "update",
         from: "messaging-service",
-        files: [
-          {
-            filePath: "test-bucket/test-file1",
-            version: "2.1.0",
-            token: "abc123"
-          }, {
-            filePath: "test-bucket/test-file2",
-            version: "1.1.0",
-            token: "def456"
+        filePath: "test-bucket/test-file1",
+        version: "2.1.0",
+        token: {
+          hash: "abc123",
+          data: {
+            displayId: "test-display",
+            date: Date.now(),
+            filePath: "test-bucket/test-file1"
           }
-        ]
+        }
       };
 
       return messageReceiveHandler(msg)
         .then(()=>{
-          const totalCalls = 2;
-
-          assert.equal(db.fileMetadata.put.callCount, totalCalls);
-          assert.deepEqual(db.fileMetadata.put.calls[0].args[0], {
-            filePath: msg.files[0].filePath,
-            version: msg.files[0].version,
+          assert(db.fileMetadata.put.called);
+          assert.deepEqual(db.fileMetadata.put.lastCall.args[0], {
+            filePath: msg.filePath,
+            version: msg.version,
             status: "STALE",
-            token: msg.files[0].token
-          });
-          assert.deepEqual(db.fileMetadata.put.calls[1].args[0], {
-            filePath: msg.files[1].filePath,
-            version: msg.files[1].version,
-            status: "STALE",
-            token: msg.files[1].token
+            token: msg.token
           });
 
-          assert.equal(db.watchlist.put.callCount, totalCalls);
-          assert.deepEqual(db.watchlist.put.calls[0].args[0], {
-            filePath: msg.files[0].filePath,
-            version: msg.files[0].version,
+          assert(db.watchlist.put.called);
+          assert.deepEqual(db.watchlist.put.lastCall.args[0], {
+            filePath: msg.filePath,
+            version: msg.version,
             status: "STALE",
-            token: msg.files[0].token
-          });
-          assert.deepEqual(db.watchlist.put.calls[1].args[0], {
-            filePath: msg.files[1].filePath,
-            version: msg.files[1].version,
-            status: "STALE",
-            token: msg.files[1].token
+            token: msg.token
           });
         });
-
-
     });
   });
 

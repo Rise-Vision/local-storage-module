@@ -1,13 +1,11 @@
+const gcsValidator = require("gcs-filepath-validator");
+
 module.exports = {
-  validateAndFilter(files) {
-    if (!files || !Array.isArray(files) || files.length === 0) {return false;}
+  validate({filePath, version, token} = {}) {
+    if (!filePath || !version || !token) {return false;}
+    if (!token.hash || !token.data) {return false;}
 
-    const filesForUpdate = files.filter((file)=>{
-      return file.filePath && file.version && file.token;
-    });
-
-    if (filesForUpdate.length === 0) {return false;}
-
-    return filesForUpdate;
+    return gcsValidator.validateFilepath(filePath);
   }
 };
+
