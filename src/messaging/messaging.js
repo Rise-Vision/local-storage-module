@@ -2,25 +2,41 @@ const commonConfig = require("common-display-module");
 const update = require("./update/update");
 const watch = require("./watch/watch");
 
+function handleWatch(message) {
+  return watch.process(message)
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function handleWatchResult(message) {
+  return watch.msResult(message)
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function handleMSFileUpdate(message) {
+  if (!message.type) {return;}
+
+  if (message.type === "add" || message.type === "update") {
+    return update.process(message)
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+}
+
 function messageReceiveHandler(message) {
   if (!message) {return;}
   if (!message.topic) {return;}
 
   if (message.topic.toUpperCase() === "WATCH") {
-    return watch.process(message)
-    .catch((err) => {
-      console.log(err);
-    });
+    return handleWatch(message);
   } else if (message.topic.toUpperCase() === "WATCH-RESULT") {
-    return watch.msResult(message)
-    .catch((err) => {
-      console.log(err);
-    });
-  } else if (message.topic.toUpperCase() === "GCSUPDATE") {
-    return update.process(message)
-      .catch((err) => {
-        console.log(err);
-      });
+    return handleWatchResult(message);
+  } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
+    return handleMSFileUpdate(message);
   }
 }
 
