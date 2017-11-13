@@ -1,9 +1,11 @@
 /* eslint-env mocha */
 const commonConfig = require("common-display-module");
 const simple = require("simple-mock");
+const assert = require("assert");
 const os = require("os");
 const messaging = require("../../src/messaging/messaging");
 const database = require("../../src/db/lokijs/database");
+const api = require("../../src/db/api");
 const localMessagingModule = require("local-messaging-module");
 const path = require("path");
 const {platform} = require("rise-common-electron");
@@ -13,6 +15,7 @@ global.log = {file: ()=>{}};
 
 describe("WATCH: Integration", function() {
   const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
+  const filePath = "messaging-service-test-bucket/test-folder/test-file.txt";
 
   describe("Connected to Messaging Service through Local Messaging", ()=>{
     before(()=>{
@@ -46,9 +49,9 @@ describe("WATCH: Integration", function() {
       simple.restore();
     });
 
-    it("sends watch and receives response", function() {
+    it("[client] sends watch and receives response", function() {
       this.timeout(9000); // eslint-disable-line
-      const filePath = "messaging-service-test-bucket/test-folder/test-file.txt";
+
 
       console.log("Broadcasting message through LM to LS");
       commonConfig.broadcastMessage({
@@ -64,6 +67,32 @@ describe("WATCH: Integration", function() {
           if (message.topic === "FILE-UPDATE") {res();}
         }));
       });
+    });
+
+    it("MS sends UPDATE", function(done) {
+      // confirm db state
+      assert(api.fileMetadata.get(filePath).version);
+      assert.equal(api.fileMetadata.get(filePath).status, "STALE");
+      assert(api.fileMetadata.get(filePath).token);
+      assert(api.watchlist.get(filePath).version);
+
+      console.log("Broadcasting message through LM to LS");
+      commonConfig.broadcastMessage({
+        topic: "update",
+        files: [{filePath, version: "test-version-updated", token: "test-token-updated"}]
+      });
+
+      const delay = 200;
+
+      setTimeout(()=>{
+        assert.equal(api.fileMetadata.get(filePath).version, "test-version-updated");
+        assert.equal(api.fileMetadata.get(filePath).status, "STALE");
+        assert.equal(api.fileMetadata.get(filePath).token, "test-token-updated");
+
+        assert.equal(api.watchlist.get(filePath).version, "test-version-updated");
+        done();
+      }, delay);
+
     });
   });
 });
