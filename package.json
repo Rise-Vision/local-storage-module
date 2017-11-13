@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "eslint src && ./pre-build.sh && webpack --env.MODULE_VERSION=$(cat version) --config webpack.config.js && ./post-build.sh",
-    "test": "eslint test && eslint src && mocha -r test/mocha-env.js -t 20000 --recursive test/**",
+    "test": "eslint test && eslint src && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/**",
     "test-integration": "eslint test && eslint src && mocha -r test/mocha-env.js -t 20000 --recursive test/integration/**",
     "test-unit": "eslint test && eslint src && mocha -r test/mocha-env.js -t 20000 --recursive test/unit/**"
   },

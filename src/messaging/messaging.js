@@ -1,4 +1,5 @@
 const commonConfig = require("common-display-module");
+const update = require("./update/update");
 const watch = require("./watch/watch");
 
 function messageReceiveHandler(message) {
@@ -15,6 +16,11 @@ function messageReceiveHandler(message) {
     .catch((err) => {
       console.log(err);
     });
+  } else if (message.topic.toUpperCase() === "GCSUPDATE") {
+    return update.process(message)
+      .catch((err) => {
+        console.log(err);
+      });
   }
 }
 

@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 /* eslint-disable max-statements */
-const messaging = require("../../../src/messaging/messaging.js");
+const messaging = require("../../../../src/messaging/messaging.js");
 const assert = require("assert");
-const db = require("../../../src/db/api");
+const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
-const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
+const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
 
 describe("Messaging", ()=>{
 
