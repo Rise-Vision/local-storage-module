@@ -36,7 +36,7 @@ describe("Messaging", ()=>{
 
     it("updates file(s) in fileMetadata -> updates file(s) in watchlist", ()=>{
       const msg = {
-        topic: "update",
+        topic: "gcsupdate",
         from: "messaging-service",
         files: [
           {

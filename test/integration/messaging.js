@@ -69,7 +69,7 @@ describe("WATCH: Integration", function() {
       });
     });
 
-    it("MS sends UPDATE", function(done) {
+    it("MS sends GCSUPDATE", function(done) {
       // confirm db state
       assert(api.fileMetadata.get(filePath).version);
       assert.equal(api.fileMetadata.get(filePath).status, "STALE");
@@ -78,7 +78,7 @@ describe("WATCH: Integration", function() {
 
       console.log("Broadcasting message through LM to LS");
       commonConfig.broadcastMessage({
-        topic: "update",
+        topic: "gcsupdate",
         files: [{filePath, version: "test-version-updated", token: "test-token-updated"}]
       });
 

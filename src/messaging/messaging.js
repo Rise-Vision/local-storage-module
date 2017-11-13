@@ -16,7 +16,7 @@ function messageReceiveHandler(message) {
     .catch((err) => {
       console.log(err);
     });
-  } else if (message.topic.toUpperCase() === "UPDATE") {
+  } else if (message.topic.toUpperCase() === "GCSUPDATE") {
     return update.process(message)
       .catch((err) => {
         console.log(err);
