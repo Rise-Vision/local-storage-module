@@ -39,6 +39,24 @@ module.exports = {
 
         res();
       });
+    },
+    delete(filePath) {
+      if (!filePath) {throw Error("missing params");}
+
+      return new Promise((res, rej)=>{
+        const metadata = database.getCollection("metadata");
+        const item = metadata.by("filePath", filePath);
+
+        if (item) {
+          try {
+            metadata.remove(item);
+          } catch (err) {
+            rej(err);
+          }
+        }
+
+        res();
+      });
     }
   },
   owners: {
@@ -77,6 +95,24 @@ module.exports = {
         res();
       });
 
+    },
+    delete(filePath) {
+      if (!filePath) {throw Error("missing params");}
+
+      return new Promise((res, rej)=>{
+        const owners = database.getCollection("owners");
+        const item = owners.by("filePath", filePath);
+
+        if (item) {
+          try {
+            owners.remove(item);
+          } catch (err) {
+            rej(err);
+          }
+        }
+
+        res();
+      });
     }
   },
   watchlist: {
@@ -87,6 +123,24 @@ module.exports = {
       const item = watchlist.by("filePath", filePath);
 
       return field ? item && item[field] : item;
+    },
+    delete(filePath) {
+      if (!filePath) {throw Error("missing params");}
+
+      return new Promise((res, rej)=>{
+        const watchlist = database.getCollection("watchlist");
+        const item = watchlist.by("filePath", filePath);
+
+        if (item) {
+          try {
+            watchlist.remove(item);
+          } catch (err) {
+            rej(err);
+          }
+        }
+
+        res();
+      });
     },
     put(entry) {
       if (!entry) {throw Error("missing params");}
