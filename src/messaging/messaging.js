@@ -1,4 +1,5 @@
 const commonConfig = require("common-display-module");
+const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
 
@@ -21,6 +22,13 @@ function handleMSFileUpdate(message) {
 
   if (message.type === "add" || message.type === "update") {
     return update.process(message)
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  if (message.type === "delete") {
+    return deleteFile.process(message)
       .catch((err) => {
         console.log(err);
       });

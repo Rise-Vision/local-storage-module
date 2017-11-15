@@ -49,7 +49,7 @@ describe("WATCH: Integration", function() {
       simple.restore();
     });
 
-    it("[client] sends watch and receives response", function() {
+    it("[client] should send watch and receive response", function() {
       this.timeout(9000); // eslint-disable-line
 
 
@@ -102,6 +102,28 @@ describe("WATCH: Integration", function() {
         assert.deepEqual(api.fileMetadata.get(filePath).token, token);
 
         assert.equal(api.watchlist.get(filePath).version, "test-version-updated");
+        done();
+      }, delay);
+
+    });
+
+    it("should receive MSFILEUPDATE from MS and delete file in DB", function(done) {
+      // confirm db state
+      assert(api.fileMetadata.get(filePath));
+      assert(api.watchlist.get(filePath));
+
+      console.log("Broadcasting message through LM to LS");
+      commonConfig.broadcastMessage({
+        topic: "msfileupdate",
+        type: "delete",
+        filePath
+      });
+
+      const delay = 200;
+
+      setTimeout(()=>{
+        assert(!api.fileMetadata.get(filePath));
+        assert(!api.watchlist.get(filePath));
         done();
       }, delay);
 
