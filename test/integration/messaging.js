@@ -107,7 +107,7 @@ describe("WATCH: Integration", function() {
 
     });
 
-    it("should receive MSFILEUPDATE from MS and delete file in DB", function(done) {
+    it("should receive MSFILEUPDATE, delete file in DB's, client receives response", function() {
       // confirm db state
       assert(api.fileMetadata.get(filePath));
       assert(api.watchlist.get(filePath));
@@ -119,13 +119,17 @@ describe("WATCH: Integration", function() {
         filePath
       });
 
-      const delay = 200;
-
-      setTimeout(()=>{
-        assert(!api.fileMetadata.get(filePath));
-        assert(!api.watchlist.get(filePath));
-        done();
-      }, delay);
+      return new Promise(res=>{
+        commonConfig.receiveMessages("test")
+          .then(receiver=>receiver.on("message", (message)=>{
+            if (message.topic === "FILE-UPDATE") {
+              assert.equal(message.data.status, "DELETED");
+              assert(!api.fileMetadata.get(filePath));
+              assert(!api.watchlist.get(filePath));
+              res();
+            }
+          }));
+      });
 
     });
   });

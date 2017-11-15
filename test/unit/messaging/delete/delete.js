@@ -38,7 +38,7 @@ describe("Messaging", ()=>{
     });
 
 
-    it("deletes file in all databases and broadcasts FILE-DELETE", ()=>{
+    it("deletes file in all databases and broadcasts FILE-UPDATE with DELETED status", ()=>{
       const msg = {
         topic: "msfileupdate",
         type: "delete",
@@ -56,8 +56,8 @@ describe("Messaging", ()=>{
           assert.equal(db.watchlist.delete.lastCall.args[0], msg.filePath);
 
           assert(broadcastIPC.broadcast.called);
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-DELETE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], msg.filePath);
+          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {filePath: msg.filePath, status: "DELETED"});
         });
     });
   });
