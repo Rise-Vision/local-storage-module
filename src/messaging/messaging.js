@@ -20,14 +20,14 @@ function handleWatchResult(message) {
 function handleMSFileUpdate(message) {
   if (!message.type) {return;}
 
-  if (message.type === "add" || message.type === "update") {
+  if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
     return update.process(message)
       .catch((err) => {
         console.log(err);
       });
   }
 
-  if (message.type === "delete") {
+  if (message.type.toUpperCase() === "DELETE") {
     return deleteFile.process(message)
       .catch((err) => {
         console.log(err);
