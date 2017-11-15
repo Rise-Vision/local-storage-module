@@ -144,6 +144,11 @@ describe("Messaging", ()=>{
         }
       }
     };
+    const mockMessage = {
+      topic: "watch-result",
+      from: "test-module",
+      filePath: "test-bucket/test-file"
+    };
 
     beforeEach(()=>{
       simple.mock(commonConfig, "broadcastMessage").returnWith();
@@ -162,14 +167,22 @@ describe("Messaging", ()=>{
       simple.restore();
     });
 
-    it("determines file status to be CURRENT when no token provided in message", ()=>{
-      const msg = {
-        topic: "watch-result",
-        from: "test-module",
-        filePath: "test-bucket/test-file",
-        version: "1.0.0"
-      };
+    it("should broadcast FILEUPDATE with NOEXIST status when error providing from MS", ()=>{
+      const msg = Object.assign({}, mockMessage, {error: 404});
 
+      return messageReceiveHandler(msg)
+        .then(()=>{
+          assert(broadcastIPC.broadcast.called);
+          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+            filePath: msg.filePath,
+            status: "NOEXIST"
+          });
+        });
+    });
+
+    it("determines file status to be CURRENT when no token provided in message", ()=>{
+      const msg = Object.assign({}, mockMessage, {version: "1.0.0"});
 
       return messageReceiveHandler(msg)
         .then(()=>{
@@ -178,13 +191,7 @@ describe("Messaging", ()=>{
     });
 
     it("determines file status to be STALE when token is provided in message", ()=>{
-      const msg = {
-        topic: "watch-result",
-        from: "test-module",
-        filePath: "test-bucket/test-file",
-        version: "1.0.0",
-        token: "abc123"
-      };
+      const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: "abc123"});
 
       return messageReceiveHandler(msg)
         .then(()=>{
@@ -193,12 +200,7 @@ describe("Messaging", ()=>{
     });
 
     it("adds to fileMetaData -> adds to watchlist -> broadcasts FILEUPDATE", ()=>{
-      const msg = {
-        topic: "watch-result",
-        from: "test-module",
-        filePath: "test-bucket/test-file",
-        version: "1.0.0"
-      };
+      const msg = Object.assign({}, mockMessage, {version: "1.0.0"});
 
       return messageReceiveHandler(msg)
         .then(()=>{
