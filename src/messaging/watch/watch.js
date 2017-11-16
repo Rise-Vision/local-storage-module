@@ -30,7 +30,17 @@ module.exports = {
     return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
   },
   msResult(message) {
-    const {filePath, version, token} = message;
+    const {filePath, version, token, error} = message;
+
+    if (error) {
+      broadcastIPC.broadcast("FILE-UPDATE", {
+        filePath,
+        status: "NOEXIST"
+      });
+
+      return Promise.resolve();
+    }
+
     const status = token ? "STALE" : "CURRENT";
 
     return db.fileMetadata.put({filePath, version, status, token})
