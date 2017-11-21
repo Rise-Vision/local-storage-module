@@ -38,7 +38,10 @@
     "zip-webpack-plugin": "^2.0.0"
   },
   "dependencies": {
-    "common-display-module": "git://github.com/Rise-Vision/common-display-module.git#v1.4.0",
-    "gcs-filepath-validator": "^1.0.0"
+    "common-display-module": "git://github.com/Rise-Vision/common-display-module.git#v1.5.2",
+    "gcs-filepath-validator": "^1.0.0",
+    "fs-extra": "^4.0.2",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5"
   }
 }
