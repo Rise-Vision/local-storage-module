@@ -1,6 +1,7 @@
 const broadcastIPC = require("../broadcast-ipc.js");
 const commonConfig = require("common-display-module");
 const db = require("../../db/api");
+const fileController = require("../../files/file-controller");
 const fileSystem = require("../../files/file-system");
 const entry = require("./entry");
 
@@ -44,14 +45,20 @@ module.exports = {
     const status = token ? "STALE" : "CURRENT";
 
     return db.fileMetadata.put({filePath, version, status, token})
-    .then(db.watchlist.put({filePath, version}))
-    .then(()=>{
-      broadcastIPC.broadcast("FILE-UPDATE", {
-        filePath,
-        status,
-        version,
-        ospath: fileSystem.osPath(filePath)
+      .then(db.watchlist.put({filePath, version}))
+      .then(()=>{
+        broadcastIPC.broadcast("FILE-UPDATE", {
+          filePath,
+          status,
+          version,
+          ospath: fileSystem.osPath(filePath)
+        });
+
+        if (status === "CURRENT") {
+          return Promise.resolve();
+        }
+
+        return fileController.download(filePath);
       });
-    });
   }
 };

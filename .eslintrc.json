@@ -57,10 +57,7 @@
         "func-call-spacing": "error",
         "func-name-matching": "error",
         "func-names": "off",
-        "func-style": [
-            "error",
-            "declaration"
-        ],
+        "func-style": "error",
         "function-paren-newline": "error",
         "generator-star-spacing": "error",
         "getter-return": "error",
@@ -167,7 +164,7 @@
         "no-shadow": "error",
         "no-shadow-restricted-names": "error",
         "no-spaced-func": "error",
-        "no-sync": "error",
+        "no-sync": "off",
         "no-tabs": "error",
         "no-template-curly-in-string": "error",
         "no-ternary": "off",

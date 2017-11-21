@@ -3,21 +3,21 @@ const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
 
-function handleWatch(message) {
+const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
       console.log(err);
     });
-}
+};
 
-function handleWatchResult(message) {
+const handleWatchResult = (message) => {
   return watch.msResult(message)
     .catch((err) => {
       console.log(err);
     });
-}
+};
 
-function handleMSFileUpdate(message) {
+const handleMSFileUpdate = (message) => {
   if (!message.type) {return;}
 
   if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
@@ -33,9 +33,9 @@ function handleMSFileUpdate(message) {
         console.log(err);
       });
   }
-}
+};
 
-function messageReceiveHandler(message) {
+const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
 
@@ -46,7 +46,7 @@ function messageReceiveHandler(message) {
   } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
     return handleMSFileUpdate(message);
   }
-}
+};
 
 module.exports = {
   init() {

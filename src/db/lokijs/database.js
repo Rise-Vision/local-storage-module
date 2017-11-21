@@ -10,7 +10,7 @@ const defaultSaveInterval = 4000;
 
 let db = null;
 
-function initCollections() {
+const initCollections = () => {
   [COLLECTION_METADATA, COLLECTION_OWNERS, COLLECTION_WATCH_LIST].forEach((collName)=>{
     const collection = db.getCollection(collName);
 
@@ -20,7 +20,7 @@ function initCollections() {
       });
     }
   });
-}
+};
 
 module.exports = {
   close(cb) {
