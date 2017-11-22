@@ -20,7 +20,7 @@ module.exports = {
       .then(()=>{
         broadcastIPC.broadcast("FILE-UPDATE", {
           filePath,
-          ospath: fileSystem.osPath(filePath),
+          ospath: fileSystem.getPathInCache(filePath),
           status: metaData.status,
           version: metaData.version
         });
@@ -51,7 +51,7 @@ module.exports = {
           filePath,
           status,
           version,
-          ospath: fileSystem.osPath(filePath)
+          ospath: fileSystem.getPathInCache(filePath)
         });
 
         if (status === "CURRENT") {

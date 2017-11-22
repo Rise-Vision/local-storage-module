@@ -24,7 +24,7 @@ module.exports = {
 
     return platform.fileExists(downloadPath);
   },
-  osPath(filePath) {
+  getPathInCache(filePath) {
     const modulePath = commonConfig.getModulePath("local-storage");
     const fileName = module.exports.getFileName(filePath);
 

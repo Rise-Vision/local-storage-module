@@ -18,9 +18,9 @@ describe("File System", ()=> {
     simple.restore();
   });
 
-  describe("ospath", () => {
+  describe("getPathInCache", () => {
     it("should provide os path for a file given a gcs filePath", ()=> {
-      assert.equal(fileSystem.osPath(testFilePath), `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`);
+      assert.equal(fileSystem.getPathInCache(testFilePath), `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`);
     });
   });
 
