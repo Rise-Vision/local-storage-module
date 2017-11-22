@@ -16,7 +16,7 @@ const sendMessage = (token) => {
 };
 
 const validateToken = (token) => {
-  if (!token || !token.data.timestamp || !token.data.filePath || !token.data.displayId || !token.hash) {
+  if (!token || !token.data || !token.data.timestamp || !token.data.filePath || !token.data.displayId || !token.hash) {
     throw Error("Invalid token provided");
   }
 

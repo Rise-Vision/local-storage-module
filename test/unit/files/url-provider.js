@@ -32,7 +32,7 @@ describe("URL Provider", ()=>{
     });
 
     it("should throw error when no token hash provided", ()=>{
-      assert.throws(() => {urlProvider.getURL({})}, Error);
+      assert.throws(() => {urlProvider.getURL({data: testToken.data})}, Error);
     });
 
     it("should throw error when no token data provided", ()=>{
