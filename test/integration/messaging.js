@@ -11,11 +11,12 @@ const path = require("path");
 const {platform} = require("rise-common-electron");
 const dbSaveInterval = 5;
 
-global.log = {file: ()=>{}};
+global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}};
 
 describe("WATCH: Integration", function() {
   const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
   const filePath = "messaging-service-test-bucket/test-folder/test-file.txt";
+  const testModulePath = "rvplayer/modules/local-storage/";
 
   describe("Connected to Messaging Service through Local Messaging", ()=>{
     before(()=>{
@@ -42,7 +43,7 @@ describe("WATCH: Integration", function() {
 
     beforeEach(()=>{
       simple.mock(commonConfig, "getMachineId").returnWith("0");
-      simple.mock(commonConfig, "getLocalStoragePath").returnWith("mock-file-path");
+      simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
     });
 
     afterEach(()=>{
