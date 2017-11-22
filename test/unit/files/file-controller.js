@@ -2,7 +2,7 @@
 /* eslint-disable max-statements */
 const assert = require("assert");
 const simple = require("simple-mock");
-const downloader = require("../../../src/files/downloader");
+const file = require("../../../src/files/file");
 const db = require("../../../src/db/api");
 const urlProvider = require("../../../src/files/url-provider");
 const fileController = require("../../../src/files/file-controller");
@@ -44,12 +44,12 @@ describe("File Controller", ()=>{
       });
       simple.mock(fileSystem, "isDownloading").returnWith(true);
       simple.mock(urlProvider, "getURL");
-      simple.mock(downloader, "download");
+      simple.mock(file, "request");
 
       return fileController.download(testFilePath)
         .then(()=>{
           assert.equal(urlProvider.getURL.callCount, 0);
-          assert.equal(downloader.download.callCount, 0);
+          assert.equal(file.request.callCount, 0);
         });
     });
 
@@ -63,14 +63,14 @@ describe("File Controller", ()=>{
       simple.mock(fileSystem, "isDownloading").returnWith(false);
       simple.mock(request, "post").resolveWith("test-signed-url");
       simple.mock(urlProvider, "getURL");
-      simple.mock(downloader, "download");
+      simple.mock(file, "request");
 
       return fileController.download(testFilePath)
         .then(()=>{
           assert.equal(urlProvider.getURL.callCount, 1);
           assert.deepEqual(urlProvider.getURL.lastCall.args[0], testToken);
-          assert.equal(downloader.download.callCount, 1);
-          assert.equal(downloader.download.lastCall.args[0], "test-signed-url");
+          assert.equal(file.request.callCount, 1);
+          assert.equal(file.request.lastCall.args[0], "test-signed-url");
         });
     });
 
