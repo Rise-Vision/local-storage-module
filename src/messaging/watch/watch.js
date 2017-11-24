@@ -56,7 +56,7 @@ module.exports = {
 
         if (status === "STALE" && !fileController.isProcessing(filePath)) {
           fileController.addToProcessing(filePath);
-          fileController.download(filePath, token)
+          return fileController.download(filePath, token)
             .catch(err=>{
               fileController.removeFromProcessing(filePath);
               throw err;

@@ -26,7 +26,7 @@ const validateToken = (token) => {
   return Promise.resolve(token);
 };
 
-const responseHandler = (response) => {
+const handleResponse = (response) => {
   if (response.statusCode !== SUCCESS_CODE) {
     return Promise.reject(new Error(`Invalid response with status code ${response.statusCode}`));
   }
@@ -38,7 +38,7 @@ module.exports = {
   getURL(token) {
     return validateToken(token)
       .then(sendMessage)
-      .then(responseHandler)
+      .then(handleResponse)
       .catch(err=>{
         broadcastIPC.broadcast("FILE-ERROR", {
           filePath: token.data.filePath,

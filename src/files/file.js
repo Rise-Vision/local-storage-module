@@ -1,12 +1,13 @@
-const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
+const config = require("../config/config");
+const broadcastIPC = require("../messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
 
-const twoMinTimeout = 120000;
+const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
 
 const requestFile = (signedURL) => {
   const options = {
     uri: signedURL,
-    timeout: global.secondMillis * twoMinTimeout,
+    timeout: config.secondMillis * twoMinTimeout,
     resolveWithFullResponse: true
   };
 
