@@ -173,6 +173,8 @@ describe("Messaging", ()=>{
       simple.mock(fileController, "download").resolveWith();
       simple.mock(broadcastIPC, "broadcast");
 
+      fileController.removeFromProcessing(testFilePath);
+
       return messaging.init();
     });
 
@@ -271,6 +273,18 @@ describe("Messaging", ()=>{
         .then(()=>{
           assert(fileController.download.called);
           assert.equal(fileController.download.lastCall.args[0], msg.filePath);
+          assert.equal(fileController.download.lastCall.args[1], testToken);
+        });
+    });
+
+    it("[STALE] does not download when file already processing", () => {
+      fileController.addToProcessing(testFilePath);
+
+      const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: testToken});
+
+      return messageReceiveHandler(msg)
+        .then(()=>{
+          assert(!fileController.download.called);
         });
     });
   });

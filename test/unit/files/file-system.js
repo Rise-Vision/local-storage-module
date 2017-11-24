@@ -1,9 +1,9 @@
 /* eslint-env mocha */
+/* eslint-disable no-magic-numbers, max-statements */
 const assert = require("assert");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const fileSystem = require("../../../src/files/file-system");
-const mockfs = require("mock-fs");
 
 describe("File System", ()=> {
 
@@ -18,8 +18,20 @@ describe("File System", ()=> {
     simple.restore();
   });
 
+  describe("getCacheDir", () => {
+    it("should provide path to cache folder", ()=> {
+      assert.equal(fileSystem.getCacheDir(), `${testModulePath}cache`);
+    });
+  });
+
+  describe("getDownloadDir", () => {
+    it("should provide path to download folder", ()=> {
+      assert.equal(fileSystem.getDownloadDir(), `${testModulePath}download`);
+    });
+  });
+
   describe("getPathInCache", () => {
-    it("should provide os path for a file given a gcs filePath", ()=> {
+    it("should provide path for a file in cache given a gcs filePath", ()=> {
       assert.equal(fileSystem.getPathInCache(testFilePath), `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`);
     });
   });
@@ -40,20 +52,55 @@ describe("File System", ()=> {
     });
   });
 
-  describe("isDownloading", ()=>{
-     it("should return true if file is found in the download folder given a gcs filePath", () => {
-      mockfs({
-        [`${testModulePath}download`]: {
-          "e498da09daba1d6bb3c6e5c0f0966784": "some content"
-        }
-      });
-
-      assert(fileSystem.isDownloading(testFilePath));
-      mockfs.restore();
+  describe("processing", ()=>{
+    it("should return true if file hash name is found in processing list", () => {
+      fileSystem.addToProcessingList("abc123");
+      assert(fileSystem.isProcessing("abc123"));
     });
 
-    it("should return false if file is not found in the download folder given a gcs filePath", () => {
-      assert(!fileSystem.isDownloading(testFilePath));
+    it("should return false if file hash name is not found in processing list", () => {
+      fileSystem.removeFromProcessingList("abc123");
+      assert(!fileSystem.isProcessing("abc123"));
+    });
+  });
+
+  describe("isThereAvailableSpace", () => {
+    const oneGB = 1024 * 1024 * 1024;
+    const fiveHundredTwelveMB = 512 * 1024 * 1024;
+    const threeHundredMB = 300 * 1024 * 1024;
+
+    it("should return  true when passing no fileSize and there is space in disk", () => {
+      assert(fileSystem.isThereAvailableSpace(oneGB));
+    });
+
+    it("should return true when passing no fileSize and there is space in disk even though a file is being downloaded", () => {
+      fileSystem.addToDownloadTotalSize(threeHundredMB);
+      assert(fileSystem.isThereAvailableSpace(oneGB));
+      fileSystem.removeFromDownloadTotalSize(threeHundredMB);
+    });
+
+    it("should return false when passing no fileSize and there is no space in disk", () => {
+      assert(!fileSystem.isThereAvailableSpace(fiveHundredTwelveMB));
+    });
+
+    it("should return false when passing no fileSize and there is no space in disk when downloading a file", () => {
+      fileSystem.addToDownloadTotalSize(fiveHundredTwelveMB);
+      assert(!fileSystem.isThereAvailableSpace(oneGB));
+      fileSystem.removeFromDownloadTotalSize(fiveHundredTwelveMB);
+    });
+
+    it("should return false when passing fileSize and there is no space in disk", () => {
+      assert(!fileSystem.isThereAvailableSpace(oneGB, fiveHundredTwelveMB));
+    });
+
+    it("should return true when passing fileSize and there is space in disk", () => {
+      assert(fileSystem.isThereAvailableSpace(oneGB, threeHundredMB));
+    });
+
+    it("should return false when passing fileSize and there is space in disk but it is downloading", () => {
+      fileSystem.addToDownloadTotalSize(threeHundredMB);
+      assert(!fileSystem.isThereAvailableSpace(oneGB, fiveHundredTwelveMB));
+      fileSystem.removeFromDownloadTotalSize(threeHundredMB);
     });
   });
 

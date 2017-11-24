@@ -44,7 +44,7 @@ describe("URL Provider", ()=>{
     });
 
     it("should return successful signed URL", ()=>{
-      simple.mock(request, "post").resolveWith("test-signed-url");
+      simple.mock(request, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
 
       return urlProvider.getURL(testToken)
         .then(url=>{
@@ -54,20 +54,28 @@ describe("URL Provider", ()=>{
     });
 
     it("should broadcast FILE-ERROR when unsuccessful response from URL Provider", ()=>{
-      simple.mock(request, "post").rejectWith("test-signed-error");
+      simple.mock(request, "post").rejectWith();
       simple.mock(broadcastIPC, "broadcast");
 
       return urlProvider.getURL(testToken)
-        .catch(error=>{
-          assert(error);
-          assert.equal(error, "test-signed-error");
-
+        .then(url=>{
+          assert(!url);
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
-            filePath: testToken.data.filePath,
-            error
-          });
+          assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "Could not retrieve signed URL");
+        })
+    });
+
+    it("should broadcast FILE-ERROR when invalid status response from URL Provider", ()=>{
+      simple.mock(request, "post").resolveWith({statusCode: 403, body: "test issue"});
+      simple.mock(broadcastIPC, "broadcast");
+
+      return urlProvider.getURL(testToken)
+        .then(url=>{
+          assert(!url);
+          assert(broadcastIPC.broadcast.called);
+          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
+          assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "Could not retrieve signed URL");
         })
     });
 

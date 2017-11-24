@@ -1,6 +1,8 @@
 const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
 
+const SUCCESS_CODE = 200;
+
 const sendMessage = (token) => {
   const {data, hash} = token;
   const options = {
@@ -9,7 +11,8 @@ const sendMessage = (token) => {
       data,
       hash
     },
-    json: true
+    json: true,
+    resolveWithFullResponse: true
   };
 
   return request.post(options);
@@ -23,17 +26,25 @@ const validateToken = (token) => {
   return Promise.resolve(token);
 };
 
+const handleResponse = (response) => {
+  if (response.statusCode !== SUCCESS_CODE) {
+    return Promise.reject(new Error(`Invalid response with status code ${response.statusCode}`));
+  }
+
+  return response.body;
+};
+
 module.exports = {
   getURL(token) {
     return validateToken(token)
       .then(sendMessage)
-      .catch(error=>{
+      .then(handleResponse)
+      .catch(err=>{
         broadcastIPC.broadcast("FILE-ERROR", {
           filePath: token.data.filePath,
-          error
+          msg: "Could not retrieve signed URL",
+          detail: err
         });
-
-        return Promise.reject(error);
       });
   }
 };
