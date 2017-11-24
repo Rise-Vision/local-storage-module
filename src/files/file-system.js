@@ -2,6 +2,7 @@ const commonConfig = require("common-display-module");
 const crypto = require("crypto");
 const path = require("path");
 const platform = require("rise-common-electron").platform;
+const fs = require("fs-extra");
 
 const DIR_CACHE = "cache";
 const DIR_DOWNLOAD = "download";
@@ -69,6 +70,17 @@ module.exports = {
 
     const spaceLeft = spaceOnDisk - downloadTotalSize - module.exports.getDiskThreshold() - fileSize;
     return spaceLeft > 0;
+  },
+  moveFileFromDownloadToCache(filePath) {
+    return fs.move(module.exports.getPathInDownload(filePath), module.exports.getPathInCache(filePath));
+  },
+  deleteFileFromDownload(filePath) {
+    const downloadPath = module.exports.getPathInDownload(filePath);
+
+    if (platform.fileExists(downloadPath)) {
+      fs.remove(downloadPath)
+        .catch(err=>console.log(err));
+    }
   }
 
 };
