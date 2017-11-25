@@ -31,6 +31,7 @@
     "lokijs": "1.5.1",
     "mocha": "^4.0.0",
     "mock-fs": "^4.4.2",
+    "nock": "^9.1.2",
     "simple-mock": "^0.8.0",
     "local-messaging-module": "git@github.com:Rise-Vision/local-messaging-module.git#8ad545f4",
     "unzipsfx-webpack-plugin": "git+https://github.com/Rise-Vision/unzipsfx-webpack-plugin.git",
