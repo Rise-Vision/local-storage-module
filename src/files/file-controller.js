@@ -77,6 +77,6 @@ module.exports = {
         return file.request(filePath, signedURL);
       })
       .then(response=>validateResponse(filePath, response))
-      .then(file.writeToDisk);
+      .then(response=>file.writeToDisk(filePath, response));
   }
 };

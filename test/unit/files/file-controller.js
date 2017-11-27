@@ -30,7 +30,7 @@ describe("File Controller", ()=>{
       simple.mock(broadcastIPC, "broadcast").returnWith();
       simple.mock(urlProvider, "getURL");
       simple.mock(file, "request");
-      simple.mock(file, "writeToDisk");
+      simple.mock(file, "writeToDisk").resolveWith();
     });
 
     it("should reject and broadcast FILE-ERROR and not get signed url when no available space", ()=>{
@@ -88,6 +88,8 @@ describe("File Controller", ()=>{
       return fileController.download(testFilePath, testToken)
         .then(() => {
           assert(file.writeToDisk.called);
+          assert.equal(file.writeToDisk.lastCall.args[0], testFilePath);
+          assert.deepEqual(file.writeToDisk.lastCall.args[1], {statusCode: 200, headers: {"Content-length": "100000"}});
         })
     });
   });

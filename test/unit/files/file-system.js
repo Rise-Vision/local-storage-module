@@ -4,6 +4,8 @@ const assert = require("assert");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const fileSystem = require("../../../src/files/file-system");
+const mockfs = require("mock-fs");
+const platform = require("rise-common-electron").platform;
 
 describe("File System", ()=> {
 
@@ -102,6 +104,52 @@ describe("File System", ()=> {
       assert(!fileSystem.isThereAvailableSpace(oneGB, fiveHundredTwelveMB));
       fileSystem.removeFromDownloadTotalSize(threeHundredMB);
     });
+  });
+
+  describe("moveFromDownloadToCache", () => {
+
+    beforeEach(()=>{
+      mockfs.restore();
+    });
+
+    it("should move the file", () => {
+      mockfs({
+        [`${testModulePath}download`]: {
+          "e498da09daba1d6bb3c6e5c0f0966784": "some content"
+        },
+        [`${testModulePath}cache`]: {}
+      });
+
+      return fileSystem.moveFileFromDownloadToCache(testFilePath)
+        .then(()=>{
+          assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+          assert(platform.fileExists(`${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+
+        })
+        .catch((err) => {
+          console.log("shouldn't be here", err);
+          assert(false);
+        });
+      });
+    });
+
+  describe("deleteFileFromDownload", () => {
+
+    it("should delete a file in download directory", (done) => {
+      mockfs({
+        [`${testModulePath}download`]: {
+          "e498da09daba1d6bb3c6e5c0f0966784": "some content"
+        }
+      });
+
+      fileSystem.deleteFileFromDownload(testFilePath);
+
+      setTimeout(()=>{
+        assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+        done();
+      }, 200);
+    });
+
   });
 
 });
