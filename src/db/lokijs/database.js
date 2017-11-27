@@ -2,9 +2,10 @@ const COLLECTION_METADATA = "metadata",
   COLLECTION_OWNERS = "owners",
   COLLECTION_WATCH_LIST = "watchlist";
 
-const commonConfig = require("common-display-module"),
-  loki = require("lokijs"),
-  path = require("path");
+const commonConfig = require("common-display-module");
+const config = require("../../../src/config/config");
+const loki = require("lokijs");
+const path = require("path");
 
 const defaultSaveInterval = 4000;
 
@@ -36,7 +37,7 @@ module.exports = {
   start(dirPath = null, saveInterval = defaultSaveInterval) {
     return new Promise((res, rej)=>{
       try {
-        const dbPath = path.join(dirPath || commonConfig.getModulePath("local-storage"), "local-storage.db");
+        const dbPath = path.join(dirPath || commonConfig.getModulePath(config.moduleName), `${config.moduleName}.db`);
 
         db = new loki(dbPath, {
           autoload: true,

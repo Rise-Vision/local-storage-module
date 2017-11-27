@@ -1,3 +1,4 @@
 module.exports = {
-  secondMillis: 1000
+  secondMillis: 1000,
+  moduleName: "local-storage"
 };

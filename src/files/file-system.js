@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const path = require("path");
 const platform = require("rise-common-electron").platform;
 const fs = require("fs-extra");
+const config = require("../../src/config/config");
 
 const DIR_CACHE = "cache";
 const DIR_DOWNLOAD = "download";
@@ -20,11 +21,11 @@ module.exports = {
     return crypto.createHash("md5").update(filePath).digest("hex");
   },
   getCacheDir() {
-    const modulePath = commonConfig.getModulePath("local-storage");
+    const modulePath = commonConfig.getModulePath(config.moduleName);
     return path.join(modulePath, DIR_CACHE);
   },
   getDownloadDir() {
-    const modulePath = commonConfig.getModulePath("local-storage");
+    const modulePath = commonConfig.getModulePath(config.moduleName);
     return path.join(modulePath, DIR_DOWNLOAD);
   },
   getDiskThreshold() {
