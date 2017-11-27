@@ -81,6 +81,12 @@ module.exports = {
       fs.remove(downloadPath)
         .catch(err=>console.log(err));
     }
+  },
+  cleanupDownloadFolder() {
+    return fs.emptyDir(module.exports.getDownloadDir())
+  },
+  createDir(dir) {
+    return fs.ensureDir(dir);
   }
 
 };
