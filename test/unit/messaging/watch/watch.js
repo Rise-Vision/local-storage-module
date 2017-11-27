@@ -1,5 +1,6 @@
 /* eslint-env mocha */
-/* eslint-disable max-statements */
+/* eslint-disable max-statements, no-magic-numbers */
+/* eslint max-lines: ["off"] */
 const messaging = require("../../../../src/messaging/messaging.js");
 const assert = require("assert");
 const db = require("../../../../src/db/api");
@@ -172,6 +173,8 @@ describe("Messaging", ()=>{
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(fileController, "download").resolveWith();
       simple.mock(broadcastIPC, "broadcast");
+      simple.mock(fileController, "addToProcessing");
+      simple.mock(fileController, "removeFromProcessing");
 
       fileController.removeFromProcessing(testFilePath);
 
@@ -261,9 +264,9 @@ describe("Messaging", ()=>{
           assert.deepEqual(db.watchlist.put.lastCall.args[0], {filePath: msg.filePath, version: msg.version});
         })
         .then(()=>{
-          assert(broadcastIPC.broadcast.called);
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          assert.equal(broadcastIPC.broadcast.callCount, 2);
+          assert.equal(broadcastIPC.broadcast.firstCall.args[0], "FILE-UPDATE");
+          assert.deepEqual(broadcastIPC.broadcast.firstCall.args[1], {
             filePath: msg.filePath,
             ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
             status: "STALE",
@@ -271,10 +274,24 @@ describe("Messaging", ()=>{
           });
         })
         .then(()=>{
+          assert(fileController.addToProcessing.called);
+          assert.equal(fileController.addToProcessing.lastCall.args[0], testFilePath);
           assert(fileController.download.called);
           assert.equal(fileController.download.lastCall.args[0], msg.filePath);
           assert.equal(fileController.download.lastCall.args[1], testToken);
-        });
+        })
+        .then(()=>{
+          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+            filePath: msg.filePath,
+            ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
+            status: "CURRENT",
+            version: msg.version
+          });
+
+          assert(fileController.removeFromProcessing.called);
+          assert.equal(fileController.removeFromProcessing.lastCall.args[0], testFilePath);
+          });
     });
 
     it("[STALE] does not download when file already processing", () => {

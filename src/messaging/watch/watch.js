@@ -57,6 +57,16 @@ module.exports = {
         if (status === "STALE" && !fileController.isProcessing(filePath)) {
           fileController.addToProcessing(filePath);
           return fileController.download(filePath, token)
+            .then(() => {
+              fileController.removeFromProcessing(filePath);
+
+              broadcastIPC.broadcast("FILE-UPDATE", {
+                filePath,
+                status: "CURRENT",
+                version,
+                ospath: fileSystem.getPathInCache(filePath)
+              });
+            })
             .catch(err=>{
               fileController.removeFromProcessing(filePath);
               throw err;
