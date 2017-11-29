@@ -7,14 +7,20 @@ const watch = require("./watch/watch");
 const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
-      console.log(err);
+      log.error({
+        event_details: JSON.stringify(err),
+        version: commonConfig.getModuleVersion()
+      }, null, config.bqTableName);
     });
 };
 
 const handleWatchResult = (message) => {
   return watch.msResult(message)
     .catch((err) => {
-      console.log(err);
+      log.error({
+        event_details: JSON.stringify(err),
+        version: commonConfig.getModuleVersion()
+      }, null, config.bqTableName);
     });
 };
 
@@ -24,14 +30,20 @@ const handleMSFileUpdate = (message) => {
   if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
     return update.process(message)
       .catch((err) => {
-        console.log(err);
+        log.error({
+          event_details: JSON.stringify(err),
+          version: commonConfig.getModuleVersion()
+        }, null, config.bqTableName);
       });
   }
 
   if (message.type.toUpperCase() === "DELETE") {
     return deleteFile.process(message)
       .catch((err) => {
-        console.log(err);
+        log.error({
+          event_details: JSON.stringify(err),
+          version: commonConfig.getModuleVersion()
+        }, null, config.bqTableName);
       });
   }
 };

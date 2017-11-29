@@ -40,7 +40,7 @@
     "zip-webpack-plugin": "^2.0.0"
   },
   "dependencies": {
-    "common-display-module": "git://github.com/Rise-Vision/common-display-module.git#v1.5.2",
+    "common-display-module": "git://github.com/Rise-Vision/common-display-module.git#v1.5.5",
     "gcs-filepath-validator": "^1.0.0",
     "fs-extra": "^4.0.2",
     "request": "^2.83.0",
