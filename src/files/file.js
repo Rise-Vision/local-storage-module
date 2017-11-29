@@ -3,14 +3,17 @@ const broadcastIPC = require("../messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
 const fileSystem = require("./file-system");
 const fs = require("fs");
+const commonConfig = require("common-display-module");
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
 
 const requestFile = (signedURL) => {
+  const proxy = commonConfig.getProxyAgents();
   const options = {
     uri: signedURL,
     timeout: config.secondMillis * twoMinTimeout,
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    proxy: proxy.httpsAgent || proxy.httpAgent || null
   };
 
   return request.get(options);

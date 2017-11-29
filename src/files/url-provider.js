@@ -1,10 +1,12 @@
 const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
+const commonConfig = require("common-display-module");
 
 const SUCCESS_CODE = 200;
 
 const sendMessage = (token) => {
   const {data, hash} = token;
+  const proxy = commonConfig.getProxyAgents();
   const options = {
     uri: "https://services.risevision.com/urlprovider/",
     body: {
@@ -12,7 +14,8 @@ const sendMessage = (token) => {
       hash
     },
     json: true,
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    proxy: proxy.httpsAgent || proxy.httpAgent || null
   };
 
   return request.post(options);
