@@ -3,14 +3,15 @@ const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
+const util = require("util");
 
 const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
       log.error({
-        event_details: JSON.stringify(err),
-        version: commonConfig.getModuleVersion()
-      }, null, config.bqTableName);
+        event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+        version: config.getModuleVersion()
+      }, "Handle WATCH Error", config.bqTableName);
     });
 };
 
@@ -18,9 +19,9 @@ const handleWatchResult = (message) => {
   return watch.msResult(message)
     .catch((err) => {
       log.error({
-        event_details: JSON.stringify(err),
-        version: commonConfig.getModuleVersion()
-      }, null, config.bqTableName);
+        event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+        version: config.getModuleVersion()
+      }, "Handle WATCH-RESULT Error", config.bqTableName);
     });
 };
 
@@ -31,9 +32,9 @@ const handleMSFileUpdate = (message) => {
     return update.process(message)
       .catch((err) => {
         log.error({
-          event_details: JSON.stringify(err),
-          version: commonConfig.getModuleVersion()
-        }, null, config.bqTableName);
+          event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+          version: config.getModuleVersion()
+        }, "Handle MSFILEUPDATE Error", config.bqTableName);
       });
   }
 
@@ -41,9 +42,9 @@ const handleMSFileUpdate = (message) => {
     return deleteFile.process(message)
       .catch((err) => {
         log.error({
-          event_details: JSON.stringify(err),
-          version: commonConfig.getModuleVersion()
-        }, null, config.bqTableName);
+          event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+          version: config.getModuleVersion()
+        }, "Handle DELETE Error", config.bqTableName);
       });
   }
 };

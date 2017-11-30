@@ -1,4 +1,5 @@
 const broadcastIPC = require("../broadcast-ipc.js");
+const config = require("../../../src/config/config");
 const commonConfig = require("common-display-module");
 const db = require("../../db/api");
 const fileController = require("../../files/file-controller");
@@ -27,7 +28,7 @@ module.exports = {
       });
     }
 
-    const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
+    const msMessage = Object.assign({}, message, {version: metaData.version || "0", displayId: config.getDisplayId()});
     return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
   },
   msResult(message) {

@@ -4,6 +4,7 @@ const request = require("request-promise-native");
 const fileSystem = require("./file-system");
 const fs = require("fs");
 const commonConfig = require("common-display-module");
+const util = require("util");
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
 
@@ -28,7 +29,7 @@ module.exports = {
         broadcastIPC.broadcast("FILE-ERROR", {
           filePath,
           msg: "File's host server could not be reached",
-          detail: err
+          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
         });
 
         return Promise.reject(new Error("File's host server could not be reached"));
@@ -51,7 +52,7 @@ module.exports = {
         broadcastIPC.broadcast("FILE-ERROR", {
           filePath,
           msg: "File I/O Error",
-          detail: err
+          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
         });
 
         rej(new Error("File I/O Error"));

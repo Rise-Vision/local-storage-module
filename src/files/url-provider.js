@@ -1,6 +1,7 @@
 const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
 const commonConfig = require("common-display-module");
+const util = require("util");
 
 const SUCCESS_CODE = 200;
 
@@ -46,7 +47,7 @@ module.exports = {
         broadcastIPC.broadcast("FILE-ERROR", {
           filePath: token.data.filePath,
           msg: "Could not retrieve signed URL",
-          detail: err
+          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
         });
       });
   }

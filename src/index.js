@@ -6,14 +6,18 @@ const config = require("./config/config");
 const preventBQLog = process.env.RISE_PREVENT_BQ_LOG;
 const externalLogger = require("common-display-module/external-logger")(config.bqProjectName, config.bqDatasetName, config.bqFailedEntryFile);
 const modulePath = commonConfig.getModulePath(config.moduleName);
+const util = require("util");
 
 global.log = require("rise-common-electron").logger(preventBQLog ? null : externalLogger, modulePath, config.moduleName);
 
 const initialize = () => {
   return commonConfig.getDisplayId()
     .then(displayId=>{
+      config.setDisplayId(displayId);
+      config.setModuleVersion(commonConfig.getModuleVersion(config.moduleName));
+
       log.resetLogFiles(Math.pow(10, 5)); // eslint-disable-line no-magic-numbers
-      log.setDisplaySettings({displayid: displayId})
+      log.setDisplaySettings({displayid: displayId});
     })
     .then(fileSystem.cleanupDownloadFolder())
     .then(fileSystem.createDir(fileSystem.getDownloadDir()))
@@ -25,7 +29,7 @@ initialize()
   .then(messaging.init)
   .catch((err)=>{
     log.error({
-      event_details: JSON.stringify(err),
-      version: commonConfig.getModuleVersion()
+      event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+      version: config.getModuleVersion()
     }, null, config.bqTableName);
   });
