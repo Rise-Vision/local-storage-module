@@ -13,10 +13,14 @@ global.log = require("rise-common-electron").logger(preventBQLog ? null : extern
 const initialize = () => {
   return commonConfig.getDisplayId()
     .then(displayId=>{
+      const baseBytes = 10;
+      const expo = 5;
+      const maxFileSizeBytes = Math.pow(baseBytes, expo);
+
       config.setDisplayId(displayId);
       config.setModuleVersion(commonConfig.getModuleVersion(config.moduleName));
 
-      log.resetLogFiles(Math.pow(10, 5)); // eslint-disable-line no-magic-numbers
+      log.resetLogFiles(maxFileSizeBytes);
       log.setDisplaySettings({displayid: displayId});
     })
     .then(fileSystem.cleanupDownloadFolder())
