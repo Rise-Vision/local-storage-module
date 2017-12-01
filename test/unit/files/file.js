@@ -45,13 +45,14 @@ describe("File", ()=>{
         })
     });
 
-    it("should broadcast FILE-ERROR when request error occurs", ()=>{
+    it("should attempt request 3 times before broadcasting FILE-ERROR when request error occurs", ()=>{
       simple.mock(request, "get").rejectWith();
       simple.mock(broadcastIPC, "broadcast");
 
       return file.request(testFilePath, testSignedURL)
         .catch(err=>{
           assert(err);
+          assert.equal(request.get.callCount, 3);
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "File's host server could not be reached");

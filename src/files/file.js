@@ -7,6 +7,7 @@ const commonConfig = require("common-display-module");
 const util = require("util");
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
+const requestRetries = 2;
 
 const requestFile = (signedURL) => {
   const proxy = commonConfig.getProxyAgents();
@@ -21,11 +22,15 @@ const requestFile = (signedURL) => {
 };
 
 module.exports = {
-  request(filePath, signedURL) {
+  request(filePath, signedURL, retries = requestRetries) {
     if (!filePath || !signedURL) {throw Error("Invalid file request params");}
 
     return requestFile(signedURL)
       .catch(err=> {
+        if (retries > 0) {
+          return module.exports.request(filePath, signedURL, retries - 1);
+        }
+
         broadcastIPC.broadcast("FILE-ERROR", {
           filePath,
           msg: "File's host server could not be reached",
