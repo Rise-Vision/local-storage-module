@@ -5,23 +5,24 @@ const update = require("./update/update");
 const watch = require("./watch/watch");
 const util = require("util");
 
+const logError = (err, userFriendlyMessage = "") => {
+  log.error({
+    event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+    version: config.getModuleVersion()
+  }, userFriendlyMessage, config.bqTableName);
+};
+
 const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
-      log.error({
-        event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
-        version: config.getModuleVersion()
-      }, "Handle WATCH Error", config.bqTableName);
+      logError(err, "Handle WATCH Error");
     });
 };
 
 const handleWatchResult = (message) => {
   return watch.msResult(message)
     .catch((err) => {
-      log.error({
-        event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
-        version: config.getModuleVersion()
-      }, "Handle WATCH-RESULT Error", config.bqTableName);
+      logError(err, "Handle WATCH-RESULT Error");
     });
 };
 
@@ -31,20 +32,14 @@ const handleMSFileUpdate = (message) => {
   if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
     return update.process(message)
       .catch((err) => {
-        log.error({
-          event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
-          version: config.getModuleVersion()
-        }, "Handle MSFILEUPDATE Error", config.bqTableName);
+        logError(err, "Handle MSFILEUPDATE Error");
       });
   }
 
   if (message.type.toUpperCase() === "DELETE") {
     return deleteFile.process(message)
       .catch((err) => {
-        log.error({
-          event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
-          version: config.getModuleVersion()
-        }, "Handle DELETE Error", config.bqTableName);
+        logError(err, "Handle DELETE Error");
       });
   }
 };
