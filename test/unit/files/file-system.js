@@ -152,4 +152,23 @@ describe("File System", ()=> {
 
   });
 
+  describe("cleanupDownloadFolder", () => {
+
+    it("should delete all files in download directory", () => {
+      mockfs({
+        [`${testModulePath}download`]: {
+          "e498da09daba1d6bb3c6e5c0f0966784": "some content"
+        }
+      });
+
+      assert(platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+
+      return fileSystem.cleanupDownloadFolder(testFilePath)
+        .then(() => {
+          assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+        });
+    });
+
+  });
+
 });
