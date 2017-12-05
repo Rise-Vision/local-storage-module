@@ -25,7 +25,7 @@ describe("WATCH: Integration", function() {
       });
 
       return platform.mkdirRecursively(tempDBPath)
-      .then(()=>localMessagingModule.start())
+      .then(()=>localMessagingModule.start("ls-test-did", "ls-test-mid"))
       .then(()=>database.start(tempDBPath, dbSaveInterval))
       .then(messaging.init);
     });
@@ -53,20 +53,20 @@ describe("WATCH: Integration", function() {
     it("[client] should send watch and receive response", function() {
       this.timeout(9000); // eslint-disable-line
 
-
-      console.log("Broadcasting message through LM to LS");
-      commonConfig.broadcastMessage({
-        from: "test",
-        topic: "watch",
-        filePath
-      });
-
       return new Promise(res=>{
         commonConfig.receiveMessages("test")
         .then(receiver=>receiver.on("message", (message)=>{
-          console.log(message);
+          console.log("MESSAGE RECEIVED BY TEST DISPLAY MODULE");
+          console.dir(message);
           if (message.topic === "FILE-UPDATE") {res();}
         }));
+
+        console.log("Broadcasting message through LM to LS");
+        commonConfig.broadcastMessage({
+          from: "test",
+          topic: "watch",
+          filePath
+        });
       });
     });
 
@@ -78,12 +78,12 @@ describe("WATCH: Integration", function() {
       assert(api.watchlist.get(filePath).version);
 
       const token = {
-        hash: "abc123",
         data: {
-          displayId: "ls-test-id",
-          date: Date.now(),
-          filePath
-        }
+          timestamp: Date.now(),
+          filePath,
+          displayId: "ls-test-id"
+        },
+        hash: "abc123"
       };
 
       console.log("Broadcasting message through LM to LS");
@@ -131,7 +131,6 @@ describe("WATCH: Integration", function() {
             }
           }));
       });
-
     });
   });
 });
