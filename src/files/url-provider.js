@@ -18,7 +18,6 @@ const sendMessage = (token) => {
     resolveWithFullResponse: true,
     proxy: proxy.httpsAgent || proxy.httpAgent || null
   };
-
   return request.post(options);
 };
 

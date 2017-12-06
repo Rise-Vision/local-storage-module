@@ -10,13 +10,17 @@ const localMessagingModule = require("local-messaging-module");
 const path = require("path");
 const {platform} = require("rise-common-electron");
 const dbSaveInterval = 5;
+const fileStat = require("util").promisify(require("fs").stat);
+const fileSystem = require("../../src/files/file-system");
 
 global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}};
 
 describe("WATCH: Integration", function() {
-  const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
+  const tmpdir = os.tmpdir();
+  const tempDBPath = path.join(tmpdir, `lokijs_test_dir${Math.random()}`);
+  const tempModulePath = path.join(tmpdir, `local-storage${Math.random()}`);
+  const tempCacheDir = path.join(tmpdir, `local-storage-cache${Math.random()}`);
   const filePath = "messaging-service-test-bucket/test-folder/test-file.txt";
-  const testModulePath = "rvplayer/modules/local-storage/";
 
   describe("Connected to Messaging Service through Local Messaging", ()=>{
     before(()=>{
@@ -24,7 +28,15 @@ describe("WATCH: Integration", function() {
         displayid: "ls-test-id", displayId: "ls-test-id"
       });
 
+      simple.mock(commonConfig, "getMachineId").returnWith("0");
+      simple.mock(commonConfig, "getModulePath").returnWith(tempModulePath);
+      simple.mock(fileSystem, "getCacheDir").returnWith(tempCacheDir);
+
       return platform.mkdirRecursively(tempDBPath)
+      .then(()=>platform.mkdirRecursively(tempModulePath))
+      .then(()=>platform.mkdirRecursively(tempCacheDir))
+      .then(()=>platform.mkdirRecursively(fileSystem.getDownloadDir()))
+      .then(()=>platform.mkdirRecursively(fileSystem.getCacheDir()))
       .then(()=>localMessagingModule.start("ls-test-did", "ls-test-mid"))
       .then(()=>database.start(tempDBPath, dbSaveInterval))
       .then(messaging.init);
@@ -41,25 +53,22 @@ describe("WATCH: Integration", function() {
       }, dbSaveInterval * dbSaveInterval);
     });
 
-    beforeEach(()=>{
-      simple.mock(commonConfig, "getMachineId").returnWith("0");
-      simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
-    });
-
-    afterEach(()=>{
-      simple.restore();
-    });
-
     it("[client] should send watch and receive response", function() {
       this.timeout(9000); // eslint-disable-line
+      const expectedSavedSize = 10;
 
       return new Promise(res=>{
         commonConfig.receiveMessages("test")
         .then(receiver=>receiver.on("message", (message)=>{
+          const fileDownloaded = message.topic === "FILE-UPDATE" &&
+          message.data.status === "CURRENT";
+
           console.log("MESSAGE RECEIVED BY TEST DISPLAY MODULE");
           console.dir(message);
-          if (message.topic === "FILE-UPDATE") {res();}
-        }));
+          if (fileDownloaded) {res(message.data.ospath);}
+        }))
+        .then(fileStat)
+        .then(stats=>stats.size === expectedSavedSize);
 
         console.log("Broadcasting message through LM to LS");
         commonConfig.broadcastMessage({

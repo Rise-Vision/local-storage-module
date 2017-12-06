@@ -45,33 +45,33 @@ module.exports = {
     const status = token ? "STALE" : "CURRENT";
 
     return db.fileMetadata.put({filePath, version, status, token})
-      .then(db.watchlist.put({filePath, version}))
-      .then(()=>{
-        broadcastIPC.broadcast("FILE-UPDATE", {
-          filePath,
-          status,
-          version,
-          ospath: fileSystem.getPathInCache(filePath)
-        });
-
-        if (status === "STALE" && !fileController.isProcessing(filePath)) {
-          fileController.addToProcessing(filePath);
-          return fileController.download(filePath, token)
-            .then(() => {
-              fileController.removeFromProcessing(filePath);
-
-              broadcastIPC.broadcast("FILE-UPDATE", {
-                filePath,
-                status: "CURRENT",
-                version,
-                ospath: fileSystem.getPathInCache(filePath)
-              });
-            })
-            .catch(err=>{
-              fileController.removeFromProcessing(filePath);
-              throw err;
-            })
-        }
+    .then(db.watchlist.put({filePath, version}))
+    .then(()=>{
+      broadcastIPC.broadcast("FILE-UPDATE", {
+        filePath,
+        status,
+        version,
+        ospath: fileSystem.getPathInCache(filePath)
       });
+
+      if (status === "STALE" && !fileController.isProcessing(filePath)) {
+        fileController.addToProcessing(filePath);
+        return fileController.download(filePath, token)
+        .then(() => {
+          fileController.removeFromProcessing(filePath);
+
+          broadcastIPC.broadcast("FILE-UPDATE", {
+            filePath,
+            status: "CURRENT",
+            version,
+            ospath: fileSystem.getPathInCache(filePath)
+          });
+        })
+        .catch(err=>{
+          fileController.removeFromProcessing(filePath);
+          throw err;
+        })
+      }
+    });
   }
 };

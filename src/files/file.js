@@ -1,6 +1,6 @@
 const config = require("../config/config");
 const broadcastIPC = require("../messaging/broadcast-ipc.js");
-const request = require("request-promise-native");
+const request = require("request");
 const fileSystem = require("./file-system");
 const fs = require("fs");
 const commonConfig = require("common-display-module");
@@ -18,7 +18,16 @@ const requestFile = (signedURL) => {
     proxy: proxy.httpsAgent || proxy.httpAgent || null
   };
 
-  return request.get(options);
+  return new Promise((res, rej)=>{
+    const req = request.get(options);
+    req.pause();
+    req.on("response", resp=>{
+      res(resp);
+    });
+    req.on("error", err=>{
+      rej(err);
+    });
+  });
 };
 
 module.exports = {
@@ -26,19 +35,19 @@ module.exports = {
     if (!filePath || !signedURL) {throw Error("Invalid file request params");}
 
     return requestFile(signedURL)
-      .catch(err=> {
-        if (retries > 0) {
-          return module.exports.request(filePath, signedURL, retries - 1);
-        }
+    .catch(err=> {
+      if (retries > 0) {
+        return module.exports.request(filePath, signedURL, retries - 1);
+      }
 
-        broadcastIPC.broadcast("FILE-ERROR", {
-          filePath,
-          msg: "File's host server could not be reached",
-          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
-        });
-
-        return Promise.reject(new Error("File's host server could not be reached"));
+      broadcastIPC.broadcast("FILE-ERROR", {
+        filePath,
+        msg: "File's host server could not be reached",
+        detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
       });
+
+      return Promise.reject(new Error("File's host server could not be reached"));
+    });
   },
   writeToDisk(filePath, response) {
     if (!filePath || !response) {throw Error("Invalid write to disk params")}
@@ -66,21 +75,18 @@ module.exports = {
       file.on("finish", () => {
         file.close(() => {
           fileSystem.moveFileFromDownloadToCache(filePath)
-            .then(() => {
-              fileSystem.removeFromDownloadTotalSize(fileSize);
-              res();
-            })
-            .catch(err=>{
-              handleError(err);
-            })
+          .then(() => {
+            fileSystem.removeFromDownloadTotalSize(fileSize);
+            res();
+          })
+          .catch(err=>{
+            handleError(err);
+          })
         });
       }).on("error", (err) => {
         handleError(err);
       });
-
       response.pipe(file);
     });
-
-
   }
 };

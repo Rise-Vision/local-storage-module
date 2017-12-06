@@ -4,7 +4,7 @@ const assert = require("assert");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const file = require("../../../src/files/file");
-const request = require("request-promise-native");
+const request = require("request");
 const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
 const mockfs = require("mock-fs");
 const nock = require("nock");
@@ -36,7 +36,14 @@ describe("File", ()=>{
     });
 
     it("should return successful response", ()=>{
-      simple.mock(request, "get").resolveWith(mockSuccessfulResponse);
+      simple.mock(request, "get").returnWith({
+        pause() {},
+        on(msg, cb) {
+          if (msg === "response") {
+            return cb({statusCode: 200, headers: {"Content-length": "100000"}});
+          }
+        }
+      });
 
       return file.request(testFilePath, testSignedURL)
         .then(response=>{

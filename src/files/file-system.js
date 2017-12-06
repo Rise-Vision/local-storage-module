@@ -64,10 +64,15 @@ module.exports = {
     downloadTotalSize -= parseInt(size, 10);
   },
   getAvailableSpace() {
-    return platform.getFreeDiskSpace(module.exports.getCacheDir());
+    return platform.getFreeDiskSpace(module.exports.getCacheDir())
+    .catch(err=>console.log(err));
   },
   isThereAvailableSpace(spaceOnDisk, fileSize = 0) {
-    if (!spaceOnDisk || Number.isNaN(spaceOnDisk)) {throw Error("Not a valid value for spaceOnDisk");}
+    if (spaceOnDisk === 0) {return false;}
+
+    if (!spaceOnDisk || Number.isNaN(spaceOnDisk)) {
+      throw Error("Not a valid value for spaceOnDisk");
+    }
 
     const spaceLeft = spaceOnDisk - downloadTotalSize - module.exports.getDiskThreshold() - fileSize;
     return spaceLeft > 0;

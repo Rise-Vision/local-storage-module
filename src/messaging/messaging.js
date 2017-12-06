@@ -6,7 +6,8 @@ const watch = require("./watch/watch");
 const util = require("util");
 const fileSystem = require("../../src/files/file-system");
 
-const logError = (filePath, err, userFriendlyMessage = "") => {
+const logError = (err, userFriendlyMessage = "", filePath) => {
+  console.dir(err);
   log.error({
     event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
     version: config.getModuleVersion(),
@@ -18,15 +19,15 @@ const logError = (filePath, err, userFriendlyMessage = "") => {
 const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
-      logError(err, "Handle WATCH Error");
+      logError(err, "Handle WATCH Error", message.filePath);
     });
 };
 
 const handleWatchResult = (message) => {
   return watch.msResult(message)
-    .catch((err) => {
-      logError(err, "Handle WATCH-RESULT Error");
-    });
+  .catch((err) => {
+    logError(err, "Handle WATCH-RESULT Error", message.filePath);
+  });
 };
 
 const handleMSFileUpdate = (message) => {
@@ -35,14 +36,14 @@ const handleMSFileUpdate = (message) => {
   if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
     return update.process(message)
       .catch((err) => {
-        logError(err, "Handle MSFILEUPDATE Error");
+        logError(err, "Handle MSFILEUPDATE Error", message.filePath);
       });
   }
 
   if (message.type.toUpperCase() === "DELETE") {
     return deleteFile.process(message)
       .catch((err) => {
-        logError(err, "Handle DELETE Error");
+        logError(err, "Handle DELETE Error", message.filePath);
       });
   }
 };

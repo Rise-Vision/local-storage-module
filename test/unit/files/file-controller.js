@@ -6,7 +6,8 @@ const file = require("../../../src/files/file");
 const urlProvider = require("../../../src/files/url-provider");
 const fileController = require("../../../src/files/file-controller");
 const fileSystem = require("../../../src/files/file-system");
-const request = require("request-promise-native");
+const request = require("request");
+const requestPromise = require("request-promise-native");
 const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
 
 describe("File Controller", ()=>{
@@ -51,7 +52,7 @@ describe("File Controller", ()=>{
     it("should reject and broadcast FILE-ERROR and not request file when requesting signed url fails", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
-      simple.mock(request, "post").resolveWith({statusCode: 403, body: "test issue"});
+      simple.mock(requestPromise, "post").resolveWith({statusCode: 403, body: "test issue"});
 
       return fileController.download(testFilePath, testToken)
         .catch((err) => {
@@ -65,7 +66,7 @@ describe("File Controller", ()=>{
     it("should reject and broadcast FILE-ERROR and not write file when file request returns invalid response", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
-      simple.mock(request, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
+      simple.mock(requestPromise, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
       simple.mock(request, "get").resolveWith({statusCode: 404});
 
 
@@ -82,8 +83,15 @@ describe("File Controller", ()=>{
     it("should action writing file with successful request response", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
-      simple.mock(request, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
-      simple.mock(request, "get").resolveWith({statusCode: 200, headers: {"Content-length": "100000"}});
+      simple.mock(requestPromise, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
+      simple.mock(request, "get").returnWith({
+        pause() {},
+        on(msg, cb) {
+          if (msg === "response") {
+            return cb({statusCode: 200, headers: {"Content-length": "100000"}});
+          }
+        }
+      });
 
       return fileController.download(testFilePath, testToken)
         .then(() => {
