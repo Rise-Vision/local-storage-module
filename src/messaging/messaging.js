@@ -1,41 +1,54 @@
 const commonConfig = require("common-display-module");
+const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
+const util = require("util");
+const fileSystem = require("../../src/files/file-system");
 
-function handleWatch(message) {
+const logError = (err, userFriendlyMessage = "", filePath) => {
+  console.dir(err);
+  log.error({
+    event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+    version: config.getModuleVersion(),
+    file_path: filePath,
+    file_name: fileSystem.getFileName(filePath)
+  }, userFriendlyMessage, config.bqTableName);
+};
+
+const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
-      console.log(err);
+      logError(err, "Handle WATCH Error", message.filePath);
     });
-}
+};
 
-function handleWatchResult(message) {
+const handleWatchResult = (message) => {
   return watch.msResult(message)
-    .catch((err) => {
-      console.log(err);
-    });
-}
+  .catch((err) => {
+    logError(err, "Handle WATCH-RESULT Error", message.filePath);
+  });
+};
 
-function handleMSFileUpdate(message) {
+const handleMSFileUpdate = (message) => {
   if (!message.type) {return;}
 
   if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
     return update.process(message)
       .catch((err) => {
-        console.log(err);
+        logError(err, "Handle MSFILEUPDATE Error", message.filePath);
       });
   }
 
   if (message.type.toUpperCase() === "DELETE") {
     return deleteFile.process(message)
       .catch((err) => {
-        console.log(err);
+        logError(err, "Handle DELETE Error", message.filePath);
       });
   }
-}
+};
 
-function messageReceiveHandler(message) {
+const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
 
@@ -46,11 +59,11 @@ function messageReceiveHandler(message) {
   } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
     return handleMSFileUpdate(message);
   }
-}
+};
 
 module.exports = {
   init() {
-    return commonConfig.receiveMessages("local-storage").then((receiver) => {
+    return commonConfig.receiveMessages(config.moduleName).then((receiver) => {
       receiver.on("message", messageReceiveHandler);
     });
   }

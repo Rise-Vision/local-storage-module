@@ -10,11 +10,16 @@ const localMessagingModule = require("local-messaging-module");
 const path = require("path");
 const {platform} = require("rise-common-electron");
 const dbSaveInterval = 5;
+const fileStat = require("util").promisify(require("fs").stat);
+const fileSystem = require("../../src/files/file-system");
 
-global.log = {file: ()=>{}};
+global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}};
 
 describe("WATCH: Integration", function() {
-  const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
+  const tmpdir = os.tmpdir();
+  const tempDBPath = path.join(tmpdir, `lokijs_test_dir${Math.random()}`);
+  const tempModulePath = path.join(tmpdir, `local-storage${Math.random()}`);
+  const tempCacheDir = path.join(tmpdir, `local-storage-cache${Math.random()}`);
   const filePath = "messaging-service-test-bucket/test-folder/test-file.txt";
 
   describe("Connected to Messaging Service through Local Messaging", ()=>{
@@ -23,8 +28,16 @@ describe("WATCH: Integration", function() {
         displayid: "ls-test-id", displayId: "ls-test-id"
       });
 
+      simple.mock(commonConfig, "getMachineId").returnWith("0");
+      simple.mock(commonConfig, "getModulePath").returnWith(tempModulePath);
+      simple.mock(fileSystem, "getCacheDir").returnWith(tempCacheDir);
+
       return platform.mkdirRecursively(tempDBPath)
-      .then(()=>localMessagingModule.start())
+      .then(()=>platform.mkdirRecursively(tempModulePath))
+      .then(()=>platform.mkdirRecursively(tempCacheDir))
+      .then(()=>platform.mkdirRecursively(fileSystem.getDownloadDir()))
+      .then(()=>platform.mkdirRecursively(fileSystem.getCacheDir()))
+      .then(()=>localMessagingModule.start("ls-test-did", "ls-test-mid"))
       .then(()=>database.start(tempDBPath, dbSaveInterval))
       .then(messaging.init);
     });
@@ -40,32 +53,29 @@ describe("WATCH: Integration", function() {
       }, dbSaveInterval * dbSaveInterval);
     });
 
-    beforeEach(()=>{
-      simple.mock(commonConfig, "getMachineId").returnWith("0");
-      simple.mock(commonConfig, "getLocalStoragePath").returnWith("mock-file-path");
-    });
-
-    afterEach(()=>{
-      simple.restore();
-    });
-
     it("[client] should send watch and receive response", function() {
       this.timeout(9000); // eslint-disable-line
-
-
-      console.log("Broadcasting message through LM to LS");
-      commonConfig.broadcastMessage({
-        from: "test",
-        topic: "watch",
-        filePath
-      });
+      const expectedSavedSize = 10;
 
       return new Promise(res=>{
         commonConfig.receiveMessages("test")
         .then(receiver=>receiver.on("message", (message)=>{
-          console.log(message);
-          if (message.topic === "FILE-UPDATE") {res();}
-        }));
+          const fileDownloaded = message.topic === "FILE-UPDATE" &&
+          message.data.status === "CURRENT";
+
+          console.log("MESSAGE RECEIVED BY TEST DISPLAY MODULE");
+          console.dir(message);
+          if (fileDownloaded) {res(message.data.ospath);}
+        }))
+        .then(fileStat)
+        .then(stats=>stats.size === expectedSavedSize);
+
+        console.log("Broadcasting message through LM to LS");
+        commonConfig.broadcastMessage({
+          from: "test",
+          topic: "watch",
+          filePath
+        });
       });
     });
 
@@ -77,12 +87,12 @@ describe("WATCH: Integration", function() {
       assert(api.watchlist.get(filePath).version);
 
       const token = {
-        hash: "abc123",
         data: {
-          displayId: "ls-test-id",
-          date: Date.now(),
-          filePath
-        }
+          timestamp: Date.now(),
+          filePath,
+          displayId: "ls-test-id"
+        },
+        hash: "abc123"
       };
 
       console.log("Broadcasting message through LM to LS");
@@ -130,7 +140,6 @@ describe("WATCH: Integration", function() {
             }
           }));
       });
-
     });
   });
 });

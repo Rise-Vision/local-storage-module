@@ -5,6 +5,9 @@
         "node": true
     },
     "extends": "eslint:recommended",
+    "globals": {
+        "log": true
+    },
     "rules": {
         "accessor-pairs": "error",
         "array-bracket-newline": "error",
@@ -23,7 +26,12 @@
             "never"
         ],
         "callback-return": "error",
-        "camelcase": "error",
+        "camelcase": [
+            "error",
+            {
+                "properties": "never"
+            }
+        ],
         "capitalized-comments": "off",
         "class-methods-use-this": "error",
         "comma-dangle": "error",
@@ -57,10 +65,7 @@
         "func-call-spacing": "error",
         "func-name-matching": "error",
         "func-names": "off",
-        "func-style": [
-            "error",
-            "declaration"
-        ],
+        "func-style": "error",
         "function-paren-newline": "error",
         "generator-star-spacing": "error",
         "getter-return": "error",
@@ -167,7 +172,7 @@
         "no-shadow": "error",
         "no-shadow-restricted-names": "error",
         "no-spaced-func": "error",
-        "no-sync": "error",
+        "no-sync": "off",
         "no-tabs": "error",
         "no-template-curly-in-string": "error",
         "no-ternary": "off",
@@ -214,7 +219,7 @@
         "prefer-const": "error",
         "prefer-destructuring": "off",
         "prefer-numeric-literals": "error",
-        "prefer-promise-reject-errors": "error",
+        "prefer-promise-reject-errors": "off",
         "prefer-reflect": "error",
         "prefer-rest-params": "error",
         "prefer-spread": "error",

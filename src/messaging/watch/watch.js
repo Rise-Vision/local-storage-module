@@ -1,6 +1,7 @@
 const broadcastIPC = require("../broadcast-ipc.js");
 const commonConfig = require("common-display-module");
 const db = require("../../db/api");
+const fileController = require("../../files/file-controller");
 const fileSystem = require("../../files/file-system");
 const entry = require("./entry");
 
@@ -19,7 +20,7 @@ module.exports = {
       .then(()=>{
         broadcastIPC.broadcast("FILE-UPDATE", {
           filePath,
-          ospath: fileSystem.osPath(filePath),
+          ospath: fileSystem.getPathInCache(filePath),
           status: metaData.status,
           version: metaData.version
         });
@@ -50,8 +51,27 @@ module.exports = {
         filePath,
         status,
         version,
-        ospath: fileSystem.osPath(filePath)
+        ospath: fileSystem.getPathInCache(filePath)
       });
+
+      if (status === "STALE" && !fileController.isProcessing(filePath)) {
+        fileController.addToProcessing(filePath);
+        return fileController.download(filePath, token)
+        .then(() => {
+          fileController.removeFromProcessing(filePath);
+
+          broadcastIPC.broadcast("FILE-UPDATE", {
+            filePath,
+            status: "CURRENT",
+            version,
+            ospath: fileSystem.getPathInCache(filePath)
+          });
+        })
+        .catch(err=>{
+          fileController.removeFromProcessing(filePath);
+          throw err;
+        })
+      }
     });
   }
 };

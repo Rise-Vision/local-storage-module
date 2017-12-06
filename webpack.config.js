@@ -5,7 +5,7 @@ const path = require("path");
 const UnzipsfxPlugin = require("unzipsfx-webpack-plugin");
 const ZipPlugin = require("zip-webpack-plugin");
 
-module.exports = env =>  {
+module.exports = env => {
 
   return {
     entry: "./src/index.js",
