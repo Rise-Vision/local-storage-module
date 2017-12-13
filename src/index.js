@@ -31,6 +31,11 @@ const initialize = () => {
 initialize()
   .then(database.start)
   .then(messaging.init)
+  .then(()=>{
+    log.all("started", {
+      version: config.getModuleVersion()
+    }, null, config.bqTableName);
+  })
   .catch((err)=>{
     log.error({
       event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
