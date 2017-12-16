@@ -14,6 +14,7 @@ const fileSystem = require("../../../src/files/file-system");
 describe("File", ()=>{
 
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
+  const mockModuleDir = "rvplayer/modules";
   const testModulePath = "rvplayer/modules/local-storage/";
   const testSignedURL = "http://test-signed-url";
   const mockSuccessfulResponse = {statusCode: 200, headers: {"Content-length": "100000"}};
@@ -71,7 +72,7 @@ describe("File", ()=>{
   describe("writeToDisk", ()=> {
     beforeEach(()=>{
       simple.mock(commonConfig, "broadcastMessage").returnWith();
-      simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
+      simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
 
       // Mock the file system.
       mockfs({
@@ -137,8 +138,6 @@ describe("File", ()=>{
           console.log("shouldn't be here", err);
           assert(false);
         });
-
-
     });
 
     it("should delete file from download folder and broadcast FILE-ERROR when I/O error", () => {

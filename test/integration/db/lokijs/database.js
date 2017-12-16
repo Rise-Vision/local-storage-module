@@ -18,10 +18,10 @@ describe("lokijs - integration", ()=>{
   });
 
   it("creates local-storage.db file", (done)=>{
-    const tempDBPath = path.join(os.tmpdir(), "lokijs_test_dir");
+    const tempDBPath = path.join(os.tmpdir(), "local-storage");
     platform.mkdirRecursively(tempDBPath)
     .then(()=>{
-      return database.start(tempDBPath, dbSaveInterval);
+      return database.start(os.tmpdir(), dbSaveInterval);
     })
     .then(()=>{
       return setTimeout(()=>{

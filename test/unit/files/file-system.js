@@ -9,11 +9,12 @@ const platform = require("rise-common-electron").platform;
 
 describe("File System", ()=> {
 
-  const testModulePath = "rvplayer/modules/local-storage/";
+  const mockModulePath = "rvplayer/modules/";
+  const expectedDataPath = "rvplayer/modules/local-storage/";
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
 
   beforeEach(() => {
-    simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
+    simple.mock(commonConfig, "getModuleDir").returnWith(mockModulePath);
   });
 
   afterEach(() => {
@@ -22,19 +23,19 @@ describe("File System", ()=> {
 
   describe("getCacheDir", () => {
     it("should provide path to cache folder", ()=> {
-      assert.equal(fileSystem.getCacheDir(), `${testModulePath}cache`);
+      assert.equal(fileSystem.getCacheDir(), `${expectedDataPath}cache`);
     });
   });
 
   describe("getDownloadDir", () => {
     it("should provide path to download folder", ()=> {
-      assert.equal(fileSystem.getDownloadDir(), `${testModulePath}download`);
+      assert.equal(fileSystem.getDownloadDir(), `${expectedDataPath}download`);
     });
   });
 
   describe("getPathInCache", () => {
     it("should provide path for a file in cache given a gcs filePath", ()=> {
-      assert.equal(fileSystem.getPathInCache(testFilePath), `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`);
+      assert.equal(fileSystem.getPathInCache(testFilePath), `${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`);
     });
   });
 
@@ -50,7 +51,7 @@ describe("File System", ()=> {
 
   describe("getPathInDownload", () => {
     it("should return the path to a file in download folder given a gcs filePath", () => {
-      assert.equal(fileSystem.getPathInDownload(testFilePath), `${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`);
+      assert.equal(fileSystem.getPathInDownload(testFilePath), `${expectedDataPath}download/e498da09daba1d6bb3c6e5c0f0966784`);
     });
   });
 
@@ -114,16 +115,16 @@ describe("File System", ()=> {
 
     it("should move the file", () => {
       mockfs({
-        [`${testModulePath}download`]: {
+        [`${expectedDataPath}download`]: {
           "e498da09daba1d6bb3c6e5c0f0966784": "some content"
         },
-        [`${testModulePath}cache`]: {}
+        [`${expectedDataPath}cache`]: {}
       });
 
       return fileSystem.moveFileFromDownloadToCache(testFilePath)
         .then(()=>{
-          assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
-          assert(platform.fileExists(`${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+          assert(!platform.fileExists(`${expectedDataPath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+          assert(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
 
         })
         .catch((err) => {
@@ -137,7 +138,7 @@ describe("File System", ()=> {
 
     it("should delete a file in download directory", (done) => {
       mockfs({
-        [`${testModulePath}download`]: {
+        [`${expectedDataPath}download`]: {
           "e498da09daba1d6bb3c6e5c0f0966784": "some content"
         }
       });
@@ -145,7 +146,7 @@ describe("File System", ()=> {
       fileSystem.deleteFileFromDownload(testFilePath);
 
       setTimeout(()=>{
-        assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+        assert(!platform.fileExists(`${expectedDataPath}download/e498da09daba1d6bb3c6e5c0f0966784`));
         done();
       }, 200);
     });
@@ -156,16 +157,16 @@ describe("File System", ()=> {
 
     it("should delete all files in download directory", () => {
       mockfs({
-        [`${testModulePath}download`]: {
+        [`${expectedDataPath}download`]: {
           "e498da09daba1d6bb3c6e5c0f0966784": "some content"
         }
       });
 
-      assert(platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+      assert(platform.fileExists(`${expectedDataPath}download/e498da09daba1d6bb3c6e5c0f0966784`));
 
       return fileSystem.cleanupDownloadFolder(testFilePath)
         .then(() => {
-          assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+          assert(!platform.fileExists(`${expectedDataPath}download/e498da09daba1d6bb3c6e5c0f0966784`));
         });
     });
 

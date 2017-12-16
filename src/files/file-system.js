@@ -26,7 +26,7 @@ module.exports = {
   },
   getDownloadDir() {
     const modulePath = commonConfig.getModuleDir();
-    return path.join(modulePath, config.moduleName, DIR_CACHE);
+    return path.join(modulePath, config.moduleName, DIR_DOWNLOAD);
   },
   getDiskThreshold() {
     return halfGB;
