@@ -22,6 +22,7 @@ describe("File", ()=>{
   describe("request", ()=> {
     beforeEach(()=>{
       simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(global.log, "file").returnWith();
     });
 
     afterEach(()=>{
@@ -73,6 +74,7 @@ describe("File", ()=>{
     beforeEach(()=>{
       simple.mock(commonConfig, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
+      simple.mock(global.log, "file").returnWith();
 
       // Mock the file system.
       mockfs({
@@ -165,10 +167,7 @@ describe("File", ()=>{
             assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
             assert(!platform.fileExists(`${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
           }, 200);
-
         });
-
     });
   });
-
 });
