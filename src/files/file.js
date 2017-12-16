@@ -58,21 +58,8 @@ module.exports = {
     fileSystem.addToDownloadTotalSize(fileSize);
 
     return new Promise((res, rej) => {
-      const file = fs.createWriteStream(pathInDownload);
-      const handleError = (err) => {
-        fileSystem.deleteFileFromDownload(filePath);
-        fileSystem.removeFromDownloadTotalSize(fileSize);
-
-        broadcastIPC.broadcast("FILE-ERROR", {
-          filePath,
-          msg: "File I/O Error",
-          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
-        });
-
-        rej(new Error("File I/O Error"));
-      };
-
-      file.on("finish", () => {
+      const file = fs.createWriteStream(pathInDownload)
+      .on("finish", () => {
         file.close(() => {
           fileSystem.moveFileFromDownloadToCache(filePath)
           .then(() => {
@@ -83,10 +70,25 @@ module.exports = {
             handleError(err);
           })
         });
-      }).on("error", (err) => {
+      })
+      .on("error", (err) => {
         handleError(err);
       });
+
       response.pipe(file);
+
+      function handleError(err) {
+        fileSystem.deleteFileFromDownload(filePath);
+        fileSystem.removeFromDownloadTotalSize(fileSize);
+
+        broadcastIPC.broadcast("FILE-ERROR", {
+          filePath,
+          msg: "File I/O Error",
+          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
+        });
+
+        rej(new Error("File I/O Error"));
+      }
     });
   }
 };
