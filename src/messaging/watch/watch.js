@@ -60,9 +60,13 @@ module.exports = {
         .then(() => {
           fileController.removeFromProcessing(filePath);
 
+          const newStatus = db.fileMetadata.get(filePath).version === version
+            ? "CURRENT"
+            : "STALE";
+
           broadcastIPC.broadcast("FILE-UPDATE", {
             filePath,
-            status: "CURRENT",
+            status: newStatus,
             version,
             ospath: fileSystem.getPathInCache(filePath)
           });
