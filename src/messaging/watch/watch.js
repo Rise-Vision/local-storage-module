@@ -64,6 +64,8 @@ module.exports = {
             ? "CURRENT"
             : "STALE";
 
+          db.fileMetadata.put(filePath, newStatus);
+
           broadcastIPC.broadcast("FILE-UPDATE", {
             filePath,
             status: newStatus,
