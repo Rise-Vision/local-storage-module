@@ -61,11 +61,11 @@ describe("WATCH: Integration", function() {
         commonConfig.receiveMessages("test")
         .then(receiver=>receiver.on("message", (message)=>{
           const fileDownloaded = message.topic === "FILE-UPDATE" &&
-          message.data.status === "CURRENT";
+          message.status === "CURRENT";
 
           console.log("MESSAGE RECEIVED BY TEST DISPLAY MODULE");
           console.dir(message);
-          if (fileDownloaded) {res(message.data.ospath);}
+          if (fileDownloaded) {res(message.ospath);}
         }))
         .then(fileStat)
         .then(stats=>stats.size === expectedSavedSize);
@@ -133,7 +133,7 @@ describe("WATCH: Integration", function() {
         commonConfig.receiveMessages("test")
           .then(receiver=>receiver.on("message", (message)=>{
             if (message.topic === "FILE-UPDATE") {
-              assert.equal(message.data.status, "DELETED");
+              assert.equal(message.status, "DELETED");
               assert(!api.fileMetadata.get(filePath));
               assert(!api.watchlist.get(filePath));
               res();
