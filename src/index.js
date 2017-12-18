@@ -23,9 +23,9 @@ const initialize = () => {
       log.resetLogFiles(maxFileSizeBytes);
       log.setDisplaySettings({displayid: displayId});
     })
-    .then(fileSystem.cleanupDownloadFolder())
-    .then(fileSystem.createDir(fileSystem.getDownloadDir()))
-    .then(fileSystem.createDir(fileSystem.getCacheDir()))
+    .then(fileSystem.cleanupDownloadFolder)
+    .then(()=>fileSystem.createDir(fileSystem.getDownloadDir()))
+    .then(()=>fileSystem.createDir(fileSystem.getCacheDir()))
 };
 
 initialize()
