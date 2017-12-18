@@ -3,10 +3,12 @@ const config = require("../../src/config/config");
 
 module.exports = {
   broadcast(topic, data = {}) {
-    commonConfig.broadcastMessage({
-      from: config.moduleName,
-      topic,
+    commonConfig.broadcastMessage(Object.assign(
+      {
+        from: config.moduleName,
+        topic
+      },
       data
-    });
+    ));
   }
 }
