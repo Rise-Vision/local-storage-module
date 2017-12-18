@@ -11,6 +11,7 @@ const fileController = require("../../../../src/files/file-controller");
 
 describe("Messaging", ()=>{
 
+  const mockModuleDir = "rvplayer/modules";
   const testModulePath = "rvplayer/modules/local-storage/";
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
   const testToken = {
@@ -35,7 +36,7 @@ describe("Messaging", ()=>{
 
     beforeEach(()=>{
       simple.mock(commonConfig, "sendToMessagingService").returnWith();
-      simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
+      simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
       simple.mock(commonConfig, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
 
@@ -167,7 +168,7 @@ describe("Messaging", ()=>{
       simple.mock(commonConfig, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
-      simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
+      simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
 
       simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
       simple.mock(db.watchlist, "put").resolveWith();

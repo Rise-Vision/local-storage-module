@@ -37,7 +37,7 @@ module.exports = {
   start(dirPath = null, saveInterval = defaultSaveInterval) {
     return new Promise((res, rej)=>{
       try {
-        const dbPath = path.join(dirPath || commonConfig.getModulePath(config.moduleName), `${config.moduleName}.db`);
+        const dbPath = path.join(dirPath || commonConfig.getModuleDir(), config.moduleName, `${config.moduleName}.db`);
 
         db = new loki(dbPath, {
           autoload: true,

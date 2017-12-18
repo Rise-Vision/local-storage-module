@@ -21,12 +21,12 @@ module.exports = {
     return crypto.createHash("md5").update(filePath).digest("hex");
   },
   getCacheDir() {
-    const modulePath = commonConfig.getModulePath(config.moduleName);
-    return path.join(modulePath, DIR_CACHE);
+    const modulePath = commonConfig.getModuleDir();
+    return path.join(modulePath, config.moduleName, DIR_CACHE);
   },
   getDownloadDir() {
-    const modulePath = commonConfig.getModulePath(config.moduleName);
-    return path.join(modulePath, DIR_DOWNLOAD);
+    const modulePath = commonConfig.getModuleDir();
+    return path.join(modulePath, config.moduleName, DIR_DOWNLOAD);
   },
   getDiskThreshold() {
     return halfGB;
