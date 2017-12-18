@@ -32,7 +32,7 @@ module.exports = {
           rej(err);
         }
 
-        res();
+        res(entry);
       });
     },
     delete(filePath) {
