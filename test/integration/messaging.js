@@ -82,7 +82,7 @@ describe("WATCH: Integration", function() {
     it("should receive MSFILEUPDATE from MS and update DB", function(done) {
       // confirm db state
       assert(api.fileMetadata.get(filePath).version);
-      assert.equal(api.fileMetadata.get(filePath).status, "STALE");
+      assert.equal(api.fileMetadata.get(filePath).status, "CURRENT");
       assert(api.fileMetadata.get(filePath).token);
       assert(api.watchlist.get(filePath).version);
 

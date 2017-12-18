@@ -169,7 +169,7 @@ describe("Messaging", ()=>{
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
 
-      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(fileController, "download").resolveWith();
       simple.mock(broadcastIPC, "broadcast");
@@ -309,7 +309,7 @@ describe("Messaging", ()=>{
 
       return messageReceiveHandler(msg)
       .then(()=>{
-        assert.equal(db.fileMetadata.put.lastCall.args[1], "STALE");
+        assert.equal(db.fileMetadata.put.lastCall.args[0].status, "STALE");
         assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
         assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
           filePath: msg.filePath,
@@ -330,7 +330,7 @@ describe("Messaging", ()=>{
 
       return messageReceiveHandler(msg)
       .then(()=>{
-        assert.equal(db.fileMetadata.put.lastCall.args[1], "CURRENT");
+        assert.equal(db.fileMetadata.put.lastCall.args[0].status, "CURRENT");
         assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
         assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
           filePath: msg.filePath,
