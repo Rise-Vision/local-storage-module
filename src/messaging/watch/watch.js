@@ -64,11 +64,12 @@ module.exports = {
             ? "CURRENT"
             : "STALE";
 
-          db.fileMetadata.put(filePath, newStatus);
-
+          return db.fileMetadata.put({filePath, status: newStatus});
+        })
+        .then(putObj=>{
           broadcastIPC.broadcast("FILE-UPDATE", {
             filePath,
-            status: newStatus,
+            status: putObj.status,
             version,
             ospath: fileSystem.getPathInCache(filePath)
           });
@@ -76,7 +77,7 @@ module.exports = {
         .catch(err=>{
           fileController.removeFromProcessing(filePath);
           throw err;
-        })
+        });
       }
     });
   }
