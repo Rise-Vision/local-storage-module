@@ -169,7 +169,7 @@ describe("Messaging", ()=>{
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(commonConfig, "getModulePath").returnWith(testModulePath);
 
-      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(fileController, "download").resolveWith();
       simple.mock(broadcastIPC, "broadcast");
@@ -247,12 +247,17 @@ describe("Messaging", ()=>{
     });
 
     it("[STALE] adds to fileMetaData -> adds to watchlist -> broadcasts FILEUPDATE -> download", ()=>{
+      const mockMetadata = {
+        version: "1.0.0"
+      };
+
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
       const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: testToken});
 
       return messageReceiveHandler(msg)
         .then(()=>{
           assert(db.fileMetadata.put.called);
-          assert.deepEqual(db.fileMetadata.put.lastCall.args[0], {
+          assert.deepEqual(db.fileMetadata.put.calls[0].args[0], {
             filePath: msg.filePath,
             version: msg.version,
             status: "STALE",
@@ -292,6 +297,48 @@ describe("Messaging", ()=>{
           assert(fileController.removeFromProcessing.called);
           assert.equal(fileController.removeFromProcessing.lastCall.args[0], testFilePath);
           });
+    });
+
+    it("Updates file metadata status as stale after downloading if version has changed", ()=>{
+      const mockMetadata = {
+        version: "2.0.0"
+      };
+
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: testToken});
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.equal(db.fileMetadata.put.lastCall.args[0].status, "STALE");
+        assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+        assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          filePath: msg.filePath,
+          ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
+          status: "STALE",
+          version: msg.version
+        });
+      });
+    });
+
+    it("Updates file metadata status as current after downloading if version has not changed", ()=>{
+      const mockMetadata = {
+        version: "1.0.0"
+      };
+
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: testToken});
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.equal(db.fileMetadata.put.lastCall.args[0].status, "CURRENT");
+        assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+        assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          filePath: msg.filePath,
+          ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
+          status: "CURRENT",
+          version: msg.version
+        });
+      });
     });
 
     it("[STALE] does not download when file already processing", () => {

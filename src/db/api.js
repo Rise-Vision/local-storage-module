@@ -24,12 +24,7 @@ module.exports = {
           item = metadata.insert({filePath: entry.filePath});
         }
 
-        item.status = entry.status;
-        item.version = entry.version;
-
-        if (entry.token) {
-          item.token = entry.token;
-        }
+        Object.assign(item, entry);
 
         try {
           metadata.update(item);
@@ -37,7 +32,7 @@ module.exports = {
           rej(err);
         }
 
-        res();
+        res(entry);
       });
     },
     delete(filePath) {
