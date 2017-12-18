@@ -39,6 +39,7 @@ describe("Messaging", ()=>{
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
       simple.mock(commonConfig, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
+      simple.mock(global.log, "file").returnWith();
 
       return messaging.init();
     });
@@ -176,6 +177,7 @@ describe("Messaging", ()=>{
       simple.mock(broadcastIPC, "broadcast");
       simple.mock(fileController, "addToProcessing");
       simple.mock(fileController, "removeFromProcessing");
+      simple.mock(global.log, "file").returnWith();
 
       fileController.removeFromProcessing(testFilePath);
 

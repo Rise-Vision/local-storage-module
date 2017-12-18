@@ -9,6 +9,8 @@ module.exports = {
   process(message) {
     const {filePath, from} = message;
 
+    log.file(`Recieved watch for ${filePath}`);
+
     if (!entry.validate({filePath, owner: from})) {
       return Promise.reject(new Error("Invalid watch message"));
     }
@@ -33,6 +35,8 @@ module.exports = {
   msResult(message) {
     const {filePath, version, token, error} = message;
 
+    log.file(`Received version ${version} for ${filePath}`);
+
     if (error) {
       broadcastIPC.broadcast("FILE-UPDATE", {
         filePath,
@@ -47,6 +51,8 @@ module.exports = {
     return db.fileMetadata.put({filePath, version, status, token})
     .then(db.watchlist.put({filePath, version}))
     .then(()=>{
+      log.file(`Broadcasting ${status} FILE-UPDATE for ${filePath}`);
+
       broadcastIPC.broadcast("FILE-UPDATE", {
         filePath,
         status,
@@ -67,6 +73,8 @@ module.exports = {
           return db.fileMetadata.put({filePath, status: newStatus});
         })
         .then(putObj=>{
+          log.file(`Broadcasting ${putObj.status} FILE-UPDATE for ${filePath}`);
+
           broadcastIPC.broadcast("FILE-UPDATE", {
             filePath,
             status: putObj.status,

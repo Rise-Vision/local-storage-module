@@ -19,6 +19,8 @@ const requestFile = (signedURL) => {
   };
 
   return new Promise((res, rej)=>{
+    log.file(`Downloading ${signedURL}`);
+
     const req = request.get(options);
     req.pause();
     req.on("response", resp=>{
@@ -54,6 +56,8 @@ module.exports = {
 
     const fileSize = response.headers["content-length"];
     const pathInDownload = fileSystem.getPathInDownload(filePath);
+
+    log.file(`Writing ${pathInDownload} for ${filePath}`);
 
     fileSystem.addToDownloadTotalSize(fileSize);
 
