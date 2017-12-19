@@ -61,6 +61,10 @@ module.exports = {
     fileSystem.removeFromProcessingList(fileName);
   },
   download(filePath, token) {
+    if (module.exports.isProcessing(filePath) {return Promise.resolve();}
+
+    module.exports.addToProcessing(filePath);
+
     return checkAvailableDiskSpace(filePath)
     .then((availableSpace) => {
       if (!availableSpace) {
@@ -76,6 +80,11 @@ module.exports = {
       return file.request(filePath, signedURL);
     })
     .then(response=>validateResponse(filePath, response))
-    .then(response=>file.writeToDisk(filePath, response));
+    .then(response=>file.writeToDisk(filePath, response))
+    .then(()=>module.exports.removeFromProcessing(filePath))
+    .catch(err=>{
+      fileController.removeFromProcessing(filePath);
+      return Promise.reject(err);
+    });
   }
 };

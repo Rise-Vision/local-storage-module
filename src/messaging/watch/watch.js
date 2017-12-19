@@ -60,12 +60,9 @@ module.exports = {
         ospath: fileSystem.getPathInCache(filePath)
       });
 
-      if (status === "STALE" && !fileController.isProcessing(filePath)) {
-        fileController.addToProcessing(filePath);
+      if (status === "STALE") {
         return fileController.download(filePath, token)
         .then(() => {
-          fileController.removeFromProcessing(filePath);
-
           const newStatus = db.fileMetadata.get(filePath).version === version
             ? "CURRENT"
             : "STALE";
@@ -81,10 +78,6 @@ module.exports = {
             version,
             ospath: fileSystem.getPathInCache(filePath)
           });
-        })
-        .catch(err=>{
-          fileController.removeFromProcessing(filePath);
-          throw err;
         });
       }
     });
