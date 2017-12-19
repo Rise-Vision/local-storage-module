@@ -61,7 +61,7 @@ module.exports = {
     fileSystem.removeFromProcessingList(fileName);
   },
   download(filePath, token) {
-    if (module.exports.isProcessing(filePath) {return Promise.resolve();}
+    if (module.exports.isProcessing(filePath)) {return Promise.resolve();}
 
     module.exports.addToProcessing(filePath);
 
@@ -83,7 +83,7 @@ module.exports = {
     .then(response=>file.writeToDisk(filePath, response))
     .then(()=>module.exports.removeFromProcessing(filePath))
     .catch(err=>{
-      fileController.removeFromProcessing(filePath);
+      module.exports.removeFromProcessing(filePath);
       return Promise.reject(err);
     });
   }

@@ -6,7 +6,6 @@ const file = require("../../../src/files/file");
 const urlProvider = require("../../../src/files/url-provider");
 const fileController = require("../../../src/files/file-controller");
 const fileSystem = require("../../../src/files/file-system");
-const request = require("request");
 const requestPromise = require("request-promise-native");
 const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
 
@@ -25,6 +24,7 @@ describe("File Controller", ()=>{
   describe("download", ()=> {
     afterEach(()=>{
       simple.restore();
+      fileController.removeFromProcessing(testFilePath);
     });
 
     beforeEach(()=>{
@@ -63,11 +63,11 @@ describe("File Controller", ()=>{
         })
     });
 
-    it("should reject and broadcast FILE-ERROR and not write file when file request returns invalid response", ()=>{
+    it("should reject and and not write file when file request returns invalid response", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
+      simple.mock(file, "request").rejectWith("test-reject");
       simple.mock(requestPromise, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
-      simple.mock(request, "get").resolveWith({statusCode: 404});
 
 
       return fileController.download(testFilePath, testToken)
@@ -75,7 +75,6 @@ describe("File Controller", ()=>{
           assert(err);
           assert.equal(file.request.lastCall.args[0], testFilePath);
           assert.equal(file.request.lastCall.args[1], "test-signed-url");
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
           assert(!file.writeToDisk.called);
         })
     });
@@ -83,23 +82,51 @@ describe("File Controller", ()=>{
     it("should action writing file with successful request response", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
-      simple.mock(requestPromise, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
-      simple.mock(request, "get").returnWith({
-        pause() {},
-        on(msg, cb) {
-          if (msg === "response") {
-            return cb({statusCode: 200, headers: {"Content-length": "100000"}});
-          }
-        }
-      });
+      simple.mock(file, "request").resolveWith({statusCode: 200, headers: {"Content-length": 100000}});
+      simple.mock(urlProvider, "getURL").resolveWith("test-url");
 
       return fileController.download(testFilePath, testToken)
-        .then(() => {
-          assert(file.writeToDisk.called);
-          assert.equal(file.writeToDisk.lastCall.args[0], testFilePath);
-          assert.deepEqual(file.writeToDisk.lastCall.args[1], {statusCode: 200, headers: {"Content-length": "100000"}});
-        })
+      .then(() => {
+        assert(file.writeToDisk.called);
+        assert.equal(file.writeToDisk.lastCall.args[0], testFilePath);
+        assert.deepEqual(file.writeToDisk.lastCall.args[1], {statusCode: 200, headers: {"Content-length": "100000"}});
+      });
+    });
+
+    it("should not download when already downloading a file", ()=>{
+      simple.mock(fileController, "checkAvailableDiskSpace").resolveWith();
+
+      fileController.addToProcessing(testFilePath);
+
+      return fileController.download(testFilePath, testToken)
+      .then(() => {
+        assert(!fileController.checkAvailableDiskSpace.called);
+        assert(!file.request.called);
+      });
+    });
+
+    it("adds file to processing when downloading", ()=>{
+      simple.mock(urlProvider, "getURL").resolveWith("test-url");
+      simple.mock(fileSystem, "getAvailableSpace").resolveWith(Infinity);
+      simple.mock(fileController, "addToProcessing");
+      simple.mock(file, "request").resolveWith({statusCode: 200, headers: {"Content-length": 100000}});
+
+      return fileController.download(testFilePath, testToken)
+      .then(() => {
+        assert(fileController.addToProcessing.called);
+      });
+    });
+
+    it("removes file from processing", ()=>{
+      simple.mock(file, "request").resolveWith({statusCode: 200, headers: {"Content-length": 100000}});
+      simple.mock(urlProvider, "getURL").resolveWith("test-url");
+      simple.mock(fileSystem, "getAvailableSpace").resolveWith(Infinity);
+      simple.mock(fileController, "removeFromProcessing");
+
+      return fileController.download(testFilePath, testToken)
+      .then(() => {
+        assert(fileController.removeFromProcessing.called);
+      });
     });
   });
-
 });
