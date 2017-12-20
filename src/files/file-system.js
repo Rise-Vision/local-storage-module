@@ -78,7 +78,7 @@ module.exports = {
     return spaceLeft > 0;
   },
   moveFileFromDownloadToCache(filePath) {
-    return fs.move(module.exports.getPathInDownload(filePath), module.exports.getPathInCache(filePath));
+    return fs.move(module.exports.getPathInDownload(filePath), module.exports.getPathInCache(filePath), {overwrite: true});
   },
   deleteFileFromDownload(filePath) {
     const downloadPath = module.exports.getPathInDownload(filePath);
