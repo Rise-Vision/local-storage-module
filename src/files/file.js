@@ -82,6 +82,7 @@ module.exports = {
       response.pipe(file);
 
       function handleError(err) {
+        log.file(err && err.stack ? err.stack : err)
         fileSystem.deleteFileFromDownload(filePath);
         fileSystem.removeFromDownloadTotalSize(fileSize);
 
