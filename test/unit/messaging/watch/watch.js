@@ -12,7 +12,6 @@ const fileController = require("../../../../src/files/file-controller");
 describe("Messaging", ()=>{
 
   const mockModuleDir = "rvplayer/modules";
-  const testModulePath = "rvplayer/modules/local-storage/";
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
   const testToken = {
     hash: "abc123",
@@ -56,7 +55,7 @@ describe("Messaging", ()=>{
 
       simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
       simple.mock(db.owners, "addToSet").resolveWith();
-      simple.mock(broadcastIPC, "broadcast");
+      simple.mock(broadcastIPC, "fileUpdate");
 
       const msg = {
         topic: "watch",
@@ -69,11 +68,9 @@ describe("Messaging", ()=>{
           assert(db.owners.addToSet.called);
           assert.deepEqual(db.owners.addToSet.lastCall.args[0], {filePath: msg.filePath, owner: msg.from});
 
-          assert(broadcastIPC.broadcast.called);
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          assert(broadcastIPC.fileUpdate.called);
+          assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
             filePath: msg.filePath,
-            ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
             status: mockMetadata.status,
             version: mockMetadata.version
           });
@@ -90,7 +87,7 @@ describe("Messaging", ()=>{
 
       simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
       simple.mock(db.owners, "addToSet").resolveWith();
-      simple.mock(broadcastIPC, "broadcast");
+      simple.mock(broadcastIPC, "fileUpdate");
 
       const msg = {
         topic: "watch",
@@ -103,11 +100,9 @@ describe("Messaging", ()=>{
           assert(db.owners.addToSet.called);
           assert.deepEqual(db.owners.addToSet.lastCall.args[0], {filePath: msg.filePath, owner: msg.from});
 
-          assert(broadcastIPC.broadcast.called);
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          assert(broadcastIPC.fileUpdate.called);
+          assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
             filePath: msg.filePath,
-            ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
             status: mockMetadata.status,
             version: mockMetadata.version
           });
@@ -174,7 +169,7 @@ describe("Messaging", ()=>{
       simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(fileController, "download").resolveWith();
-      simple.mock(broadcastIPC, "broadcast");
+      simple.mock(broadcastIPC, "fileUpdate");
       simple.mock(fileController, "addToProcessing");
       simple.mock(fileController, "removeFromProcessing");
       simple.mock(global.log, "file").returnWith();
@@ -193,9 +188,8 @@ describe("Messaging", ()=>{
 
       return messageReceiveHandler(msg)
         .then(()=>{
-          assert(broadcastIPC.broadcast.called);
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          assert(broadcastIPC.fileUpdate.called);
+          assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
             filePath: msg.filePath,
             status: "NOEXIST"
           });
@@ -238,11 +232,9 @@ describe("Messaging", ()=>{
           assert.deepEqual(db.watchlist.put.lastCall.args[0], {filePath: msg.filePath, version: msg.version});
         })
         .then(()=>{
-          assert(broadcastIPC.broadcast.called);
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+          assert(broadcastIPC.fileUpdate.called);
+          assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
             filePath: msg.filePath,
-            ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
             status: "CURRENT",
             version: msg.version
           });
@@ -258,46 +250,27 @@ describe("Messaging", ()=>{
       const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: testToken});
 
       return messageReceiveHandler(msg)
-        .then(()=>{
-          assert(db.fileMetadata.put.called);
-          assert.deepEqual(db.fileMetadata.put.calls[0].args[0], {
-            filePath: msg.filePath,
-            version: msg.version,
-            status: "STALE",
-            token: testToken
-          });
-        })
-        .then(()=>{
-          assert(db.watchlist.put.called);
-          assert.deepEqual(db.watchlist.put.lastCall.args[0], {filePath: msg.filePath, version: msg.version});
-        })
-        .then(()=>{
-          assert.equal(broadcastIPC.broadcast.callCount, 2);
-          assert.equal(broadcastIPC.broadcast.firstCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.firstCall.args[1], {
-            filePath: msg.filePath,
-            ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
-            status: "STALE",
-            version: msg.version
-          });
-        })
-        .then(()=>{
-          assert(fileController.download.called);
-          assert.equal(fileController.download.lastCall.args[0], msg.filePath);
-          assert.equal(fileController.download.lastCall.args[1], testToken);
-        })
-        .then(()=>{
-          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
-            filePath: msg.filePath,
-            ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
-            status: "CURRENT",
-            version: msg.version
-          });
-
-          assert(fileController.removeFromProcessing.called);
-          assert.equal(fileController.removeFromProcessing.lastCall.args[0], testFilePath);
-          });
+      .then(()=>{
+        assert(db.fileMetadata.put.called);
+        assert.deepEqual(db.fileMetadata.put.calls[0].args[0], {
+          filePath: msg.filePath,
+          version: msg.version,
+          status: "STALE",
+          token: testToken
+        });
+      })
+      .then(()=>{
+        assert(db.watchlist.put.called);
+        assert.deepEqual(db.watchlist.put.lastCall.args[0], {filePath: msg.filePath, version: msg.version});
+      })
+      .then(()=>{
+        assert.equal(broadcastIPC.fileUpdate.callCount, 1);
+        assert.deepEqual(broadcastIPC.fileUpdate.firstCall.args[0], {
+          filePath: msg.filePath,
+          status: "STALE",
+          version: msg.version
+        });
+      })
     });
 
     it("Updates file metadata status as stale after downloading if version has changed", ()=>{
@@ -311,32 +284,9 @@ describe("Messaging", ()=>{
       return messageReceiveHandler(msg)
       .then(()=>{
         assert.equal(db.fileMetadata.put.lastCall.args[0].status, "STALE");
-        assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-        assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
+        assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
           filePath: msg.filePath,
-          ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
           status: "STALE",
-          version: msg.version
-        });
-      });
-    });
-
-    it("Updates file metadata status as current after downloading if version has not changed", ()=>{
-      const mockMetadata = {
-        version: "1.0.0"
-      };
-
-      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
-      const msg = Object.assign({}, mockMessage, {version: "1.0.0", token: testToken});
-
-      return messageReceiveHandler(msg)
-      .then(()=>{
-        assert.equal(db.fileMetadata.put.lastCall.args[0].status, "CURRENT");
-        assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-        assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {
-          filePath: msg.filePath,
-          ospath: `${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`,
-          status: "CURRENT",
           version: msg.version
         });
       });

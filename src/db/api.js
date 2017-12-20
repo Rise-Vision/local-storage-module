@@ -4,6 +4,12 @@ const database = require("./lokijs/database");
 
 module.exports = {
   fileMetadata: {
+    clear: ()=>database.getCollection("metadata").clear(),
+    allEntries: ()=>database.getCollection("metadata").find(),
+    setAll(updateObj) {
+      database.getCollection("metadata")
+      .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
+    },
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 
@@ -35,6 +41,7 @@ module.exports = {
         res(entry);
       });
     },
+    getStale: ()=>database.getCollection("metadata").find({status: "STALE"}),
     delete(filePath) {
       if (!filePath) {throw Error("missing params");}
 
@@ -55,6 +62,7 @@ module.exports = {
     }
   },
   owners: {
+    clear: ()=>database.getCollection("owners").clear(),
     get(filePath) {
       if (!filePath) {throw Error("missing params");}
 
@@ -111,6 +119,8 @@ module.exports = {
     }
   },
   watchlist: {
+    clear: ()=>database.getCollection("watchlist").clear(),
+    allEntries: ()=>database.getCollection("watchlist").find(),
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 

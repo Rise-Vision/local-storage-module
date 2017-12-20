@@ -1,8 +1,6 @@
 const broadcastIPC = require("../broadcast-ipc.js");
 const commonConfig = require("common-display-module");
 const db = require("../../db/api");
-const fileController = require("../../files/file-controller");
-const fileSystem = require("../../files/file-system");
 const entry = require("./entry");
 
 module.exports = {
@@ -20,12 +18,7 @@ module.exports = {
     if (metaData.status && metaData.status !== "UNKNOWN") {
       return db.owners.addToSet({filePath, owner: from})
       .then(()=>{
-        broadcastIPC.broadcast("FILE-UPDATE", {
-          filePath,
-          ospath: fileSystem.getPathInCache(filePath),
-          status: metaData.status,
-          version: metaData.version
-        });
+        broadcastIPC.fileUpdate({filePath, status: metaData.status, version: metaData.version});
       });
     }
 
@@ -38,11 +31,7 @@ module.exports = {
     log.file(`Received version ${version} for ${filePath}`);
 
     if (error) {
-      broadcastIPC.broadcast("FILE-UPDATE", {
-        filePath,
-        status: "NOEXIST"
-      });
-
+      broadcastIPC.fileUpdate({filePath, status: "NOEXIST"});
       return Promise.resolve();
     }
 
@@ -51,35 +40,7 @@ module.exports = {
     return db.fileMetadata.put({filePath, version, status, token})
     .then(db.watchlist.put({filePath, version}))
     .then(()=>{
-      log.file(`Broadcasting ${status} FILE-UPDATE for ${filePath}`);
-
-      broadcastIPC.broadcast("FILE-UPDATE", {
-        filePath,
-        status,
-        version,
-        ospath: fileSystem.getPathInCache(filePath)
-      });
-
-      if (status === "STALE") {
-        return fileController.download(filePath, token)
-        .then(() => {
-          const newStatus = db.fileMetadata.get(filePath).version === version
-            ? "CURRENT"
-            : "STALE";
-
-          return db.fileMetadata.put({filePath, status: newStatus});
-        })
-        .then(putObj=>{
-          log.file(`Broadcasting ${putObj.status} FILE-UPDATE for ${filePath}`);
-
-          broadcastIPC.broadcast("FILE-UPDATE", {
-            filePath,
-            status: putObj.status,
-            version,
-            ospath: fileSystem.getPathInCache(filePath)
-          });
-        });
-      }
+      broadcastIPC.fileUpdate({filePath, status, version});
     });
   }
 };
