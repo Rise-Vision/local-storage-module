@@ -2,6 +2,7 @@ const file = require("./file");
 const fileSystem = require("./file-system");
 const urlProvider = require("./url-provider");
 const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
+const db = require("../db/api");
 
 const SUCCESS_CODE = 200;
 
@@ -11,10 +12,7 @@ const checkAvailableDiskSpace = (filePath, fileSize = 0) => {
     const availableSpace = fileSystem.isThereAvailableSpace(spaceInDisk, fileSize);
 
     if (!availableSpace) {
-      broadcastIPC.broadcast("FILE-ERROR", {
-        filePath,
-        msg: "Insufficient disk space"
-      });
+      broadcastIPC.fileError({filePath, msg: "Insufficient disk space"});
 
       return false;
     }
@@ -60,7 +58,9 @@ module.exports = {
     const fileName = fileSystem.getFileName(filePath);
     fileSystem.removeFromProcessingList(fileName);
   },
-  download(filePath, token) {
+  download(entry) {
+    const {filePath, version, token} = entry;
+
     if (module.exports.isProcessing(filePath)) {return Promise.resolve();}
 
     module.exports.addToProcessing(filePath);
@@ -82,9 +82,21 @@ module.exports = {
     .then(response=>validateResponse(filePath, response))
     .then(response=>file.writeToDisk(filePath, response))
     .then(()=>module.exports.removeFromProcessing(filePath))
+    .then(()=>module.exports.broadcastAfterDownload(version, filePath))
     .catch(err=>{
       module.exports.removeFromProcessing(filePath);
       return Promise.reject(err);
+    });
+  },
+  broadcastAfterDownload(downloadedVersion, filePath) {
+    const currentVersion = db.fileMetadata.get(filePath).version;
+    const newStatus = currentVersion === downloadedVersion ?
+      "CURRENT" :
+      "STALE";
+
+    return db.fileMetadata.put({filePath, status: newStatus})
+    .then(({status})=>{
+      broadcastIPC.fileUpdate({filePath, status, version: currentVersion});
     });
   }
 };

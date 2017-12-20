@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 const commonConfig = require("common-display-module");
 const simple = require("simple-mock");
+const queue = require("../../src/files/download-queue");
 const assert = require("assert");
 const os = require("os");
 const messaging = require("../../src/messaging/messaging");
@@ -53,9 +54,10 @@ describe("WATCH: Integration", function() {
       }, dbSaveInterval * dbSaveInterval);
     });
 
-    it("[client] should send watch and receive response", function() {
+    it("[client] should send watch and receive response after queue downloads file", ()=>{
       this.timeout(9000); // eslint-disable-line
       const expectedSavedSize = 10;
+      queue.checkStaleFiles();
 
       return new Promise(res=>{
         commonConfig.receiveMessages("test")

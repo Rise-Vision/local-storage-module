@@ -43,7 +43,7 @@ module.exports = {
       .then(sendMessage)
       .then(handleResponse)
       .catch(err=>{
-        broadcastIPC.broadcast("FILE-ERROR", {
+        broadcastIPC.fileError({
           filePath: token.data.filePath,
           msg: "Could not retrieve signed URL",
           detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
