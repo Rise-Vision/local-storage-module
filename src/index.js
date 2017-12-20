@@ -1,6 +1,7 @@
 const database = require("./db/lokijs/database");
 const fileSystem = require("./files/file-system");
 const messaging = require("./messaging/messaging");
+const refreshAllWatchEntries = require("./messaging/watch/refresh-all");
 const commonConfig = require("common-display-module");
 const downloadQueue = require("./files/download-queue");
 const config = require("./config/config");
@@ -32,6 +33,7 @@ const initialize = () => {
 initialize()
   .then(database.start)
   .then(messaging.init)
+  .then(refreshAllWatchEntries)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{
     log.all("started", {
