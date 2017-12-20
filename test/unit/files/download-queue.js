@@ -44,11 +44,12 @@ describe("Download Queue", ()=>{
     simple.mock(db.fileMetadata, "getStale").returnWith([]);
 
     let callCount = 0;
-    return queue.checkStaleFiles(()=>{
+    return queue.checkStaleFiles((cb)=>{
       callCount += 1;
+      if (callCount < 5) {return cb();}
     })
     .then(()=>{
-      assert.equal(callCount, 1);
+      assert.equal(callCount, 5);
     });
   });
 
@@ -58,12 +59,13 @@ describe("Download Queue", ()=>{
     simple.mock(log, "error").returnWith();
 
     let callCount = 0;
-    return queue.checkStaleFiles(()=>{
+    return queue.checkStaleFiles((cb)=>{
       callCount += 1;
+      if (callCount < 5) {return cb();}
     })
     .then(()=>{
-      assert.equal(callCount, 1);
-      assert.equal(log.error.callCount, 1);
+      assert.equal(callCount, 5);
+      assert.equal(log.error.callCount, 5);
     });
   });
 });

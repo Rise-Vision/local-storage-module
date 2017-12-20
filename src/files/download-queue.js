@@ -7,14 +7,18 @@ module.exports = {
   checkStaleFiles(timer = setTimeout) {
     const staleEntries = db.fileMetadata.getStale();
     if (!staleEntries.length) {
-      return Promise.resolve(timer(module.exports.checkStaleFiles, queueCheckInterval));
+      return intervalCheck();
     }
 
     return fileController.download(staleEntries[0])
-    .then(module.exports.checkStaleFiles)
+    .then(module.exports.checkStaleFiles.bind(null, timer))
     .catch((err)=>{
       log.error(err);
-      timer(module.exports.checkStaleFiles, queueCheckInterval);
+      return intervalCheck();
     });
+
+    function intervalCheck() {
+      return Promise.resolve(timer(module.exports.checkStaleFiles.bind(null, timer), queueCheckInterval));
+    }
   }
 };
