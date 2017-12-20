@@ -46,7 +46,7 @@ describe("lokijs - integration", ()=>{
       {
         filePath: "my-bucket/my-other-file",
         status: "CURRENT",
-        versions: "2"
+        version: "2"
       }
     ];
 
@@ -54,5 +54,49 @@ describe("lokijs - integration", ()=>{
     db.fileMetadata.put(testEntries[1]);
     assert.equal(db.fileMetadata.getStale().length, 1);
     assert.equal(db.fileMetadata.getStale()[0].filePath, "my-bucket/my-file");
+  });
+
+  it("updates all entries with new field values", ()=>{
+    const testEntries = [
+      {
+        filePath: "my-bucket/my-file",
+        status: "STALE",
+        version: "1"
+      },
+      {
+        filePath: "my-bucket/my-other-file",
+        status: "CURRENT",
+        version: "2"
+      }
+    ];
+
+    db.fileMetadata.put(testEntries[0]);
+    db.fileMetadata.put(testEntries[1]);
+
+    db.fileMetadata.setAll({status: "UNKNOWN"});
+    assert.deepEqual(db.fileMetadata.allEntries()[0].filePath, "my-bucket/my-file");
+    assert.deepEqual(db.fileMetadata.allEntries()[0].status, "UNKNOWN");
+    assert.deepEqual(db.fileMetadata.allEntries()[1].filePath, "my-bucket/my-other-file");
+    assert.deepEqual(db.fileMetadata.allEntries()[1].status, "UNKNOWN");
+  });
+
+  it("retrieves all WATCH entries", ()=>{
+    const testEntries = [
+      {
+        filePath: "my-bucket/my-file",
+        version: "1"
+      },
+      {
+        filePath: "my-bucket/my-other-file",
+        version: "2"
+      }
+    ];
+
+    db.watchlist.put(testEntries[0]);
+    db.watchlist.put(testEntries[1]);
+    assert.deepEqual(db.watchlist.allEntries()[0].filePath, "my-bucket/my-file");
+    assert.deepEqual(db.watchlist.allEntries()[0].version, "1");
+    assert.deepEqual(db.watchlist.allEntries()[1].filePath, "my-bucket/my-other-file");
+    assert.deepEqual(db.watchlist.allEntries()[1].version, "2");
   });
 });
