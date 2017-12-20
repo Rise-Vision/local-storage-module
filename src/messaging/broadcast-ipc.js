@@ -18,7 +18,7 @@ module.exports = {
     module.exports.broadcast("FILE-UPDATE", Object.assign({}, data, ospath));
   },
   fileError(data = {}) {
-    log.file(`Broadcasting FILE-ERROR ${data.msg} for ${data.filePath}`);
+    log.file(`Broadcasting FILE-ERROR for ${data.filePath} ${data.msg} ${data.detail}`);
     module.exports.broadcast("FILE-ERROR", data);
   }
 }

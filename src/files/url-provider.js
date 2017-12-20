@@ -46,7 +46,7 @@ module.exports = {
         broadcastIPC.fileError({
           filePath: token.data.filePath,
           msg: "Could not retrieve signed URL",
-          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
+          detail: err ? err.stack || util.inspect(err, {depth: 1}) : ""
         });
       });
   }
