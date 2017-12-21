@@ -17,16 +17,6 @@ jobs:
           command: npm run test
           no_output_timeout: 1m
 
-  "version":
-      docker: *DOCKERIMAGE
-      steps:
-        - checkout
-        - run: echo $(date +%Y.%m.%d.%H.%M) >version
-        - persist_to_workspace:
-            root: .
-            paths:
-              - version
-
   "build":
       docker: *DOCKERIMAGE
       steps:
@@ -51,9 +41,18 @@ jobs:
         - checkout
         - attach_workspace:
             at: .
-        - run: ./stage.sh
+        - run: npm install common-display-module
+        - run:
+            name: Stage
+            command: node_modules/common-display-module/stage.sh
+            environment:
+              MODULENAME: local-storage
+        - persist_to_workspace:
+            root: .
+            paths:
+              - version
 
-  "deploy":
+  "deploy-beta":
     docker: *DOCKERIMAGE
     steps:
       - checkout
@@ -61,22 +60,42 @@ jobs:
           at: .
       - restore_cache:
           key: node-cache-v2{{ checksum "package.json" }}
-      - run: ./deploy.sh
+      - run: npm install common-display-module
+      - run:
+          name: Deploy to beta
+          command: node_modules/common-display-module/deploy.sh
+          environment:
+            MODULENAME: local-storage
+
+  "deploy-stable":
+    docker: *DOCKERIMAGE
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: node-cache-v2{{ checksum "package.json" }}
+      - run: npm install common-display-module
+      - run:
+          name: Deploy to beta
+          command: node_modules/common-display-module/deploy.sh
+          environment:
+            MODULENAME: local-storage
+            BRANCH: STABLE
 
 workflows:
   version: 2
   workflow1:
     jobs:
       - "test"
-      - "version"
       - "build":
           requires:
             - test
-            - version
           filters:
             branches:
               only:
                 - master
+                - build/stable
                 - /^stage\/.*/
                 - /^staging\/.*/
       - "stage":
@@ -86,13 +105,22 @@ workflows:
             branches:
               only:
                 - master
+                - build/stable
                 - /^stage\/.*/
                 - /^staging\/.*/
-      - "deploy":
+
+      - "deploy-stable":
+          requires:
+            - stage
+          filters:
+            branches:
+              only:
+                - build/stable
+
+      - "deploy-beta":
           requires:
             - stage
           filters:
             branches:
               only:
                 - master
-
