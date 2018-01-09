@@ -27,7 +27,6 @@ module.exports = {
       return Promise.reject(new Error("Invalid add/update message"));
     }
 
-    // check size before calling
     return file.writeDirectlyToDisk(fileId, data, from)
     .then(() => {
       db.directCacheFileMetadata.put(Object.assign({}, {fileId, timestamp}));
