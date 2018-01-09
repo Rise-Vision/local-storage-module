@@ -2,6 +2,8 @@
 /* eslint-disable max-statements */
 const assert = require("assert");
 const simple = require("simple-mock");
+const path = require("path");
+const os = require("os");
 const commonConfig = require("common-display-module");
 const platform = require("rise-common-electron").platform;
 const db = require("../../../../src/db/api");
@@ -86,6 +88,8 @@ describe("Messaging", ()=>{
         }
       }
     };
+    const tmpdir = os.tmpdir();
+    const tempCacheDir = path.join(tmpdir, `local-storage-cache${Math.random()}`);
 
     beforeEach(()=>{
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
@@ -93,8 +97,10 @@ describe("Messaging", ()=>{
 
       simple.mock(file, "writeDirectlyToDisk");
       simple.mock(db.directCacheFileMetadata, "put");
+      simple.mock(fileSystem, "getCacheDir").returnWith(tempCacheDir);
 
-      return messaging.init();
+      return platform.mkdirRecursively(fileSystem.getCacheDir())
+      .then(messaging.init);
     });
 
     afterEach(()=>{
