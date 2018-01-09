@@ -1,5 +1,6 @@
 const db = require("../../db/api");
 const entry = require("./entry");
+const file = require("../../files/file");
 
 module.exports = {
   process(message) {
@@ -16,5 +17,20 @@ module.exports = {
 
       return action(dbEntry);
     }));
+  },
+  directCacheProcess(message) {
+    const {filePath, data, from, timestamp} = message;
+
+    log.file(`Received updated version ${timestamp} for ${filePath}`);
+
+    if (!entry.validateDirectCacheProcess({filePath, data, from})) {
+      return Promise.reject(new Error("Invalid add/update message"));
+    }
+
+    // check size before calling
+    return file.writeDirectlyToDisk(filePath, data, from)
+    .then(() => {
+      db.directCacheFileMetadata.put(Object.assign({}, {filePath, timestamp}));
+    });
   }
 };

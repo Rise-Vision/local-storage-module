@@ -14,8 +14,12 @@ module.exports = {
   },
   fileUpdate(data = {}) {
     log.file(`Broadcasting ${data.status} FILE-UPDATE for ${data.filePath}`);
-    const ospath = {ospath: fileSystem.getPathInCache(data.filePath)};
-    module.exports.broadcast("FILE-UPDATE", Object.assign({}, data, ospath));
+    if (data.status === "DELETED") {
+      module.exports.broadcast("FILE-UPDATE", data);
+    } else {
+      const ospath = {ospath: fileSystem.getPathInCache(data.filePath)};
+      module.exports.broadcast("FILE-UPDATE", Object.assign({}, data, ospath));
+    }
   },
   fileError(data = {}) {
     log.file(`Broadcasting FILE-ERROR for ${data.filePath} ${data.msg} ${data.detail}`);

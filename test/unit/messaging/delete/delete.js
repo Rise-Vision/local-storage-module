@@ -62,4 +62,50 @@ describe("Messaging", ()=>{
     });
   });
 
+  describe("DELETE - direct caching", ()=>{
+    let messageReceiveHandler = null;
+
+    const mockReceiver = {
+      on(evt, handler) {
+        if (evt === "message") {
+          messageReceiveHandler = handler;
+        }
+      }
+    };
+
+    beforeEach(()=>{
+      simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
+      simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
+
+      simple.mock(db.directCacheFileMetadata, "delete").resolveWith();
+      simple.mock(broadcastIPC, "broadcast");
+
+      return messaging.init();
+    });
+
+    afterEach(()=>{
+      simple.restore();
+    });
+
+
+    it("deletes file in direct-cache database and broadcasts FILE-UPDATE with DELETED status", ()=>{
+      const msg = {
+        topic: "directcachefileupdate",
+        type: "delete",
+        from: "twitter",
+        filePath: "test_component_id"
+      };
+
+      return messageReceiveHandler(msg)
+        .then(()=>{
+          assert(db.directCacheFileMetadata.delete.called);
+          assert.equal(db.directCacheFileMetadata.delete.lastCall.args[0], msg.filePath);
+
+          assert(broadcastIPC.broadcast.called);
+          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {filePath: msg.filePath, status: "DELETED"});
+        });
+    });
+  });
 });

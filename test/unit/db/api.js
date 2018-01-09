@@ -1,5 +1,6 @@
+/* eslint-disable max-statements, max-lines */
 /* eslint-env mocha */
-/* eslint-disable max-statements */
+
 const assert = require("assert");
 const database = require("../../../src/db/lokijs/database");
 const db = require("../../../src/db/api");
@@ -272,4 +273,90 @@ describe("DB API", ()=> {
         });
     });
   });
+
+  describe("directCacheFileMetadata", ()=> {
+    const filePath = "test-path";
+    const mockMetadata = {filePath, timestamp: "2018.01.01.03.03"};
+
+    let mockCollection = null;
+
+    beforeEach(() => {
+      mockCollection = {
+        by: simple.stub().returnWith(JSON.parse(JSON.stringify(mockMetadata))),
+        insert: simple.stub(),
+        update: simple.stub().returnWith(),
+        remove: simple.stub().returnWith()
+      };
+
+      simple.mock(database, "getCollection").returnWith(mockCollection);
+    });
+
+    afterEach(() => {
+      simple.restore();
+    });
+
+    it("defines directCacheFileMetadata API", ()=> {
+      assert(db.directCacheFileMetadata);
+      assert(db.directCacheFileMetadata.get);
+      assert(db.directCacheFileMetadata.put);
+      assert(db.directCacheFileMetadata.delete);
+    });
+
+    it("calling get() without required filePath throws error", ()=>{
+      assert.throws(() => {db.directCacheFileMetadata.get()}, Error);
+    });
+
+    it("calling get() with filePath should return metadata", ()=> {
+      assert.deepEqual(db.directCacheFileMetadata.get(filePath), mockMetadata);
+    });
+
+    it("calling get() with filePath and field should return field value", ()=> {
+      assert.equal(db.directCacheFileMetadata.get(filePath, "timestamp"), mockMetadata.timestamp);
+    });
+
+    it("calling put() without required entry throws error", ()=>{
+      assert.throws(() => {db.directCacheFileMetadata.put()}, Error);
+    });
+
+    it("calling put() with entry filePath that doesn't exist in collection should call insert and update", ()=>{
+      const filePath2 = "test-path-2";
+      mockCollection = {
+        by: simple.stub().returnWith(),
+        insert: simple.stub().returnWith({filePath: filePath2}),
+        update: simple.stub().returnWith()
+      };
+
+      simple.mock(database, "getCollection").returnWith(mockCollection);
+
+      return db.directCacheFileMetadata.put({filePath: filePath2, timestamp: "2017.09.20.10.10"})
+        .then(()=>{
+          assert(mockCollection.insert.called);
+          assert.deepEqual(mockCollection.insert.lastCall.args[0], {filePath: filePath2});
+          assert(mockCollection.update.called);
+          assert.deepEqual(mockCollection.update.lastCall.args[0], {filePath: filePath2, timestamp: "2017.09.20.10.10"});
+        })
+    });
+
+    it("calling put() with entry filePath that exists in collection should only call update", ()=>{
+      return db.directCacheFileMetadata.put({filePath, timestamp: "2018.01.05.10.13"})
+        .then(()=>{
+          assert.equal(mockCollection.insert.callCount, 0);
+          assert(mockCollection.update.called);
+          assert.deepEqual(mockCollection.update.lastCall.args[0], {filePath, timestamp: "2018.01.05.10.13"});
+        })
+    });
+
+    it("calling delete() without required filePath throws error", ()=>{
+      assert.throws(() => {db.directCacheFileMetadata.delete()}, Error);
+    });
+
+    it("calling delete() with filePath should remove the item from the db", ()=>{
+      return db.directCacheFileMetadata.delete(filePath)
+        .then(()=>{
+          assert(mockCollection.remove.called);
+          assert.deepEqual(mockCollection.remove.lastCall.args[0], {filePath, timestamp: "2018.01.01.03.03"});
+        });
+    });
+  });
+
 });

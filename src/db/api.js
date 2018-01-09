@@ -170,6 +170,62 @@ module.exports = {
         res();
       });
     }
-  }
+  },
+  directCacheFileMetadata: {
+    clear: ()=>database.getCollection("directcachemetadata").clear(),
+    allEntries: ()=>database.getCollection("directcachemetadata").find(),
+    setAll(updateObj) {
+      database.getCollection("directcachemetadata")
+      .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
+    },
+    get(filePath, field = "") {
+      if (!filePath) {throw Error("missing params");}
 
+      const metadata = database.getCollection("directcachemetadata");
+      const item = metadata.by("filePath", filePath);
+
+      return field ? item && item[field] : item;
+    },
+    put(entry) {
+      if (!entry) {throw Error("missing params");}
+
+      return new Promise((res, rej)=>{
+        const metadata = database.getCollection("directcachemetadata");
+
+        let item = metadata.by("filePath", entry.filePath);
+
+        if (!item) {
+          item = metadata.insert({filePath: entry.filePath});
+        }
+
+        Object.assign(item, entry);
+
+        try {
+          metadata.update(item);
+        } catch (err) {
+          rej(err);
+        }
+
+        res(entry);
+      });
+    },
+    delete(filePath) {
+      if (!filePath) {throw Error("missing params");}
+
+      return new Promise((res, rej)=>{
+        const metadata = database.getCollection("directcachemetadata");
+        const item = metadata.by("componentId", filePath);
+
+        if (item) {
+          try {
+            metadata.remove(item);
+          } catch (err) {
+            rej(err);
+          }
+        }
+
+        res();
+      });
+    }
+  }
 };

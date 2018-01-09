@@ -14,10 +14,19 @@ module.exports = {
       .then(db.owners.delete(filePath))
       .then(db.watchlist.delete(filePath))
       .then(()=>{
-        broadcastIPC.broadcast("FILE-UPDATE", {
-          filePath,
-          status: "DELETED"
-        });
+        return broadcastIPC.fileUpdate(Object.assign({}, {filePath}, {status: "DELETED"}));
+      });
+  },
+  directCacheProcess(message) {
+    const {filePath} = message;
+
+    if (!filePath) {
+      return Promise.reject(new Error("Invalid delete message"));
+    }
+
+    return db.directCacheFileMetadata.delete(filePath)
+      .then(()=>{
+        return broadcastIPC.fileUpdate(Object.assign({}, {filePath}, {status: "DELETED"}));
       });
   }
 };
