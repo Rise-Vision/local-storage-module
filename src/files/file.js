@@ -95,5 +95,42 @@ module.exports = {
         rej(new Error("File I/O Error"));
       }
     });
+  },
+  writeDirectlyToDisk(fileId, data, from) {
+    if (!fileId || !data) {throw Error("Invalid write to disk params")}
+
+    log.file(`Writing data directly to ${fileId} from ${from}`);
+
+    // console.log(filePath);
+    const pathInCache = fileSystem.getPathInCache(fileId);
+
+    // console.log(pathInCache);
+    return new Promise((res, rej) => {
+      const file = fs.createWriteStream(pathInCache)
+      file.write(data);
+
+      file.on("finish", () => {
+        file.close();
+        res();
+      })
+      file.on("error", (err) => {
+        handleError(err);
+      });
+
+      file.end();
+
+
+      function handleError(err) {
+        log.file(err && err.stack ? err.stack : err)
+
+        broadcastIPC.broadcast("FILE-ERROR", {
+          fileId,
+          msg: "File I/O Error",
+          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
+        });
+
+        rej(new Error("File I/O Error"));
+      }
+    });
   }
 };

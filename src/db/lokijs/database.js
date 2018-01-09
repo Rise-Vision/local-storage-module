@@ -1,6 +1,7 @@
-const COLLECTION_METADATA = "metadata",
-  COLLECTION_OWNERS = "owners",
-  COLLECTION_WATCH_LIST = "watchlist";
+const COLLECTION_METADATA = "metadata";
+const COLLECTION_OWNERS = "owners";
+const COLLECTION_WATCH_LIST = "watchlist";
+const COLLECTION_DIRECT_CACHE_METADATA = "directcachemetadata";
 
 const commonConfig = require("common-display-module");
 const config = require("../../../src/config/config");
@@ -18,6 +19,16 @@ const initCollections = () => {
     if (!collection) {
       db.addCollection(collName, {
         unique: ["filePath"]
+      });
+    }
+  });
+
+  [COLLECTION_DIRECT_CACHE_METADATA].forEach((collName)=>{
+    const collection = db.getCollection(collName);
+
+    if (!collection) {
+      db.addCollection(collName, {
+        unique: ["fileId"]
       });
     }
   });

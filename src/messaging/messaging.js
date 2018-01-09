@@ -3,6 +3,7 @@ const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
+const get = require("./get/get");
 const util = require("util");
 const fileSystem = require("../../src/files/file-system");
 
@@ -48,16 +49,45 @@ const handleMSFileUpdate = (message) => {
   }
 };
 
+const handleDirectCacheFileUpdate = (message) => {
+  if (!message.type) {return;}
+
+  switch (message.type.toUpperCase()) {
+    case "UPDATE":
+      return update.directCacheProcess(message)
+        .catch((err) => {
+          logError(err, "Handle DIRECTCACHEFILEUPDATE - UPDATE Error", message.filePath);
+        });
+    case "GET":
+      try {
+        get.directCacheProcess(message);
+      } catch (err) {
+        logError(err, "Handle DIRECTCACHEFILEUPDATE - GET Error", message.filePath);
+      }
+      break;
+    case "DELETE":
+      return deleteFile.directCacheProcess(message)
+        .catch((err) => {
+          logError(err, "Handle DIRECTCACHEFILEUPDATE - DELETE Error", message.filePath);
+        });
+    default:
+  }
+};
+
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
 
-  if (message.topic.toUpperCase() === "WATCH") {
-    return handleWatch(message);
-  } else if (message.topic.toUpperCase() === "WATCH-RESULT") {
-    return handleWatchResult(message);
-  } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
-    return handleMSFileUpdate(message);
+  switch (message.topic.toUpperCase()) {
+      case "WATCH":
+        return handleWatch(message);
+      case "WATCH-RESULT":
+        return handleWatchResult(message);
+      case "MSFILEUPDATE":
+        return handleMSFileUpdate(message);
+      case "DIRECTCACHEFILEUPDATE":
+        return handleDirectCacheFileUpdate(message);
+      default:
   }
 };
 

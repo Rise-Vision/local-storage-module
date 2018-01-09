@@ -14,14 +14,24 @@ describe("UPDATE entry", ()=> {
     afterEach(() => {
       simple.restore();
     });
+    it("should validate correct entry value", ()=> {
+      assert.equal(entry.validate(), false);
+      assert.equal(entry.validate({filePath: "test-file"}), false);
+      assert.equal(entry.validate({filePath: "test-file", version: "test-version"}), false);
+      assert.equal(entry.validate({filePath: "test-file", version: "test-version", token: {}}), false);
+      assert.equal(entry.validate({filePath: "test-file", version: "test-version", token: {hash: "abc123", data: {timestamp: Date.now(), filePath: "test-file", displayId: "test-display"}}}), true);
+    });
   });
 
-  it("should validate correct entry value", ()=> {
-    assert.equal(entry.validate(), false);
-    assert.equal(entry.validate({filePath: "test-file"}), false);
-    assert.equal(entry.validate({filePath: "test-file", version: "test-version"}), false);
-    assert.equal(entry.validate({filePath: "test-file", version: "test-version", token: {}}), false);
-    assert.equal(entry.validate({filePath: "test-file", version: "test-version", token: {hash: "abc123", data: {timestamp: Date.now(), filePath: "test-file", displayId: "test-display"}}}), false);
+  describe("validate - direct caching", ()=> {
+    it("should validate correct entry value", ()=> {
+      assert.equal(entry.validateDirectCacheProcess(), false);
+      assert.equal(entry.validateDirectCacheProcess({fileId: "testing"}), false);
+      assert.equal(entry.validateDirectCacheProcess({fileId: "testing", data: {"test": "test"}}), false);
+      assert.equal(entry.validateDirectCacheProcess({fileId: "testing", data: {"test": "test"}, from: ""}), false);
+      assert.equal(entry.validateDirectCacheProcess({fileId: "testing", data: {"test": "test"}, from: "testing"}), false);
+      assert.equal(entry.validateDirectCacheProcess({fileId: "testing", data: JSON.stringify({"test": "test"}), from: "testing"}), true);
+    });
   });
 
 });
