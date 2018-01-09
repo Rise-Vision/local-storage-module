@@ -6,6 +6,10 @@ module.exports = {
     if (!token.hash || !token.data) {return false;}
 
     return gcsValidator.validateFilepath(filePath);
+  },
+  validateDirectCacheProcess({fileId, data, from} = {}) {
+    if (!fileId || !data || typeof data !== 'string' || !from) {return false;}
+
+    return true;
   }
 };
-

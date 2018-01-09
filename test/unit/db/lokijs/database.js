@@ -24,5 +24,6 @@ describe("lokijs", ()=>{
     assert(database.getCollection("metadata"));
     assert(database.getCollection("owners"));
     assert(database.getCollection("watchlist"));
+    assert(database.getCollection("directcachemetadata"));
   });
 });

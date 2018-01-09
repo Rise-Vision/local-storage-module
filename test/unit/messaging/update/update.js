@@ -1,10 +1,13 @@
 /* eslint-env mocha */
 /* eslint-disable max-statements */
-const messaging = require("../../../../src/messaging/messaging.js");
 const assert = require("assert");
-const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
+const platform = require("rise-common-electron").platform;
+const db = require("../../../../src/db/api");
+const file = require("../../../../src/files/file");
+const fileSystem = require("../../../../src/files/file-system");
+const messaging = require("../../../../src/messaging/messaging.js");
 
 describe("Messaging", ()=>{
 
@@ -72,4 +75,60 @@ describe("Messaging", ()=>{
     });
   });
 
+
+  describe("UPDATE - direct caching", ()=>{
+    let messageReceiveHandler = null;
+
+    const mockReceiver = {
+      on(evt, handler) {
+        if (evt === "message") {
+          messageReceiveHandler = handler;
+        }
+      }
+    };
+
+    beforeEach(()=>{
+      simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
+      simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
+
+      simple.mock(file, "writeDirectlyToDisk");
+      simple.mock(db.directCacheFileMetadata, "put");
+
+      return messaging.init();
+    });
+
+    afterEach(()=>{
+      simple.restore();
+    });
+
+
+    it("writes files directly to disk --> updates file(s) in directCacheFileMetadata", ()=>{
+      const msg = {
+        topic: "directcachefileupdate",
+        type: "update",
+        from: "twitter",
+        fileId: "test_component_id",
+        timestamp: "2017.01.01.13.12",
+        data: JSON.stringify({
+          test: "testing",
+          tweet: "hello world"
+        })
+      };
+
+      return messageReceiveHandler(msg)
+        .then(()=>{
+          assert(file.writeDirectlyToDisk.called);
+          platform.readTextFile(fileSystem.getPathInCache(msg.fileId))
+            .then(fileData=>{
+              assert.deepEqual(fileData, msg.data);
+            });
+
+          assert(db.directCacheFileMetadata.put.called);
+          assert.deepEqual(db.directCacheFileMetadata.put.lastCall.args[0], {
+            fileId: msg.fileId,
+            timestamp: msg.timestamp
+          });
+        });
+    });
+  });
 });

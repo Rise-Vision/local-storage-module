@@ -26,12 +26,7 @@
             "never"
         ],
         "callback-return": "error",
-        "camelcase": [
-            "error",
-            {
-                "properties": "never"
-            }
-        ],
+        "camelcase": "off",
         "capitalized-comments": "off",
         "class-methods-use-this": "error",
         "comma-dangle": "error",
