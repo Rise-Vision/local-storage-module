@@ -13,6 +13,6 @@ module.exports = {
     const retrievedMetadata = db.directCacheFileMetadata.get(fileId)
 
     if (!retrievedMetadata || !retrievedMetadata.fileId) {throw Error("invalid retrieved file");}
-    broadcastIPC.fileUpdate(Object.assign({}, {fileId}, {status: "CACHED"}));
+    broadcastIPC.fileUpdate(Object.assign({}, {fileId: retrievedMetadata.fileId, timestamp: retrievedMetadata.timestamp, status: "CACHED"}));
   }
 };

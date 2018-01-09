@@ -5,6 +5,7 @@ const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const db = require("../../../../src/db/api");
 const file = require("../../../../src/files/file");
+const fileSystem = require("../../../../src/files/file-system");
 const messaging = require("../../../../src/messaging/messaging.js");
 const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
 
@@ -44,6 +45,7 @@ describe("Messaging", ()=>{
         fileId: "test_component_id"
       };
       const expectedMetadata = {fileId: msg.fileId, timestamp: '2018.01.01.02.02'};
+      const expectedMessage = Object.assign({}, expectedMetadata, {status: "CACHED", ospath: fileSystem.getPathInCache(expectedMetadata.fileId)});
 
       simple.mock(db.directCacheFileMetadata, "get").returnWith(expectedMetadata);
 
@@ -51,6 +53,7 @@ describe("Messaging", ()=>{
 
       assert(broadcastIPC.broadcast.called);
       assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
+      assert.equal(JSON.stringify(broadcastIPC.broadcast.lastCall.args[1]), JSON.stringify(expectedMessage));
     });
   });
 });
