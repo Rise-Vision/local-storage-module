@@ -35,7 +35,7 @@ const validateResponse = (filePath, response) => {
           res(response);
         });
     } else {
-      broadcastIPC.broadcast("FILE-ERROR", {
+      broadcastIPC.fileError({
         filePath,
         msg: `Invalid response with status code ${response.statusCode}`
       });
