@@ -46,16 +46,16 @@ const validateResponse = (filePath, response) => {
 };
 
 module.exports = {
-  addToProcessing(filePath) {
-    const fileName = fileSystem.getFileName(filePath);
+  addToProcessing(filePath, version) {
+    const fileName = fileSystem.getFileName(filePath, version);
     fileSystem.addToProcessingList(fileName);
   },
-  isProcessing(filePath) {
-    const fileName = fileSystem.getFileName(filePath);
+  isProcessing(filePath, version) {
+    const fileName = fileSystem.getFileName(filePath, version);
     return fileSystem.isProcessing(fileName);
   },
-  removeFromProcessing(filePath) {
-    const fileName = fileSystem.getFileName(filePath);
+  removeFromProcessing(filePath, version) {
+    const fileName = fileSystem.getFileName(filePath, version);
     fileSystem.removeFromProcessingList(fileName);
   },
   download(entry) {
@@ -80,7 +80,7 @@ module.exports = {
       return file.request(filePath, signedURL);
     })
     .then(response=>validateResponse(filePath, response))
-    .then(response=>file.writeToDisk(filePath, response))
+    .then(response=>file.writeToDisk(filePath, version, response))
     .then(()=>module.exports.removeFromProcessing(filePath))
     .then(()=>module.exports.broadcastAfterDownload(version, filePath))
     .catch(err=>{

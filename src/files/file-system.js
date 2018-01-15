@@ -15,10 +15,10 @@ let downloadTotalSize = 0;
 
 module.exports = {
 
-  getFileName(filePath) {
+  getFileName(filePath, version = "") {
     if (!filePath) {return "";}
 
-    return crypto.createHash("md5").update(filePath).digest("hex");
+    return crypto.createHash("md5").update(`${filePath}${version}`).digest("hex");
   },
   getCacheDir() {
     const modulePath = commonConfig.getModuleDir();
@@ -31,8 +31,8 @@ module.exports = {
   getDiskThreshold() {
     return halfGB;
   },
-  getPathInDownload(filePath) {
-    const fileName = module.exports.getFileName(filePath);
+  getPathInDownload(filePath, version = "") {
+    const fileName = module.exports.getFileName(filePath, version);
     const downloadDir = module.exports.getDownloadDir();
 
     return path.join(downloadDir, fileName);
@@ -42,8 +42,8 @@ module.exports = {
 
     return platform.fileExists(downloadPath);
   },
-  getPathInCache(filePath) {
-    const fileName = module.exports.getFileName(filePath);
+  getPathInCache(filePath, version = "") {
+    const fileName = module.exports.getFileName(filePath, version);
     const cacheDir = module.exports.getCacheDir();
 
     return path.join(cacheDir, fileName);
@@ -77,11 +77,11 @@ module.exports = {
     const spaceLeft = spaceOnDisk - downloadTotalSize - module.exports.getDiskThreshold() - fileSize;
     return spaceLeft > 0;
   },
-  moveFileFromDownloadToCache(filePath) {
-    return fs.move(module.exports.getPathInDownload(filePath), module.exports.getPathInCache(filePath), {overwrite: true});
+  moveFileFromDownloadToCache(filePath, version) {
+    return fs.move(module.exports.getPathInDownload(filePath, version), module.exports.getPathInCache(filePath, version), {overwrite: true});
   },
-  deleteFileFromDownload(filePath) {
-    const downloadPath = module.exports.getPathInDownload(filePath);
+  deleteFileFromDownload(filePath, version) {
+    const downloadPath = module.exports.getPathInDownload(filePath, version);
 
     if (platform.fileExists(downloadPath)) {
       fs.remove(downloadPath)

@@ -13,6 +13,7 @@ describe("Broadcast IPC", ()=> {
     simple.mock(commonConfig, "broadcastMessage").returnWith();
     simple.mock(commonConfig, "broadcastToLocalWS").returnWith();
     simple.mock(db.owners, "get").returnWith([]);
+    simple.mock(log, "file").returnWith();
   });
 
   afterEach(()=>{
@@ -20,12 +21,13 @@ describe("Broadcast IPC", ()=> {
   });
 
   it("broadcasts file update", ()=>{
-    broadcast.fileUpdate({filePath: "test-file-path", status: "test-status"});
+    broadcast.fileUpdate({filePath: "test-file-path", version: "12345", status: "test-status"});
     assert.equal(commonConfig.broadcastMessage.callCount, 1);
     assert.deepEqual(commonConfig.broadcastMessage.lastCall.args[0], {
       from: config.moduleName,
       topic: "FILE-UPDATE",
       filePath: "test-file-path",
+      version: "12345",
       ospath: "fake-os-path",
       status: "test-status"
     });
@@ -34,13 +36,14 @@ describe("Broadcast IPC", ()=> {
   it("broadcasts file update to websocket client", ()=>{
     simple.mock(db.owners, "get").returnWith(["ws-client"]);
 
-    broadcast.fileUpdate({filePath: "test-file-path", status: "test-status"});
+    broadcast.fileUpdate({filePath: "test-file-path", version: "12345", status: "test-status"});
     assert.equal(commonConfig.broadcastToLocalWS.callCount, 1);
     assert.equal(commonConfig.broadcastMessage.callCount, 0);
     assert.deepEqual(commonConfig.broadcastToLocalWS.lastCall.args[0], {
       from: config.moduleName,
       topic: "FILE-UPDATE",
       filePath: "test-file-path",
+      version: "12345",
       ospath: "fake-os-path",
       status: "test-status"
     });

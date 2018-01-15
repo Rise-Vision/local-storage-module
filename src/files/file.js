@@ -51,11 +51,11 @@ module.exports = {
       return Promise.reject(new Error("File's host server could not be reached"));
     });
   },
-  writeToDisk(filePath, response) {
+  writeToDisk(filePath, version, response) {
     if (!filePath || !response) {throw Error("Invalid write to disk params")}
 
     const fileSize = response.headers["content-length"];
-    const pathInDownload = fileSystem.getPathInDownload(filePath);
+    const pathInDownload = fileSystem.getPathInDownload(filePath, version);
 
     log.file(`Writing ${pathInDownload} for ${filePath}`);
 
@@ -65,7 +65,7 @@ module.exports = {
       const file = fs.createWriteStream(pathInDownload)
       .on("finish", () => {
         file.close(() => {
-          fileSystem.moveFileFromDownloadToCache(filePath)
+          fileSystem.moveFileFromDownloadToCache(filePath, version)
           .then(() => {
             fileSystem.removeFromDownloadTotalSize(fileSize);
             res();
@@ -83,7 +83,7 @@ module.exports = {
 
       function handleError(err) {
         log.file(err && err.stack ? err.stack : err)
-        fileSystem.deleteFileFromDownload(filePath);
+        fileSystem.deleteFileFromDownload(filePath, version);
         fileSystem.removeFromDownloadTotalSize(fileSize);
 
         broadcastIPC.fileError({
