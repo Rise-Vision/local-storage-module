@@ -57,7 +57,8 @@ describe("Messaging", ()=>{
 
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
-          assert.deepEqual(broadcastIPC.broadcast.lastCall.args[1], {filePath: msg.filePath, status: "DELETED"});
+          assert.equal(broadcastIPC.broadcast.lastCall.args[1].filePath, msg.filePath);
+          assert.equal(broadcastIPC.broadcast.lastCall.args[1].status, "DELETED");
         });
     });
   });

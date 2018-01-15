@@ -42,7 +42,7 @@ module.exports = {
         return module.exports.request(filePath, signedURL, retries - 1);
       }
 
-      broadcastIPC.broadcast("FILE-ERROR", {
+      broadcastIPC.fileError({
         filePath,
         msg: "File's host server could not be reached",
         detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
@@ -86,7 +86,7 @@ module.exports = {
         fileSystem.deleteFileFromDownload(filePath);
         fileSystem.removeFromDownloadTotalSize(fileSize);
 
-        broadcastIPC.broadcast("FILE-ERROR", {
+        broadcastIPC.fileError({
           filePath,
           msg: "File I/O Error",
           detail: err ? err.message || util.inspect(err, {depth: 1}) : ""

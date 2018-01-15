@@ -14,7 +14,7 @@ module.exports = {
       .then(db.owners.delete(filePath))
       .then(db.watchlist.delete(filePath))
       .then(()=>{
-        broadcastIPC.broadcast("FILE-UPDATE", {
+        broadcastIPC.fileUpdate({
           filePath,
           status: "DELETED"
         });
