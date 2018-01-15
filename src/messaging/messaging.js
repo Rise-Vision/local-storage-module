@@ -4,15 +4,13 @@ const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
 const util = require("util");
-const fileSystem = require("../../src/files/file-system");
 
 const logError = (err, userFriendlyMessage = "", filePath) => {
   console.dir(err);
   log.error({
     event_details: err ? err.stack || util.inspect(err, {depth: 1}) : "",
     version: config.getModuleVersion(),
-    file_path: filePath,
-    file_name: fileSystem.getFileName(filePath)
+    file_path: filePath
   }, userFriendlyMessage, config.bqTableName);
 };
 
