@@ -57,7 +57,8 @@ describe("WATCH: Integration", function() {
     it("[client] should send watch and receive response after queue downloads file", ()=>{
       this.timeout(9000); // eslint-disable-line
       const expectedSavedSize = 10;
-      queue.checkStaleFiles();
+
+      queueOneStaleFileCheck();
 
       return new Promise(res=>{
         commonConfig.receiveMessages("test")
@@ -68,9 +69,7 @@ describe("WATCH: Integration", function() {
           console.log("MESSAGE RECEIVED BY TEST DISPLAY MODULE");
           console.dir(message);
           if (fileDownloaded) {res(message.ospath);}
-        }))
-        .then(fileStat)
-        .then(stats=>stats.size === expectedSavedSize);
+        }));
 
         console.log("Broadcasting message through LM to LS");
         commonConfig.broadcastMessage({
@@ -78,7 +77,14 @@ describe("WATCH: Integration", function() {
           topic: "watch",
           filePath
         });
-      });
+      })
+      .then(fileStat)
+      .then(stats=>stats.size === expectedSavedSize);
+
+      function queueOneStaleFileCheck() {
+        const timers = [()=>{}, setTimeout];
+        queue.checkStaleFiles((fn, timeout)=>timers.pop()(fn, timeout));
+      }
     });
 
     it("should receive MSFILEUPDATE from MS and update DB", function(done) {
