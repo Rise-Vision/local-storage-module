@@ -14,6 +14,8 @@ const fileSystem = require("../../../src/files/file-system");
 describe("File", ()=>{
 
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
+  const testVersion = "123456";
+  const filePathVersionHash = "d38980a3b3e98a1074df0d535da83b74";
   const mockModuleDir = "rvplayer/modules";
   const testModulePath = "rvplayer/modules/local-storage/";
   const testSignedURL = "http://test-signed-url";
@@ -113,7 +115,7 @@ describe("File", ()=>{
         .then((response)=>{
           simple.mock(response, "pipe").returnWith();
 
-          file.writeToDisk(testFilePath, response);
+          file.writeToDisk(testFilePath, testVersion, response);
           assert(fileSystem.addToDownloadTotalSize.called);
           assert.equal(fileSystem.addToDownloadTotalSize.lastCall.args[0], 10);
         });
@@ -127,14 +129,14 @@ describe("File", ()=>{
       simple.mock(fileSystem, "removeFromDownloadTotalSize");
 
       return file.request(testFilePath, `${testSignedURL}/test-file.png`)
-        .then(response=>file.writeToDisk(testFilePath, response))
+        .then(response=>file.writeToDisk(testFilePath, testVersion, response))
         .then(()=>{
 
           assert(fileSystem.removeFromDownloadTotalSize.called);
           assert.equal(fileSystem.removeFromDownloadTotalSize.lastCall.args[0], 10);
 
-          assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
-          assert(platform.fileExists(`${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+          assert(!platform.fileExists(`${testModulePath}download/${filePathVersionHash}`));
+          assert(platform.fileExists(`${testModulePath}cache/${filePathVersionHash}`));
         })
         .catch((err)=>{
           console.log("shouldn't be here", err);
@@ -152,7 +154,7 @@ describe("File", ()=>{
       simple.mock(broadcastIPC, "broadcast");
 
       return file.request(testFilePath, `${testSignedURL}/test-file.png`)
-        .then(response=>file.writeToDisk(testFilePath, response))
+        .then(response=>file.writeToDisk(testFilePath, testVersion, response))
         .catch((err)=>{
           assert(err);
 
@@ -164,8 +166,8 @@ describe("File", ()=>{
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "File I/O Error");
 
           setTimeout(()=>{
-            assert(!platform.fileExists(`${testModulePath}download/e498da09daba1d6bb3c6e5c0f0966784`));
-            assert(!platform.fileExists(`${testModulePath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+            assert(!platform.fileExists(`${testModulePath}download/${filePathVersionHash}`));
+            assert(!platform.fileExists(`${testModulePath}cache/${filePathVersionHash}`));
           }, 200);
         });
     });

@@ -21,6 +21,7 @@ describe("URL Provider", ()=>{
 
     beforeEach(()=>{
       simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(log, "file").returnWith();
     });
 
     afterEach(()=>{

@@ -25,6 +25,7 @@ describe("Messaging", ()=>{
 
       simple.mock(db.fileMetadata, "put").resolveWith();
       simple.mock(db.watchlist, "put").resolveWith();
+      simple.mock(log, "file").returnWith();
 
       return messaging.init();
     });

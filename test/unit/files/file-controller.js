@@ -13,6 +13,7 @@ const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
 describe("File Controller", ()=>{
 
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
+  const testVersion = "12345";
   const testToken = {
     hash: "abc123",
     data: {
@@ -86,11 +87,12 @@ describe("File Controller", ()=>{
       simple.mock(file, "request").resolveWith({statusCode: 200, headers: {"Content-length": 100000}});
       simple.mock(urlProvider, "getURL").resolveWith("test-url");
 
-      return fileController.download({filePath: testFilePath, token: testToken})
+      return fileController.download({filePath: testFilePath, token: testToken, version: testVersion})
       .then(() => {
         assert(file.writeToDisk.called);
         assert.equal(file.writeToDisk.lastCall.args[0], testFilePath);
-        assert.deepEqual(file.writeToDisk.lastCall.args[1], {statusCode: 200, headers: {"Content-length": "100000"}});
+        assert.equal(file.writeToDisk.lastCall.args[1], testVersion);
+        assert.deepEqual(file.writeToDisk.lastCall.args[2], {statusCode: 200, headers: {"Content-length": "100000"}}); // eslint-disable-line no-magic-numbers
       });
     });
 
