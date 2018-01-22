@@ -12,7 +12,7 @@ describe("Broadcast IPC", ()=> {
     simple.mock(fileSystem, "getPathInCache").returnWith("fake-os-path");
     simple.mock(commonConfig, "broadcastMessage").returnWith();
     simple.mock(commonConfig, "broadcastToLocalWS").returnWith();
-    simple.mock(db.owners, "get").returnWith([]);
+    simple.mock(db.owners, "get").returnWith({owners: []});
     simple.mock(log, "file").returnWith();
   });
 
@@ -34,7 +34,7 @@ describe("Broadcast IPC", ()=> {
   });
 
   it("broadcasts file update to websocket client", ()=>{
-    simple.mock(db.owners, "get").returnWith(["ws-client"]);
+    simple.mock(db.owners, "get").returnWith({owners: ["ws-client"]});
 
     broadcast.fileUpdate({filePath: "test-file-path", version: "12345", status: "test-status"});
     assert.equal(commonConfig.broadcastToLocalWS.callCount, 1);
