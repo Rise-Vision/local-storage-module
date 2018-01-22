@@ -6,13 +6,13 @@ const db = require("../db/api");
 module.exports = {
   broadcast(topic, data = {}) {
     const message = Object.assign({from: config.moduleName, topic}, data);
-    const owners = db.owners.get(data.filePath);
+    const fileOwners = db.owners.get(data.filePath);
 
     // ensure to broadcast via websocket if "ws-client" is an owner
-    if (owners && owners.includes("ws-client")) {
+    if (fileOwners && fileOwners.owners.includes("ws-client")) {
       commonConfig.broadcastToLocalWS(message);
 
-      if (owners.length === 1) {return;}
+      if (fileOwners.owners.length === 1) {return;}
     }
 
     commonConfig.broadcastMessage(message);
