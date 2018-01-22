@@ -99,4 +99,10 @@ describe("lokijs - integration", ()=>{
     assert.deepEqual(db.watchlist.allEntries()[1].filePath, "my-bucket/my-other-file");
     assert.deepEqual(db.watchlist.allEntries()[1].version, "2");
   });
+
+  it("adds owners", ()=>{
+    const filePath = "my-bucket/my-file";
+    db.owners.addToSet({filePath, owner: "test-owner"});
+    assert(db.owners.get(filePath).owners.includes("test-owner"));
+  });
 });
