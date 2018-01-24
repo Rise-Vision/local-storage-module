@@ -6,6 +6,7 @@ const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
+global.log = global.log || {};
 
 describe("Messaging", ()=>{
 
@@ -21,12 +22,14 @@ describe("Messaging", ()=>{
     };
 
     beforeEach(()=>{
+      simple.mock(log, "file").returnWith();
       simple.mock(commonConfig, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
 
       simple.mock(db.fileMetadata, "delete").resolveWith();
       simple.mock(db.owners, "delete").resolveWith();
+      simple.mock(db.owners, "get").returnWith({owners: ["test"]});
       simple.mock(db.watchlist, "delete").resolveWith();
       simple.mock(broadcastIPC, "broadcast");
 
