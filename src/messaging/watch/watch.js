@@ -15,15 +15,15 @@ module.exports = {
 
     const metaData = db.fileMetadata.get(filePath) || {};
 
-    if (metaData.status && metaData.status !== "UNKNOWN") {
-      return db.owners.addToSet({filePath, owner: from})
-      .then(()=>{
-        broadcastIPC.fileUpdate({filePath, status: metaData.status, version: metaData.version});
-      });
-    }
+    return db.owners.addToSet({filePath, owner: from})
+    .then(()=>{
+      broadcastIPC.fileUpdate({filePath, status: metaData.status, version: metaData.version});
 
-    const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
-    return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
+      if (!metaData.status || metaData.status === "UNKNOWN") {
+        const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
+        return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
+      }
+    });
   },
   msResult(message) {
     const {filePath, version, token, error} = message;

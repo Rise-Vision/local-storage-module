@@ -37,6 +37,7 @@ describe("Messaging", ()=>{
       simple.mock(commonConfig, "sendToMessagingService").returnWith();
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
       simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(db.owners, "get").returnWith({owners: ["test"]});
       simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(global.log, "file").returnWith();
 
@@ -115,6 +116,7 @@ describe("Messaging", ()=>{
       const mockMetadata = {};
 
       simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.owners, "addToSet").resolveWith();
 
       const msg = {
         topic: "watch",
@@ -122,8 +124,10 @@ describe("Messaging", ()=>{
         filePath: testFilePath
       };
 
-      messageReceiveHandler(msg);
-      assert(commonConfig.sendToMessagingService.called);
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert(commonConfig.sendToMessagingService.called);
+      });
     });
 
     it("calls remote watch when the local file state is UNKNOWN", ()=>{
@@ -139,8 +143,10 @@ describe("Messaging", ()=>{
         filePath: testFilePath
       };
 
-      messageReceiveHandler(msg);
-      assert(commonConfig.sendToMessagingService.called);
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert(commonConfig.sendToMessagingService.called);
+      });
     });
   });
 
