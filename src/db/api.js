@@ -26,6 +26,7 @@ module.exports = {
 
         item.status = entry.status;
         item.version = entry.version;
+        item.hash = entry.hash;
 
         if (entry.token) {
           item.token = entry.token;

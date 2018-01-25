@@ -19,9 +19,10 @@ module.exports = {
       .then(()=>{
         broadcastIPC.broadcast("FILE-UPDATE", {
           filePath,
-          ospath: fileSystem.osPath(filePath),
+          //ospath: fileSystem.osPath(filePath),
           status: metaData.status,
-          version: metaData.version
+          version: metaData.version,
+          hash: metaData.hash
         });
       });
     }
@@ -30,7 +31,7 @@ module.exports = {
     return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
   },
   msResult(message) {
-    const {filePath, version, token, error} = message;
+    const {filePath, version, token, error, hash} = message;
 
     if (error) {
       broadcastIPC.broadcast("FILE-UPDATE", {
@@ -43,14 +44,14 @@ module.exports = {
 
     const status = token ? "STALE" : "CURRENT";
 
-    return db.fileMetadata.put({filePath, version, status, token})
+    return db.fileMetadata.put({filePath, version, status, token, hash})
     .then(db.watchlist.put({filePath, version}))
     .then(()=>{
       broadcastIPC.broadcast("FILE-UPDATE", {
         filePath,
         status,
         version,
-        ospath: fileSystem.osPath(filePath)
+        hash
       });
     });
   }

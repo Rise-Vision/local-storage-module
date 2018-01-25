@@ -36,6 +36,7 @@ function handleMSFileUpdate(message) {
 }
 
 function messageReceiveHandler(message) {
+ console.log(message);
   if (!message) {return;}
   if (!message.topic) {return;}
 
