@@ -13,16 +13,20 @@ module.exports = {
       return Promise.reject(new Error("Invalid watch message"));
     }
 
-    const metaData = db.fileMetadata.get(filePath) || {};
-
     return db.owners.addToSet({filePath, owner: from})
     .then(()=>{
-      if (!metaData.status || metaData.status === "UNKNOWN") {
-        const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
-        return Promise.resolve(commonConfig.sendToMessagingService(msMessage));
+      const metaData = db.fileMetadata.get(filePath) || {filePath};
+      metaData.status = metaData.status || "UNKNOWN";
+
+      if (metaData.status === "UNKNOWN") {
+        return requestMSUpdate(message, metaData);
       }
 
-      broadcastIPC.fileUpdate({filePath, status: metaData.status, version: metaData.version});
+      return Promise.resolve(broadcastIPC.fileUpdate({
+        filePath,
+        status: metaData.status,
+        version: metaData.version
+      }));
     });
   },
   msResult(message) {
@@ -44,3 +48,13 @@ module.exports = {
     });
   }
 };
+
+function requestMSUpdate(message, metaData) {
+  const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
+  metaData.status = metaData.status === "UNKNOWN" ? "PENDING" : metaData.status;
+
+  return db.fileMetadata.put(metaData)
+  .then(()=>{
+    commonConfig.sendToMessagingService(msMessage);
+  });
+}

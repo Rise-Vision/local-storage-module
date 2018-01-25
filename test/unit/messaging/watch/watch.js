@@ -116,6 +116,7 @@ describe("Messaging", ()=>{
       const mockMetadata = {};
 
       simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
       simple.mock(db.owners, "addToSet").resolveWith();
 
       const msg = {
@@ -136,6 +137,8 @@ describe("Messaging", ()=>{
       };
 
       simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.owners, "addToSet").resolveWith();
 
       const msg = {
         topic: "watch",
