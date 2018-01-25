@@ -19,7 +19,7 @@ module.exports = {
       return field ? item && item[field] : item;
     },
     put(entry) {
-      if (!entry) {throw Error("missing params");}
+      if (!entry || !entry.filePath) {throw Error("missing params");}
 
       return new Promise((res, rej)=>{
         const metadata = database.getCollection("metadata");
@@ -31,7 +31,6 @@ module.exports = {
         }
 
         Object.assign(item, entry);
-
         try {
           metadata.update(item);
         } catch (err) {
