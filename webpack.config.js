@@ -9,6 +9,7 @@ const ZipPlugin = require("zip-webpack-plugin");
 module.exports = {
   entry: "./src/index.js",
   target: "node",
+  node: false,
   externals: {
     "electron": "electron",
     "original-fs": "original-fs"
