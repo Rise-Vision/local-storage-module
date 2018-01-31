@@ -6,6 +6,7 @@ let moduleVersion = "";
 module.exports = {
   secondMillis: 1000,
   moduleName: MODULE_NAME,
+  initialLogDelay: 5000,
   bqProjectName: "client-side-events",
   bqDatasetName: "Module_Events",
   bqFailedEntryFile: `${MODULE_NAME}-failed.log`,

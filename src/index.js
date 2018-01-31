@@ -36,9 +36,11 @@ initialize()
   .then(refreshAllWatchEntries)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{
-    log.all("started", {
-      version: config.getModuleVersion()
-    }, null, config.bqTableName);
+    const version = config.getModuleVersion();
+
+    setTimeout(()=>{
+      log.all("started", {version}, null, config.bqTableName);
+    }, config.initialLogDelay);
   })
   .catch((err)=>{
     log.error({
