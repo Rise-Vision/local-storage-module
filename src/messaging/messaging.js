@@ -1,4 +1,4 @@
-const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
@@ -61,7 +61,7 @@ const messageReceiveHandler = (message) => {
 
 module.exports = {
   init() {
-    return commonConfig.receiveMessages(config.moduleName).then((receiver) => {
+    return commonMessaging.receiveMessages(config.moduleName).then((receiver) => {
       receiver.on("message", messageReceiveHandler);
     });
   }

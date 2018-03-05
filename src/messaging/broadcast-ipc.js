@@ -1,4 +1,4 @@
-const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const fileSystem = require("../files/file-system");
 const config = require("../config/config");
 const db = require("../db/api");
@@ -10,12 +10,12 @@ module.exports = {
 
     // ensure to broadcast via websocket if "ws-client" is an owner
     if (fileOwners && fileOwners.owners.includes("ws-client")) {
-      commonConfig.broadcastToLocalWS(message);
+      commonMessaging.broadcastToLocalWS(message);
 
       if (fileOwners.owners.length === 1) {return;}
     }
 
-    commonConfig.broadcastMessage(message);
+    commonMessaging.broadcastMessage(message);
   },
   fileUpdate(data = {}) {
     log.file(`Broadcasting ${data.status} FILE-UPDATE for ${data.filePath}`);
