@@ -26,5 +26,24 @@ module.exports = {
           version: config.getModuleVersion(),
         }, "Error while requesting licensing data", config.bqTableName);
       });
+  },
+  updateLicensingData(data) {
+    log.file(JSON.stringify(data), "receiving licensing data");
+
+    if (licensing.containsSubscriptionDataForRiseStorage(data)) {
+      const previousAuthorized = config.isAuthorized();
+      const currentAuthorized = licensing.isRiseStorageSubscriptionActive(data);
+
+      // detect licensing change
+      if (previousAuthorized !== currentAuthorized) {
+        config.setAuthorized(currentAuthorized);
+
+        // TODO: broadcast through WS
+
+        return log.all(currentAuthorized ? "authorized" : "not_authorized", null, null, config.bqTableName);
+      }
+    }
+
+    return Promise.resolve();
   }
 };

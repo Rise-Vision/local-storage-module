@@ -51,6 +51,10 @@ const handleClientList = (message) => {
   return licensing.checkIfLicensingIsAvailable(message);
 };
 
+const handleLicensingUpdate = (message) => {
+  return licensing.updateLicensingData(message);
+};
+
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
@@ -63,6 +67,8 @@ const messageReceiveHandler = (message) => {
     return handleMSFileUpdate(message);
   } else if (message.topic.toUpperCase() === "CLIENT-LIST") {
     return handleClientList(message);
+  } else if (message.topic.toUpperCase() === "LICENSING-UPDATE") {
+    return handleLicensingUpdate(message);
   }
 
   commonMessaging.getClientList(config.moduleName);
