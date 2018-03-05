@@ -26,5 +26,5 @@ module.exports = {
   setModuleVersion(version) {moduleVersion = version;},
   getModuleVersion() {return moduleVersion;},
   setAuthorized,
-  isAuthorized,
+  isAuthorized
 };

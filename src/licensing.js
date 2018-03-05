@@ -28,7 +28,7 @@ module.exports = {
       .catch(err => {
         log.error({
           event_details: err ? err.stack || util.inspect(err, {depth: 1}) : "",
-          version: config.getModuleVersion(),
+          version: config.getModuleVersion()
         }, "Error while requesting licensing data", config.bqTableName);
       });
   },
@@ -46,7 +46,7 @@ module.exports = {
       if (previousAuthorized !== currentAuthorized) {
         config.setAuthorized(currentAuthorized);
 
-        sendLicensing();
+        module.exports.sendLicensing();
 
         return log.all(getUserFriendlyStatus(), null, null, config.bqTableName);
       }

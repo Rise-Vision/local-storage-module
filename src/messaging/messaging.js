@@ -63,18 +63,21 @@ const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
 
-  if (message.topic.toUpperCase() === "WATCH") {
-    return handleWatch(message);
-  } else if (message.topic.toUpperCase() === "WATCH-RESULT") {
-    return handleWatchResult(message);
-  } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
-    return handleMSFileUpdate(message);
-  } else if (message.topic.toUpperCase() === "CLIENT-LIST") {
-    return handleClientList(message);
-  } else if (message.topic.toUpperCase() === "LICENSING-UPDATE") {
-    return handleLicensingUpdate(message);
-  } else if (message.topic.toUpperCase() === "STORAGE-LICENSING-REQUEST") {
-    return handleLicensingRequest(message);
+  switch (message.topic.toUpperCase()) {
+    case "CLIENT-LIST":
+      return handleClientList(message);
+    case "LICENSING-UPDATE":
+      return handleLicensingUpdate(message);
+    case "MSFILEUPDATE":
+      return handleMSFileUpdate(message);
+    case "STORAGE-LICENSING-REQUEST":
+      return handleLicensingRequest(message);
+    case "WATCH":
+      return handleWatch(message);
+    case "WATCH-RESULT":
+      return handleWatchResult(message);
+    default:
+      log.debug(`Unrecognized message topic: ${message.topic}`);
   }
 
   commonMessaging.getClientList(config.moduleName);
