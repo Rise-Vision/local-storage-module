@@ -1,9 +1,14 @@
 const licensing = require("common-display-module/licensing");
+const broadcastIPC = require("./messaging/broadcast-ipc.js");
 const util = require("util");
 const config = require("./config/config");
 
 // So we ensure it will only be sent once.
 let initialRequestAlreadySent = false;
+
+function getUserFriendlyStatus() {
+  return config.isAuthorized() ? "authorized" : "unauthorized";
+}
 
 module.exports = {
   checkIfLicensingIsAvailable(message) {
@@ -27,6 +32,9 @@ module.exports = {
         }, "Error while requesting licensing data", config.bqTableName);
       });
   },
+  sendLicensing() {
+    broadcastIPC.licensingUpdate(config.isAuthorized(), getUserFriendlyStatus());
+  },
   updateLicensingData(data) {
     log.file(JSON.stringify(data), "receiving licensing data");
 
@@ -38,9 +46,9 @@ module.exports = {
       if (previousAuthorized !== currentAuthorized) {
         config.setAuthorized(currentAuthorized);
 
-        // TODO: broadcast through WS
+        sendLicensing();
 
-        return log.all(currentAuthorized ? "authorized" : "not_authorized", null, null, config.bqTableName);
+        return log.all(getUserFriendlyStatus(), null, null, config.bqTableName);
       }
     }
 

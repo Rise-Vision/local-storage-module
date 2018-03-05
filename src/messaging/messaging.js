@@ -55,6 +55,10 @@ const handleLicensingUpdate = (message) => {
   return licensing.updateLicensingData(message);
 };
 
+const handleLicensingRequest = () => {
+  return licensing.sendLicensing();
+};
+
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
@@ -69,6 +73,8 @@ const messageReceiveHandler = (message) => {
     return handleClientList(message);
   } else if (message.topic.toUpperCase() === "LICENSING-UPDATE") {
     return handleLicensingUpdate(message);
+  } else if (message.topic.toUpperCase() === "STORAGE-LICENSING-REQUEST") {
+    return handleLicensingRequest(message);
   }
 
   commonMessaging.getClientList(config.moduleName);
