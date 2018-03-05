@@ -3,6 +3,7 @@ const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
+const licensing = require("../licensing");
 const util = require("util");
 
 const logError = (err, userFriendlyMessage = "", filePath) => {
@@ -46,6 +47,10 @@ const handleMSFileUpdate = (message) => {
   }
 };
 
+const handleClientList = (message) => {
+  return licensing.checkIfLicensingIsAvailable(message);
+};
+
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
@@ -56,7 +61,11 @@ const messageReceiveHandler = (message) => {
     return handleWatchResult(message);
   } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
     return handleMSFileUpdate(message);
+  } else if (message.topic.toUpperCase() === "CLIENT-LIST") {
+    return handleClientList(message);
   }
+
+  commonMessaging.getClientList(config.moduleName);
 };
 
 module.exports = {
