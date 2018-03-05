@@ -7,8 +7,8 @@
     "build": "eslint . && webpack",
     "postbuild": "rimraf build/local-storage && rimraf build/*.zip",
     "test": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/**",
-    "test-integration": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive test/integration/**",
-    "test-unit": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive test/unit/**"
+    "test-integration": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/integration/**",
+    "test-unit": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/unit/**"
   },
   "repository": {
     "type": "git",
