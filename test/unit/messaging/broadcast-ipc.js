@@ -59,4 +59,16 @@ describe("Broadcast IPC", ()=> {
       msg: "test-message"
     });
   });
+
+  it("broadcasts licensing update to websocket client", ()=>{
+    broadcast.licensingUpdate(true, "authorized");
+    assert.equal(commonMessaging.broadcastToLocalWS.callCount, 1);
+    assert.equal(commonMessaging.broadcastMessage.callCount, 0);
+    assert.deepEqual(commonMessaging.broadcastToLocalWS.lastCall.args[0], {
+      from: config.moduleName,
+      topic: "STORAGE-LICENSING-UPDATE",
+      isAuthorized: true,
+      userFriendlyStatus: "authorized"
+    });
+  });
 });

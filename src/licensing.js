@@ -23,6 +23,7 @@ module.exports = {
 
     return Promise.resolve()
   },
+  clearInitialRequestSent() {initialRequestAlreadySent = false;},
   requestLicensingData() {
     return licensing.requestLicensingData(config.moduleName)
       .catch(err => {
