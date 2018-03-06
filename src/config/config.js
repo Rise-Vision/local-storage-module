@@ -3,6 +3,16 @@ const MODULE_NAME = "local-storage";
 let displayId = "";
 let moduleVersion = "";
 
+let authorized = false;
+
+function setAuthorized(flag) {
+  authorized = flag;
+}
+
+function isAuthorized() {
+  return authorized;
+}
+
 module.exports = {
   secondMillis: 1000,
   moduleName: MODULE_NAME,
@@ -14,5 +24,7 @@ module.exports = {
   setDisplayId(id) {displayId = id;},
   getDisplayId() {return displayId;},
   setModuleVersion(version) {moduleVersion = version;},
-  getModuleVersion() {return moduleVersion;}
+  getModuleVersion() {return moduleVersion;},
+  setAuthorized,
+  isAuthorized
 };

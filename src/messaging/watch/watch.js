@@ -1,5 +1,5 @@
 const broadcastIPC = require("../broadcast-ipc.js");
-const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const entry = require("./entry");
 
@@ -55,6 +55,6 @@ function requestMSUpdate(message, metaData) {
 
   return db.fileMetadata.put(metaData)
   .then(()=>{
-    commonConfig.sendToMessagingService(msMessage);
+    commonMessaging.sendToMessagingService(msMessage);
   });
 }

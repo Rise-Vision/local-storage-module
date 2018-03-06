@@ -3,6 +3,7 @@
 const assert = require("assert");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const file = require("../../../src/files/file");
 const request = require("request");
 const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
@@ -23,7 +24,7 @@ describe("File", ()=>{
 
   describe("request", ()=> {
     beforeEach(()=>{
-      simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(commonMessaging, "broadcastMessage").returnWith();
       simple.mock(global.log, "file").returnWith();
     });
 
@@ -74,7 +75,7 @@ describe("File", ()=>{
 
   describe("writeToDisk", ()=> {
     beforeEach(()=>{
-      simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(commonMessaging, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
       simple.mock(global.log, "file").returnWith();
 

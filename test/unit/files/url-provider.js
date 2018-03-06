@@ -2,7 +2,7 @@
 /* eslint-disable max-statements */
 const assert = require("assert");
 const simple = require("simple-mock");
-const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
 const urlProvider = require("../../../src/files/url-provider");
@@ -20,7 +20,7 @@ describe("URL Provider", ()=>{
     };
 
     beforeEach(()=>{
-      simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(commonMessaging, "broadcastMessage").returnWith();
       simple.mock(log, "file").returnWith();
     });
 

@@ -1,8 +1,9 @@
-const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
+const licensing = require("../licensing");
 const util = require("util");
 
 const logError = (err, userFriendlyMessage = "", filePath) => {
@@ -46,22 +47,45 @@ const handleMSFileUpdate = (message) => {
   }
 };
 
+const handleClientList = (message) => {
+  return licensing.checkIfLicensingIsAvailable(message);
+};
+
+const handleLicensingUpdate = (message) => {
+  return licensing.updateLicensingData(message);
+};
+
+const handleLicensingRequest = () => {
+  return licensing.sendLicensing();
+};
+
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
 
-  if (message.topic.toUpperCase() === "WATCH") {
-    return handleWatch(message);
-  } else if (message.topic.toUpperCase() === "WATCH-RESULT") {
-    return handleWatchResult(message);
-  } else if (message.topic.toUpperCase() === "MSFILEUPDATE") {
-    return handleMSFileUpdate(message);
+  switch (message.topic.toUpperCase()) {
+    case "CLIENT-LIST":
+      return handleClientList(message);
+    case "LICENSING-UPDATE":
+      return handleLicensingUpdate(message);
+    case "MSFILEUPDATE":
+      return handleMSFileUpdate(message);
+    case "STORAGE-LICENSING-REQUEST":
+      return handleLicensingRequest(message);
+    case "WATCH":
+      return handleWatch(message);
+    case "WATCH-RESULT":
+      return handleWatchResult(message);
+    default:
+      log.debug(`Unrecognized message topic: ${message.topic}`);
   }
+
+  commonMessaging.getClientList(config.moduleName);
 };
 
 module.exports = {
   init() {
-    return commonConfig.receiveMessages(config.moduleName).then((receiver) => {
+    return commonMessaging.receiveMessages(config.moduleName).then((receiver) => {
       receiver.on("message", messageReceiveHandler);
     });
   }

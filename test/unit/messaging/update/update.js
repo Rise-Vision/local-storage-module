@@ -5,6 +5,7 @@ const assert = require("assert");
 const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 
 describe("Messaging", ()=>{
 
@@ -20,7 +21,7 @@ describe("Messaging", ()=>{
     };
 
     beforeEach(()=>{
-      simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
+      simple.mock(commonMessaging, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
 
       simple.mock(db.fileMetadata, "put").resolveWith();
