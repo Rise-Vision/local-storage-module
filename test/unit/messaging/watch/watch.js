@@ -6,6 +6,7 @@ const assert = require("assert");
 const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
 const fileController = require("../../../../src/files/file-controller");
 
@@ -34,11 +35,11 @@ describe("Messaging", ()=>{
     };
 
     beforeEach(()=>{
-      simple.mock(commonConfig, "sendToMessagingService").returnWith();
+      simple.mock(commonMessaging, "sendToMessagingService").returnWith();
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
-      simple.mock(commonConfig, "broadcastMessage").returnWith();
+      simple.mock(commonMessaging, "broadcastMessage").returnWith();
       simple.mock(db.owners, "get").returnWith({owners: ["test"]});
-      simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
+      simple.mock(commonMessaging, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(global.log, "file").returnWith();
 
       return messaging.init();
@@ -76,7 +77,7 @@ describe("Messaging", ()=>{
             version: mockMetadata.version
           });
 
-          assert.equal(commonConfig.sendToMessagingService.callCount, 0);
+          assert.equal(commonMessaging.sendToMessagingService.callCount, 0);
         });
     });
 
@@ -108,7 +109,7 @@ describe("Messaging", ()=>{
             version: mockMetadata.version
           });
 
-          assert.equal(commonConfig.sendToMessagingService.callCount, 0);
+          assert.equal(commonMessaging.sendToMessagingService.callCount, 0);
         });
     });
 
@@ -127,7 +128,7 @@ describe("Messaging", ()=>{
 
       return messageReceiveHandler(msg)
       .then(()=>{
-        assert(commonConfig.sendToMessagingService.called);
+        assert(commonMessaging.sendToMessagingService.called);
       });
     });
 
@@ -148,7 +149,7 @@ describe("Messaging", ()=>{
 
       return messageReceiveHandler(msg)
       .then(()=>{
-        assert(commonConfig.sendToMessagingService.called);
+        assert(commonMessaging.sendToMessagingService.called);
       });
     });
   });
@@ -170,9 +171,9 @@ describe("Messaging", ()=>{
     };
 
     beforeEach(()=>{
-      simple.mock(commonConfig, "broadcastMessage").returnWith();
-      simple.mock(commonConfig, "broadcastMessage").returnWith();
-      simple.mock(commonConfig, "receiveMessages").resolveWith(mockReceiver);
+      simple.mock(commonMessaging, "broadcastMessage").returnWith();
+      simple.mock(commonMessaging, "broadcastMessage").returnWith();
+      simple.mock(commonMessaging, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
 
       simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));

@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 const commonConfig = require("common-display-module");
+const commonMessaging = require("common-display-module/messaging");
 const simple = require("simple-mock");
 const queue = require("../../src/files/download-queue");
 const assert = require("assert");
@@ -44,7 +45,7 @@ describe("WATCH: Integration", function() {
     });
 
     after(()=>{
-      commonConfig.disconnect();
+      commonMessaging.disconnect();
       localMessagingModule.stop();
 
       // allow for db save interval to complete before destroying
@@ -61,7 +62,7 @@ describe("WATCH: Integration", function() {
       queueOneStaleFileCheck();
 
       return new Promise(res=>{
-        commonConfig.receiveMessages("test")
+        commonMessaging.receiveMessages("test")
         .then(receiver=>receiver.on("message", (message)=>{
           const fileDownloaded = message.topic === "FILE-UPDATE" &&
           message.status === "CURRENT";
@@ -72,7 +73,7 @@ describe("WATCH: Integration", function() {
         }));
 
         console.log("Broadcasting message through LM to LS");
-        commonConfig.broadcastMessage({
+        commonMessaging.broadcastMessage({
           from: "test",
           topic: "watch",
           filePath
@@ -104,7 +105,7 @@ describe("WATCH: Integration", function() {
       };
 
       console.log("Broadcasting message through LM to LS");
-      commonConfig.broadcastMessage({
+      commonMessaging.broadcastMessage({
         topic: "msfileupdate",
         type: "update",
         filePath,
@@ -131,14 +132,14 @@ describe("WATCH: Integration", function() {
       assert(api.watchlist.get(filePath));
 
       console.log("Broadcasting message through LM to LS");
-      commonConfig.broadcastMessage({
+      commonMessaging.broadcastMessage({
         topic: "msfileupdate",
         type: "delete",
         filePath
       });
 
       return new Promise(res=>{
-        commonConfig.receiveMessages("test")
+        commonMessaging.receiveMessages("test")
           .then(receiver=>receiver.on("message", (message)=>{
             if (message.topic === "FILE-UPDATE") {
               assert.equal(message.status, "DELETED");
