@@ -67,7 +67,7 @@ describe("Licensing", ()=> {
       assert(config.isAuthorized());
 
       assert(log.all.called);
-      assert.equal(log.all.lastCall.args[0], "authorized");
+      assert.equal(log.all.lastCall.args[1].event_details, "authorized");
     });
 
     it("should not be authorized if Rise Storage is not active", () => {
@@ -89,7 +89,7 @@ describe("Licensing", ()=> {
       assert(!config.isAuthorized());
 
       assert(log.all.called);
-      assert.equal(log.all.lastCall.args[0], "unauthorized");
+      assert.equal(log.all.lastCall.args[1].event_details, "unauthorized");
     });
 
     it("should not be authorized if Rise Storage is not present", () => {
@@ -130,7 +130,7 @@ describe("Licensing", ()=> {
 
         assert.equal(licensing.sendLicensing.callCount, 1);
         assert.equal(log.all.callCount, 1);
-        assert.equal(log.all.lastCall.args[0], "unauthorized");
+        assert.equal(log.all.lastCall.args[1].event_details, "unauthorized");
       }
 
       {
@@ -170,7 +170,7 @@ describe("Licensing", ()=> {
 
         assert.equal(licensing.sendLicensing.callCount, 2);
         assert.equal(log.all.callCount, 2);
-        assert.equal(log.all.lastCall.args[0], "authorized");
+        assert.equal(log.all.lastCall.args[1].event_details, "authorized");
       }
 
       {
