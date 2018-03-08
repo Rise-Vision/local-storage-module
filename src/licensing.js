@@ -49,7 +49,7 @@ module.exports = {
 
         module.exports.sendLicensing();
 
-        return log.all(getUserFriendlyStatus(), null, null, config.bqTableName);
+        log.all("storage subscription update", {event_details: getUserFriendlyStatus(), version: config.getModuleVersion()}, null, config.bqTableName);
       }
     }
 

@@ -79,14 +79,13 @@ const messageReceiveHandler = (message) => {
     default:
       log.debug(`Unrecognized message topic: ${message.topic}`);
   }
-
-  commonMessaging.getClientList(config.moduleName);
 };
 
 module.exports = {
   init() {
     return commonMessaging.receiveMessages(config.moduleName).then((receiver) => {
       receiver.on("message", messageReceiveHandler);
+      commonMessaging.getClientList(config.moduleName);
     });
   }
 };
