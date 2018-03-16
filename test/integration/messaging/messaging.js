@@ -2,18 +2,18 @@
 const commonConfig = require("common-display-module");
 const commonMessaging = require("common-display-module/messaging");
 const simple = require("simple-mock");
-const queue = require("../../src/files/download-queue");
+const queue = require("../../../src/files/download-queue");
 const assert = require("assert");
 const os = require("os");
-const messaging = require("../../src/messaging/messaging");
-const database = require("../../src/db/lokijs/database");
-const api = require("../../src/db/api");
+const messaging = require("../../../src/messaging/messaging");
+const database = require("../../../src/db/lokijs/database");
+const api = require("../../../src/db/api");
 const localMessagingModule = require("local-messaging-module");
 const path = require("path");
 const {platform} = require("rise-common-electron");
 const dbSaveInterval = 5;
 const fileStat = require("util").promisify(require("fs").stat);
-const fileSystem = require("../../src/files/file-system");
+const fileSystem = require("../../../src/files/file-system");
 
 global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}};
 
