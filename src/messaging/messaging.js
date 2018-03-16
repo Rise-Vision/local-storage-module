@@ -3,6 +3,7 @@ const config = require("../../src/config/config");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
+const watchlist = require("./watch/watchlist");
 const licensing = require("../licensing");
 const util = require("util");
 
@@ -26,6 +27,13 @@ const handleWatchResult = (message) => {
   return watch.msResult(message)
   .catch((err) => {
     logError(err, "Handle WATCH-RESULT Error", message.filePath);
+  });
+};
+
+const handleWatchlistResult = (message) => {
+  return watchlist.updateFilesStatusAndRequestUpdatedFiles(message.updatedFilePaths)
+  .catch((err) => {
+    logError(err, "Handle WATCHLIST-RESULT Error", "");
   });
 };
 
@@ -76,6 +84,8 @@ const messageReceiveHandler = (message) => {
       return handleWatch(message);
     case "WATCH-RESULT":
       return handleWatchResult(message);
+    case "WATCHLIST-RESULT":
+      return handleWatchlistResult(message);
     default:
       log.debug(`Unrecognized message topic: ${message.topic}`);
   }
