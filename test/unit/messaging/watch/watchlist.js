@@ -69,7 +69,7 @@ describe("watchlist - unit", ()=>{
 
     return watchlist.updateFilesStatusAndRequestUpdatedFiles(updated)
     .then(() => {
-      assert(watch.process.callCount, 2);
+      assert.equal(watch.process.callCount, 2);
 
       watch.process.calls.forEach(call => {
         const message = call.args[0];
