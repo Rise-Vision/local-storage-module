@@ -1,4 +1,4 @@
-const broadcastIPC = require("../broadcast-ipc.js");
+const broadcastIPC = require("../broadcast-ipc");
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const entry = require("./entry");
@@ -7,7 +7,7 @@ module.exports = {
   process(message) {
     const {filePath, from} = message;
 
-    log.file(`Recieved watch for ${filePath}`);
+    log.file(`Recieved watch from ${from} for ${filePath}`);
 
     if (!entry.validate({filePath, owner: from})) {
       return Promise.reject(new Error("Invalid watch message"));
@@ -22,11 +22,11 @@ module.exports = {
         return requestMSUpdate(message, metaData);
       }
 
-      return Promise.resolve(broadcastIPC.fileUpdate({
+      return broadcastIPC.fileUpdate({
         filePath,
         status: metaData.status,
         version: metaData.version
-      }));
+      });
     });
   },
   msResult(message) {
