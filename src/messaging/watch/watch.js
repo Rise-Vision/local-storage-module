@@ -1,4 +1,4 @@
-const broadcastIPC = require("../broadcast-ipc.js");
+const broadcastIPC = require("../broadcast-ipc");
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const entry = require("./entry");
