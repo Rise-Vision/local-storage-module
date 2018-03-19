@@ -7,7 +7,7 @@ module.exports = {
   process(message) {
     const {filePath, from} = message;
 
-    log.file(`Recieved watch for ${filePath}`);
+    log.file(`Recieved watch from ${from} for ${filePath}`);
 
     if (!entry.validate({filePath, owner: from})) {
       return Promise.reject(new Error("Invalid watch message"));
