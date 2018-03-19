@@ -22,11 +22,11 @@ module.exports = {
         return requestMSUpdate(message, metaData);
       }
 
-      return Promise.resolve(broadcastIPC.fileUpdate({
+      return broadcastIPC.fileUpdate({
         filePath,
         status: metaData.status,
         version: metaData.version
-      }));
+      });
     });
   },
   msResult(message) {
