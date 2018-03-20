@@ -123,4 +123,12 @@ describe("lokijs - integration", ()=>{
 
     assert.equal(lastChanged, 123456);
   });
+
+  it("sets the last changed value as undefined", ()=>{
+    db.lastChanged.set();
+
+    const lastChanged = db.lastChanged.get();
+
+    assert.equal(lastChanged, 0);
+  });
 });
