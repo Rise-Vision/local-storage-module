@@ -30,7 +30,7 @@ describe("Messaging - unit", ()=>{
       simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
 
       simple.mock(db.fileMetadata, "delete").resolveWith();
-      simple.mock(db.lastChanged, "set").resolveWith();
+      simple.mock(db.watchlist, "setLastChanged").resolveWith();
       simple.mock(db.owners, "delete").resolveWith();
       simple.mock(db.owners, "get").returnWith({owners: ["test"]});
       simple.mock(db.watchlist, "delete").resolveWith();
@@ -66,8 +66,8 @@ describe("Messaging - unit", ()=>{
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].filePath, msg.filePath);
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].status, "DELETED");
 
-          assert(db.lastChanged.set.called);
-          assert.equal(db.lastChanged.set.lastCall.args[0], 123456);
+          assert(db.watchlist.setLastChanged.called);
+          assert.equal(db.watchlist.setLastChanged.lastCall.args[0], 123456);
         });
     });
 
@@ -93,8 +93,8 @@ describe("Messaging - unit", ()=>{
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].filePath, msg.filePath);
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].status, "DELETED");
 
-          assert(db.lastChanged.set.called);
-          assert(!db.lastChanged.set.lastCall.args[0]);
+          assert(db.watchlist.setLastChanged.called);
+          assert(!db.watchlist.setLastChanged.lastCall.args[0]);
         });
     });
 

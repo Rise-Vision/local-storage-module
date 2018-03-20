@@ -26,7 +26,7 @@ describe("Messaging - unit", ()=>{
       simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
 
       simple.mock(db.fileMetadata, "put").resolveWith();
-      simple.mock(db.lastChanged, "set").resolveWith();
+      simple.mock(db.watchlist, "setLastChanged").resolveWith();
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(log, "file").returnWith();
 
@@ -73,8 +73,8 @@ describe("Messaging - unit", ()=>{
             token: msg.token
           });
 
-          assert(db.lastChanged.set.called);
-          assert.equal(db.lastChanged.set.lastCall.args[0], 123456);
+          assert(db.watchlist.setLastChanged.called);
+          assert.equal(db.watchlist.setLastChanged.lastCall.args[0], 123456);
         });
     });
 
@@ -113,8 +113,8 @@ describe("Messaging - unit", ()=>{
             token: msg.token
           });
 
-          assert(db.lastChanged.set.called);
-          assert(!db.lastChanged.set.lastCall.args[0]);
+          assert(db.watchlist.setLastChanged.called);
+          assert(!db.watchlist.setLastChanged.lastCall.args[0]);
         });
     });
   });

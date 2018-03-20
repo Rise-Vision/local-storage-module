@@ -13,7 +13,7 @@ module.exports = {
     return db.fileMetadata.delete(filePath)
       .then(() => db.owners.delete(filePath))
       .then(() => db.watchlist.delete(filePath))
-      .then(() => db.lastChanged.set(globalLastChanged))
+      .then(() => db.watchlist.setLastChanged(globalLastChanged))
       .then(()=>{
         broadcastIPC.fileUpdate({
           filePath,

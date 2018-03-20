@@ -70,21 +70,6 @@ module.exports = {
       });
     }
   },
-  lastChanged: {
-    clear: ()=>clear("last_changed"),
-    get() {
-      const entries = allEntries("last_changed");
-
-      const entry = entries.length === 0 ?
-        database.getCollection("last_changed").insert({lastChanged: 0}) : entries[0];
-
-      return entry.lastChanged;
-    },
-    set(lastChanged = 0) {
-      module.exports.lastChanged.get();
-      setAll("last_changed", {lastChanged});
-    }
-  },
   owners: {
     clear: ()=>clear("owners"),
     get(filePath) {
@@ -143,7 +128,10 @@ module.exports = {
     }
   },
   watchlist: {
-    clear: ()=>clear("watchlist"),
+    clear() {
+      clear("watchlist");
+      clear("last_changed");
+    },
     allEntries: ()=>allEntries("watchlist"),
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
@@ -193,6 +181,18 @@ module.exports = {
 
         res();
       });
+    },
+    lastChanged() {
+      const entries = allEntries("last_changed");
+
+      const entry = entries.length === 0 ?
+        database.getCollection("last_changed").insert({lastChanged: 0}) : entries[0];
+
+      return entry.lastChanged;
+    },
+    setLastChanged(lastChanged = 0) {
+      module.exports.watchlist.lastChanged();
+      setAll("last_changed", {lastChanged});
     }
   }
 

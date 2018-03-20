@@ -35,7 +35,6 @@ describe("lokijs - integration", ()=>{
     simple.restore();
 
     db.fileMetadata.clear();
-    db.lastChanged.clear();
     db.owners.clear();
     db.watchlist.clear();
   });
@@ -111,23 +110,23 @@ describe("lokijs - integration", ()=>{
   });
 
   it("returns a default last changed value", ()=>{
-    const defaultValue = db.lastChanged.get();
+    const defaultValue = db.watchlist.lastChanged();
 
     assert.equal(defaultValue, 0);
   });
 
   it("sets the last changed value", ()=>{
-    db.lastChanged.set(123456);
+    db.watchlist.setLastChanged(123456);
 
-    const lastChanged = db.lastChanged.get();
+    const lastChanged = db.watchlist.lastChanged();
 
     assert.equal(lastChanged, 123456);
   });
 
   it("sets the last changed value as undefined", ()=>{
-    db.lastChanged.set();
+    db.watchlist.setLastChanged();
 
-    const lastChanged = db.lastChanged.get();
+    const lastChanged = db.watchlist.lastChanged();
 
     assert.equal(lastChanged, 0);
   });

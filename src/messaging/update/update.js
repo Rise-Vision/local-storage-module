@@ -16,6 +16,6 @@ module.exports = {
 
       return action(dbEntry);
     }))
-    .then(() => db.lastChanged.set(globalLastChanged));
+    .then(() => db.watchlist.setLastChanged(globalLastChanged));
   }
 };

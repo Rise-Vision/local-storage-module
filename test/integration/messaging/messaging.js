@@ -122,7 +122,7 @@ describe("WATCH: Integration", function() {
         assert.equal(api.fileMetadata.get(filePath).version, "test-version-updated");
         assert.equal(api.fileMetadata.get(filePath).status, "STALE");
         assert.deepEqual(api.fileMetadata.get(filePath).token, token);
-        assert.equal(api.lastChanged.get(), 123456);
+        assert.equal(api.watchlist.lastChanged(), 123456);
 
         assert.equal(api.watchlist.get(filePath).version, "test-version-updated");
         done();
@@ -150,7 +150,7 @@ describe("WATCH: Integration", function() {
               assert.equal(message.status, "DELETED");
               assert(!api.fileMetadata.get(filePath));
               assert(!api.watchlist.get(filePath));
-              assert.equal(api.lastChanged.get(), 123458);
+              assert.equal(api.watchlist.lastChanged(), 123458);
 
               res();
             }
