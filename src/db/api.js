@@ -2,14 +2,24 @@
 
 const database = require("./lokijs/database");
 
+function allEntries(collection) {
+  return database.getCollection(collection).find();
+}
+
+function clear(collection) {
+  database.getCollection(collection).clear();
+}
+
+function setAll(collection, updateObj) {
+  database.getCollection(collection)
+  .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
+}
+
 module.exports = {
   fileMetadata: {
-    clear: ()=>database.getCollection("metadata").clear(),
-    allEntries: ()=>database.getCollection("metadata").find(),
-    setAll(updateObj) {
-      database.getCollection("metadata")
-      .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
-    },
+    clear: ()=>clear("metadata"),
+    allEntries: ()=>allEntries("metadata"),
+    setAll: (updateObj)=>setAll("metadata", updateObj),
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 
@@ -61,7 +71,7 @@ module.exports = {
     }
   },
   owners: {
-    clear: ()=>database.getCollection("owners").clear(),
+    clear: ()=>clear("owners"),
     get(filePath) {
       if (!filePath) {throw Error("missing params");}
 
@@ -118,8 +128,11 @@ module.exports = {
     }
   },
   watchlist: {
-    clear: ()=>database.getCollection("watchlist").clear(),
-    allEntries: ()=>database.getCollection("watchlist").find(),
+    clear() {
+      clear("watchlist");
+      clear("last_changed");
+    },
+    allEntries: ()=>allEntries("watchlist"),
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 
@@ -168,6 +181,18 @@ module.exports = {
 
         res();
       });
+    },
+    lastChanged() {
+      const entries = allEntries("last_changed");
+
+      const entry = entries.length === 0 ?
+        database.getCollection("last_changed").insert({lastChanged: 0}) : entries[0];
+
+      return entry.lastChanged;
+    },
+    setLastChanged(lastChanged = 0) {
+      module.exports.watchlist.lastChanged();
+      setAll("last_changed", {lastChanged});
     }
   }
 

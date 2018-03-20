@@ -1,12 +1,17 @@
 /* eslint-env mocha */
-/* eslint-disable max-statements */
+
 const assert = require("assert");
 const database = require("../../../src/db/lokijs/database");
 const db = require("../../../src/db/api");
 const simple = require("simple-mock");
 
-describe("DB API", ()=> {
-  describe("fileMetadata", ()=> {
+describe("DB API: Unit", ()=> {
+
+  afterEach(() => {
+    simple.restore();
+  });
+
+  describe("fileMeta.getdata", ()=> {
     const filePath = "test-path";
     const date = Date.now();
     const token = {
@@ -30,10 +35,6 @@ describe("DB API", ()=> {
       };
 
       simple.mock(database, "getCollection").returnWith(mockCollection);
-    });
-
-    afterEach(() => {
-      simple.restore();
     });
 
     it("defines fileMetaData API", ()=> {
@@ -126,10 +127,6 @@ describe("DB API", ()=> {
       simple.mock(database, "getCollection").returnWith(mockCollection);
     });
 
-    afterEach(() => {
-      simple.restore();
-    });
-
     it("defines owners API", ()=> {
       assert(db.owners);
       assert(db.owners.get);
@@ -198,7 +195,8 @@ describe("DB API", ()=> {
     beforeEach(() => {
       mockCollection = {
         by: simple.stub().returnWith(JSON.parse(JSON.stringify(mockWatchlist))),
-        insert: simple.stub(),
+        find: simple.stub().returnWith([]),
+        insert: simple.stub().callFn(entry => entry),
         update: simple.stub().returnWith(),
         remove: simple.stub().returnWith()
       };
@@ -206,15 +204,13 @@ describe("DB API", ()=> {
       simple.mock(database, "getCollection").returnWith(mockCollection);
     });
 
-    afterEach(() => {
-      simple.restore();
-    });
-
     it("defines watchlist API", ()=> {
       assert(db.watchlist);
       assert(db.watchlist.get);
       assert(db.watchlist.put);
       assert(db.watchlist.delete);
+      assert(db.watchlist.lastChanged);
+      assert(db.watchlist.setLastChanged);
     });
 
     it("calling get() without required filePath throws error", ()=>{
@@ -270,6 +266,12 @@ describe("DB API", ()=> {
           assert(mockCollection.remove.called);
           assert.deepEqual(mockCollection.remove.lastCall.args[0], {filePath, version: "1.0.0"});
         });
+    });
+
+    it("gets default lastChanged value as 0", ()=> {
+      const defaultValue = db.watchlist.lastChanged();
+
+      assert.equal(defaultValue, 0);
     });
   });
 });
