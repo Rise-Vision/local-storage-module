@@ -6,6 +6,11 @@ const db = require("../../../src/db/api");
 const simple = require("simple-mock");
 
 describe("DB API", ()=> {
+
+  afterEach(() => {
+    simple.restore();
+  });
+
   describe("fileMetadata", ()=> {
     const filePath = "test-path";
     const date = Date.now();
@@ -30,10 +35,6 @@ describe("DB API", ()=> {
       };
 
       simple.mock(database, "getCollection").returnWith(mockCollection);
-    });
-
-    afterEach(() => {
-      simple.restore();
     });
 
     it("defines fileMetaData API", ()=> {
@@ -109,6 +110,31 @@ describe("DB API", ()=> {
     });
   });
 
+  describe("lastChanged", ()=> {
+    beforeEach(() => {
+      const mockCollection = {
+        find: simple.stub().returnWith([]),
+        insert: entry => entry,
+        findAndUpdate: simple.stub().returnWith()
+      };
+
+      simple.mock(database, "getCollection").returnWith(mockCollection);
+    });
+
+    it("defines watchlist API", ()=> {
+      assert(db.lastChanged);
+      assert(db.lastChanged.get);
+      assert(db.lastChanged.set);
+      assert(db.lastChanged.clear);
+    });
+
+    it("gets default lastChanged value as 0", ()=> {
+      const defaultValue = db.lastChanged.get();
+
+      assert.equal(defaultValue, 0);
+    });
+  });
+
   describe("owners", ()=> {
     const filePath = "test-path";
     const mockOwners = {filePath, owners: ["player", "display-control"]};
@@ -124,10 +150,6 @@ describe("DB API", ()=> {
       };
 
       simple.mock(database, "getCollection").returnWith(mockCollection);
-    });
-
-    afterEach(() => {
-      simple.restore();
     });
 
     it("defines owners API", ()=> {
@@ -204,10 +226,6 @@ describe("DB API", ()=> {
       };
 
       simple.mock(database, "getCollection").returnWith(mockCollection);
-    });
-
-    afterEach(() => {
-      simple.restore();
     });
 
     it("defines watchlist API", ()=> {
