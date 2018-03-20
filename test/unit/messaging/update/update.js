@@ -1,5 +1,6 @@
 /* eslint-env mocha */
-/* eslint-disable max-statements */
+/* eslint-disable no-magic-numbers */
+
 const messaging = require("../../../../src/messaging/messaging.js");
 const assert = require("assert");
 const db = require("../../../../src/db/api");
@@ -7,7 +8,7 @@ const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const commonMessaging = require("common-display-module/messaging");
 
-describe("Messaging", ()=>{
+describe("Messaging - unit", ()=>{
 
   describe("UPDATE", ()=>{
     let messageReceiveHandler = null;
@@ -25,6 +26,7 @@ describe("Messaging", ()=>{
       simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");
 
       simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.lastChanged, "set").resolveWith();
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(log, "file").returnWith();
 
@@ -35,8 +37,48 @@ describe("Messaging", ()=>{
       simple.restore();
     });
 
-
     it("updates file(s) in fileMetadata -> updates file(s) in watchlist", ()=>{
+      const msg = {
+        topic: "msfileupdate",
+        type: "update",
+        from: "messaging-service",
+        filePath: "test-bucket/test-file1",
+        globalLastChanged: 123456,
+        version: "2.1.0",
+        token: {
+          hash: "abc123",
+          data: {
+            displayId: "test-display",
+            date: Date.now(),
+            filePath: "test-bucket/test-file1"
+          }
+        }
+      };
+
+      return messageReceiveHandler(msg)
+        .then(()=>{
+          assert(db.fileMetadata.put.called);
+          assert.deepEqual(db.fileMetadata.put.lastCall.args[0], {
+            filePath: msg.filePath,
+            version: msg.version,
+            status: "STALE",
+            token: msg.token
+          });
+
+          assert(db.watchlist.put.called);
+          assert.deepEqual(db.watchlist.put.lastCall.args[0], {
+            filePath: msg.filePath,
+            version: msg.version,
+            status: "STALE",
+            token: msg.token
+          });
+
+          assert(db.lastChanged.set.called);
+          assert.equal(db.lastChanged.set.lastCall.args[0], 123456);
+        });
+    });
+
+    it("updates file(s) in fileMetadata -> updates file(s) in watchlist even if no globalLastChanged ( transitional )", ()=>{
       const msg = {
         topic: "msfileupdate",
         type: "update",
@@ -70,6 +112,9 @@ describe("Messaging", ()=>{
             status: "STALE",
             token: msg.token
           });
+
+          assert(db.lastChanged.set.called);
+          assert(!db.lastChanged.set.lastCall.args[0]);
         });
     });
   });

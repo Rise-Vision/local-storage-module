@@ -3,7 +3,7 @@ const entry = require("./entry");
 
 module.exports = {
   process(message) {
-    const {filePath, lastChanged, version, token} = message;
+    const {filePath, globalLastChanged, version, token} = message;
     log.file(`Received updated version ${version} for ${filePath}`);
     log.file(`Token timestamp ${token.data.timestamp}`);
 
@@ -16,6 +16,6 @@ module.exports = {
 
       return action(dbEntry);
     }))
-    .then(() => db.lastChanged.set(lastChanged));
+    .then(() => db.lastChanged.set(globalLastChanged));
   }
 };

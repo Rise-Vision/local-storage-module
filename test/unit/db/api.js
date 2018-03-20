@@ -1,5 +1,4 @@
 /* eslint-env mocha */
-/* eslint-disable max-statements */
 
 const assert = require("assert");
 const database = require("../../../src/db/lokijs/database");

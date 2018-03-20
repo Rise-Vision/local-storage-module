@@ -4,7 +4,7 @@ const gcsValidator = require("gcs-filepath-validator");
 
 module.exports = {
   process(message) {
-    const {filePath, lastChanged} = message;
+    const {filePath, globalLastChanged} = message;
 
     if (!gcsValidator.validateFilepath(filePath)) {
       return Promise.reject(new Error("Invalid delete message"));
@@ -13,7 +13,7 @@ module.exports = {
     return db.fileMetadata.delete(filePath)
       .then(() => db.owners.delete(filePath))
       .then(() => db.watchlist.delete(filePath))
-      .then(() => db.lastChanged.set(lastChanged))
+      .then(() => db.lastChanged.set(globalLastChanged))
       .then(()=>{
         broadcastIPC.fileUpdate({
           filePath,
