@@ -10,14 +10,16 @@ function clear(collection) {
   database.getCollection(collection).clear();
 }
 
+function setAll(collection, updateObj) {
+  database.getCollection(collection)
+  .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
+}
+
 module.exports = {
   fileMetadata: {
     clear: ()=>clear("metadata"),
     allEntries: ()=>allEntries("metadata"),
-    setAll(updateObj) {
-      database.getCollection("metadata")
-      .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
-    },
+    setAll: (updateObj)=>setAll("metadata", updateObj),
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 
@@ -66,6 +68,21 @@ module.exports = {
 
         res();
       });
+    }
+  },
+  lastChanged: {
+    clear: ()=>clear("last_changed"),
+    get() {
+      const entries = allEntries("last_changed");
+
+      const entry = entries.length > 0 ? entries[0] :
+        database.getCollection("last_changed").insert({lastChanged: 0});
+
+      return entry.lastChanged;
+    },
+    set(lastChanged) {
+      module.exports.lastChanged.get();
+      setAll("last_changed", {lastChanged});
     }
   },
   owners: {
