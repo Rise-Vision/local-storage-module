@@ -40,11 +40,11 @@ describe("watchlist - integration", ()=>{
 
   afterEach(()=>{
     simple.restore();
-    db.lastChanged.clear();
+    db.watchlist.clear();
   });
 
   it("requests WATCHLIST-COMPARE", () => {
-    db.lastChanged.set(123456);
+    db.watchlist.setLastChanged(123456);
 
     watchlist.requestWatchlistCompare();
 

@@ -17,7 +17,7 @@ describe("watchlist - unit", ()=>{
   afterEach(() => simple.restore());
 
   it("requests WATCHLIST-COMPARE", ()=> {
-    simple.mock(db.lastChanged, "get").returnWith(123456);
+    simple.mock(db.watchlist, "lastChanged").returnWith(123456);
 
     watchlist.requestWatchlistCompare();
 
