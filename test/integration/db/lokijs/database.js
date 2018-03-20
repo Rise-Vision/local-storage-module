@@ -1,4 +1,6 @@
 /* eslint-env mocha */
+/* eslint-disable no-magic-numbers */
+
 const assert = require("assert");
 const database = require("../../../../src/db/lokijs/database");
 const db = require("../../../../src/db/api");
@@ -31,7 +33,9 @@ describe("lokijs - integration", ()=>{
 
   afterEach(()=>{
     simple.restore();
+
     db.fileMetadata.clear();
+    db.lastChanged.clear();
     db.owners.clear();
     db.watchlist.clear();
   });
@@ -104,5 +108,19 @@ describe("lokijs - integration", ()=>{
     const filePath = "my-bucket/my-file";
     db.owners.addToSet({filePath, owner: "test-owner"});
     assert(db.owners.get(filePath).owners.includes("test-owner"));
+  });
+
+  it("returns a default last changed value", ()=>{
+    const defaultValue = db.lastChanged.get();
+
+    assert.equal(defaultValue, 0);
+  });
+
+  it("sets the last changed value", ()=>{
+    db.lastChanged.set(123456);
+
+    const lastChanged = db.lastChanged.get();
+
+    assert.equal(lastChanged, 123456);
   });
 });

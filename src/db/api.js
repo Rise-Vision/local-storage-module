@@ -80,7 +80,7 @@ module.exports = {
 
       return entry.lastChanged;
     },
-    set(lastChanged) {
+    set(lastChanged = 0) {
       module.exports.lastChanged.get();
       setAll("last_changed", {lastChanged});
     }

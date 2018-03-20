@@ -1,6 +1,4 @@
-const COLLECTION_METADATA = "metadata",
-  COLLECTION_OWNERS = "owners",
-  COLLECTION_WATCH_LIST = "watchlist";
+const COLLECTIONS = ["metadata", "last_changed", "owners", "watchlist"];
 
 const commonConfig = require("common-display-module");
 const config = require("../../../src/config/config");
@@ -12,7 +10,7 @@ const defaultSaveInterval = 4000;
 let db = null;
 
 const initCollections = () => {
-  [COLLECTION_METADATA, COLLECTION_OWNERS, COLLECTION_WATCH_LIST].forEach((collName)=>{
+  COLLECTIONS.forEach((collName)=>{
     const collection = db.getCollection(collName);
 
     if (!collection) {
