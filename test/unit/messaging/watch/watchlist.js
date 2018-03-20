@@ -1,4 +1,6 @@
 /* eslint-env mocha */
+/* eslint-disable no-magic-numbers */
+
 const assert = require("assert");
 const simple = require("simple-mock");
 const commonMessaging = require("common-display-module/messaging");
@@ -15,34 +17,13 @@ describe("watchlist - unit", ()=>{
   afterEach(() => simple.restore());
 
   it("requests WATCHLIST-COMPARE", ()=> {
-    const testEntries = [
-      {
-        filePath: "my-bucket/my-file",
-        version: "1"
-      },
-      {
-        filePath: "my-bucket/my-other-file",
-        version: "2"
-      }
-    ];
-
-    simple.mock(db.watchlist, "allEntries").returnWith(testEntries);
+    simple.mock(db.lastChanged, "get").returnWith(123456);
 
     watchlist.requestWatchlistCompare();
 
     assert(commonMessaging.sendToMessagingService.callCount, 1);
     assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
-      topic: "WATCHLIST-COMPARE",
-      watchlist: [
-        {
-          filePath: "my-bucket/my-file",
-          version: "1"
-        },
-        {
-          filePath: "my-bucket/my-other-file",
-          version: "2"
-        }
-      ]
+      topic: "WATCHLIST-COMPARE", lastChanged: 123456
     });
   });
 

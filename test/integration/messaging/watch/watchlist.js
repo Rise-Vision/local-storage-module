@@ -1,4 +1,6 @@
 /* eslint-env mocha */
+/* eslint-disable no-magic-numbers */
+
 const assert = require("assert");
 const commonMessaging = require("common-display-module/messaging");
 const os = require("os");
@@ -38,39 +40,17 @@ describe("watchlist - integration", ()=>{
 
   afterEach(()=>{
     simple.restore();
-    db.watchlist.clear();
+    db.lastChanged.clear();
   });
 
   it("requests WATCHLIST-COMPARE", () => {
-    const testEntries = [
-      {
-        filePath: "my-bucket/my-file",
-        version: "1"
-      },
-      {
-        filePath: "my-bucket/my-other-file",
-        version: "2"
-      }
-    ];
-
-    db.watchlist.put(testEntries[0]);
-    db.watchlist.put(testEntries[1]);
+    db.lastChanged.set(123456);
 
     watchlist.requestWatchlistCompare();
 
     assert(commonMessaging.sendToMessagingService.callCount, 1);
     assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
-      topic: "WATCHLIST-COMPARE",
-      watchlist: [
-        {
-          filePath: "my-bucket/my-file",
-          version: "1"
-        },
-        {
-          filePath: "my-bucket/my-other-file",
-          version: "2"
-        }
-      ]
+      topic: "WATCHLIST-COMPARE", lastChanged: 123456
     });
   });
 });
