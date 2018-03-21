@@ -36,7 +36,7 @@ function markMissingFilesAsUnknown(remoteWatchlist) {
 function refresh(watchlist, lastChanged) {
   const filePaths = Object.keys(watchlist);
 
-  if (watchlist.length === 0) {
+  if (filePaths.length === 0) {
     return Promise.resolve();
   }
 
@@ -48,7 +48,8 @@ function refresh(watchlist, lastChanged) {
       return addNewFile(filePath);
     }
 
-    return markUpdatedFileAsStale(metaData, version)
+    return version === metaData.version ||
+      markUpdatedFileAsStale(metaData, version);
   }))
   .then(() => markMissingFilesAsUnknown(watchlist))
   .then(() => db.watchlist.setLastChanged(lastChanged));
