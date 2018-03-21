@@ -9,15 +9,28 @@ function requestWatchlistCompare() {
   commonMessaging.sendToMessagingService(msMessage);
 }
 
-function addOrUpdate(filePath, version) {
-  const previousEntry = db.fileMetadata.get(filePath);
-  const updatedEntry = Object.assign({}, previousEntry, {filePath, version});
-
-  return update.update(updatedEntry);
+function addNewFile(filePath) {
+  // obtain owner from parent folder, and register the new file, in a following PR
+  log.debug(filePath);
 }
 
-function setUnknownStatusToMissingFiles(watchlist) {
-  console.log(watchlist);
+function markUpdatedFileAsStale(metaData, version) {
+  const updatedMetaData = Object.assign({}, metaData, {version});
+
+  return update.update(updatedMetaData);
+}
+
+function markMissingFilesAsUnknown(remoteWatchlist) {
+  const localWatchlist = db.watchlist.allEntries();
+
+  return Promise.all(localWatchlist
+    .filter(entry => !remoteWatchlist[entry.filePath])
+    .map(entry => {
+      const metaData = db.fileMetadata.get(entry.filePath);
+      const updatedMetaData = Object.assign({}, metaData, {status: "UNKNOWN"});
+
+      return db.fileMetadata.put(updatedMetaData);
+  }));
 }
 
 function refresh(watchlist, lastChanged) {
@@ -29,10 +42,15 @@ function refresh(watchlist, lastChanged) {
 
   return Promise.all(filePaths.map(filePath => {
     const version = watchlist[filePath];
+    const metaData = db.fileMetadata.get(filePath);
 
-    return addOrUpdate(filePath, version);
+    if (!metaData) {
+      return addNewFile(filePath);
+    }
+
+    return markUpdatedFileAsStale(metaData, version)
   }))
-  .then(() => setUnknownStatusToMissingFiles(watchlist))
+  .then(() => markMissingFilesAsUnknown(watchlist))
   .then(() => db.watchlist.setLastChanged(lastChanged));
 }
 
