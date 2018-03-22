@@ -111,7 +111,7 @@ describe("WATCH: Integration", function() {
         topic: "msfileupdate",
         type: "update",
         filePath,
-        globalLastChanged: 123456,
+        watchlistLastChanged: 123456,
         version: "test-version-updated",
         token
       });
@@ -139,7 +139,7 @@ describe("WATCH: Integration", function() {
       commonMessaging.broadcastMessage({
         topic: "msfileupdate",
         type: "delete",
-        globalLastChanged: 123458,
+        watchlistLastChanged: 123458,
         filePath
       });
 

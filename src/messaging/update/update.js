@@ -19,6 +19,6 @@ module.exports = {
   },
   process(message) {
     return module.exports.update(message)
-    .then(() => db.watchlist.setLastChanged(message.globalLastChanged));
+    .then(() => db.watchlist.setLastChanged(message.watchlistLastChanged));
   }
 };
