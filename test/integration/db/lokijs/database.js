@@ -131,7 +131,7 @@ describe("lokijs - integration", ()=>{
     assert.equal(lastChanged, 0);
   });
 
-  it("doesn't let to set lastChanged value to a less value than it's current value", ()=>{
+  it("doesn't let to set lastChanged value to a less value than its current value", ()=>{
     db.watchlist.setLastChanged("123456");
     db.watchlist.setLastChanged("12345");
     db.watchlist.setLastChanged("1234");
