@@ -12,6 +12,8 @@ function requestWatchlistCompare() {
 function addNewFile(filePath) {
   // obtain owner from parent folder, and register the new file, in a following PR
   log.debug(filePath);
+
+  return Promise.resolve();
 }
 
 function withUnknownStatus(metaData) {
@@ -53,8 +55,8 @@ function refresh(watchlist, lastChanged) {
       return addNewFile(filePath);
     }
 
-    return version === metaData.version ||
-      refreshUpdatedFile(metaData);
+    return version === metaData.version ?
+      Promise.resolve() : refreshUpdatedFile(metaData);
   }))
   .then(() => markMissingFilesAsUnknown(watchlist))
   .then(() => db.watchlist.setLastChanged(lastChanged));
