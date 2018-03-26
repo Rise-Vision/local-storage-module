@@ -1,7 +1,8 @@
-const broadcastIPC = require("../broadcast-ipc.js");
+const broadcastIPC = require("../broadcast-ipc");
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const entry = require("./entry");
+const update = require("../update/update");
 
 module.exports = {
   process(message) {
@@ -41,8 +42,7 @@ module.exports = {
 
     const status = token ? "STALE" : "CURRENT";
 
-    return db.fileMetadata.put({filePath, version, status, token})
-    .then(db.watchlist.put({filePath, version}))
+    return update.updateWatchlistAndMetadata({filePath, version, status, token})
     .then(()=>{
       broadcastIPC.fileUpdate({filePath, status, version});
     });

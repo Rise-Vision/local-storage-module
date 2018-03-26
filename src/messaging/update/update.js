@@ -2,6 +2,11 @@ const db = require("../../db/api");
 const entry = require("./entry");
 
 module.exports = {
+  updateWatchlistAndMetadata(dbEntry) {
+    const actions = [db.fileMetadata.put, db.watchlist.put];
+
+    return Promise.all(actions.map(action => action(dbEntry)));
+  },
   update(message) {
     const {filePath, version, token} = message;
     log.file(`Received updated version ${version} for ${filePath}`);
@@ -11,11 +16,9 @@ module.exports = {
       return Promise.reject(new Error("Invalid add/update message"));
     }
 
-    return Promise.all([db.fileMetadata.put, db.watchlist.put].map((action) => {
-      const dbEntry = {filePath, version, token, status: "STALE"};
-
-      return action(dbEntry);
-    }))
+    return module.exports.updateWatchlistAndMetadata({
+      filePath, version, token, status: "STALE"
+    });
   },
   process(message) {
     return module.exports.update(message)

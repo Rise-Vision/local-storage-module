@@ -239,7 +239,10 @@ describe("Messaging", ()=>{
         })
         .then(()=>{
           assert(db.watchlist.put.called);
-          assert.deepEqual(db.watchlist.put.lastCall.args[0], {filePath: msg.filePath, version: msg.version});
+
+          const entry = db.watchlist.put.lastCall.args[0];
+          assert.equal(entry.filePath, msg.filePath);
+          assert.equal(entry.version, msg.version);
         })
         .then(()=>{
           assert(broadcastIPC.fileUpdate.called);
@@ -271,7 +274,10 @@ describe("Messaging", ()=>{
       })
       .then(()=>{
         assert(db.watchlist.put.called);
-        assert.deepEqual(db.watchlist.put.lastCall.args[0], {filePath: msg.filePath, version: msg.version});
+
+        const entry = db.watchlist.put.lastCall.args[0];
+        assert.equal(entry.filePath, msg.filePath);
+        assert.equal(entry.version, msg.version);
       })
       .then(()=>{
         assert.equal(broadcastIPC.fileUpdate.callCount, 1);
