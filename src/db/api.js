@@ -191,7 +191,12 @@ module.exports = {
       return entry.lastChanged;
     },
     setLastChanged(lastChanged = 0) {
-      module.exports.watchlist.lastChanged();
+      const previous = module.exports.watchlist.lastChanged();
+
+      if (Number(previous) >= Number(lastChanged)) {
+        return;
+      }
+
       setAll("last_changed", {lastChanged});
     }
   }
