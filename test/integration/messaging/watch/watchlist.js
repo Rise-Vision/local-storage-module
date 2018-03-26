@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-/* eslint-disable no-magic-numbers */
+/* eslint-disable function-paren-newline, no-magic-numbers, object-property-newline */
 
 const assert = require("assert");
 const commonMessaging = require("common-display-module/messaging");
@@ -40,17 +40,197 @@ describe("watchlist - integration", ()=>{
 
   afterEach(()=>{
     simple.restore();
+
+    db.fileMetadata.clear();
+    db.owners.clear();
     db.watchlist.clear();
   });
 
-  it("requests WATCHLIST-COMPARE", () => {
-    db.watchlist.setLastChanged(123456);
+  describe("WATCHLIST-COMPARE", () => {
+    it("requests WATCHLIST-COMPARE", () => {
+      db.watchlist.setLastChanged(123456);
 
-    watchlist.requestWatchlistCompare();
+      watchlist.requestWatchlistCompare();
 
-    assert(commonMessaging.sendToMessagingService.callCount, 1);
-    assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
-      topic: "WATCHLIST-COMPARE", lastChanged: 123456
+      assert(commonMessaging.sendToMessagingService.callCount, 1);
+      assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
+        topic: "WATCHLIST-COMPARE", lastChanged: 123456
+      });
     });
   });
+
+  describe("WATCHLIST-RESULT", () => {
+    function fillDatabase() {
+      db.fileMetadata.put({
+        filePath: "bucket/file1", status: "CURRENT", version: "1", token: {
+          hash: "xxxx", data: {}
+        }
+      });
+      db.fileMetadata.put({
+        filePath: "bucket/file2", status: "CURRENT", version: "2", token: {
+          hash: "yyyy", data: {}
+        }
+      });
+      db.fileMetadata.put({
+        filePath: "bucket/file3", status: "CURRENT", version: "3", token: {
+          hash: "zzzz", data: {}
+        }
+      });
+
+      db.watchlist.put({filePath: "bucket/file1", version: "1"});
+      db.watchlist.put({filePath: "bucket/file2", version: "2"});
+      db.watchlist.put({filePath: "bucket/file3", version: "3"});
+
+      db.owners.addToSet({filePath: "bucket/file1", owner: "licensing"});
+      db.owners.addToSet({filePath: "bucket/file2", owner: "licensing"});
+      db.owners.addToSet({filePath: "bucket/file3", owner: "display-control"});
+    }
+
+    it("refreshes the watchlist when there are changes", () => {
+      fillDatabase();
+
+      const remoteWatchlist = {
+        "bucket/file1": "2",
+        "bucket/file2": "3",
+        "bucket/file3": "3"
+      };
+
+      return watchlist.refresh(remoteWatchlist, 123456)
+      .then(() => {
+        const metaDataList = db.fileMetadata.allEntries()
+        .map(({filePath, status, version, token}) =>
+          ({filePath, status, version, token})
+        );
+
+        assert.deepEqual(metaDataList, [
+          {
+            filePath: "bucket/file1", status: "STALE", version: "2", token: {
+              hash: "xxxx", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file2", status: "STALE", version: "3", token: {
+              hash: "yyyy", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file3", status: "CURRENT", version: "3", token: {
+              hash: "zzzz", data: {}
+            }
+          }
+        ]);
+
+        assert.equal(db.watchlist.lastChanged(), 123456);
+      });
+    });
+
+    it("refreshes the watchlist when there are changes and deletions", () => {
+      fillDatabase();
+
+      const remoteWatchlist = {
+        "bucket/file1": "2",
+        "bucket/file3": "3"
+      };
+
+      return watchlist.refresh(remoteWatchlist, 123456)
+      .then(() => {
+        const metaDataList = db.fileMetadata.allEntries()
+        .map(({filePath, status, version, token}) =>
+          ({filePath, status, version, token})
+        );
+
+        assert.deepEqual(metaDataList, [
+          {
+            filePath: "bucket/file1", status: "STALE", version: "2", token: {
+              hash: "xxxx", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file2", status: "UNKNOWN", version: "2", token: {
+              hash: "yyyy", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file3", status: "CURRENT", version: "3", token: {
+              hash: "zzzz", data: {}
+            }
+          }
+        ]);
+
+        assert.equal(db.watchlist.lastChanged(), 123456);
+      });
+    });
+
+    it("refreshes the watchlist when there are no changes", () => {
+      fillDatabase();
+
+      const remoteWatchlist = {
+        "bucket/file1": "1",
+        "bucket/file2": "2",
+        "bucket/file3": "3"
+      };
+
+      return watchlist.refresh(remoteWatchlist, 123456)
+      .then(() => {
+        const metaDataList = db.fileMetadata.allEntries()
+        .map(({filePath, status, version, token}) =>
+          ({filePath, status, version, token})
+        );
+
+        assert.deepEqual(metaDataList, [
+          {
+            filePath: "bucket/file1", status: "CURRENT", version: "1", token: {
+              hash: "xxxx", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file2", status: "CURRENT", version: "2", token: {
+              hash: "yyyy", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file3", status: "CURRENT", version: "3", token: {
+              hash: "zzzz", data: {}
+            }
+          }
+        ]);
+
+        assert.equal(db.watchlist.lastChanged(), 123456);
+      });
+    });
+
+    it("does not refresh anything if there is no remote watchlist provided", () => {
+      fillDatabase();
+
+      return watchlist.refresh({}, 123456)
+      .then(() => {
+        const metaDataList = db.fileMetadata.allEntries()
+        .map(({filePath, status, version, token}) =>
+          ({filePath, status, version, token})
+        );
+
+        assert.deepEqual(metaDataList, [
+          {
+            filePath: "bucket/file1", status: "CURRENT", version: "1", token: {
+              hash: "xxxx", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file2", status: "CURRENT", version: "2", token: {
+              hash: "yyyy", data: {}
+            }
+          },
+          {
+            filePath: "bucket/file3", status: "CURRENT", version: "3", token: {
+              hash: "zzzz", data: {}
+            }
+          }
+        ]);
+
+        // last changed not updated in this scenario
+        assert.equal(db.watchlist.lastChanged(), 0);
+      });
+    });
+  });
+
 });

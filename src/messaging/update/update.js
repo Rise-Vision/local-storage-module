@@ -2,8 +2,8 @@ const db = require("../../db/api");
 const entry = require("./entry");
 
 module.exports = {
-  process(message) {
-    const {filePath, globalLastChanged, version, token} = message;
+  update(message) {
+    const {filePath, version, token} = message;
     log.file(`Received updated version ${version} for ${filePath}`);
     log.file(`Token timestamp ${token.data.timestamp}`);
 
@@ -12,10 +12,13 @@ module.exports = {
     }
 
     return Promise.all([db.fileMetadata.put, db.watchlist.put].map((action) => {
-      const dbEntry = Object.assign({}, {filePath, version, token}, {status: "STALE"});
+      const dbEntry = {filePath, version, token, status: "STALE"};
 
       return action(dbEntry);
     }))
-    .then(() => db.watchlist.setLastChanged(globalLastChanged));
+  },
+  process(message) {
+    return module.exports.update(message)
+    .then(() => db.watchlist.setLastChanged(message.watchlistLastChanged));
   }
 };

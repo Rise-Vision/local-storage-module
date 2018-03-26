@@ -43,7 +43,7 @@ describe("Messaging - unit", ()=>{
         type: "update",
         from: "messaging-service",
         filePath: "test-bucket/test-file1",
-        globalLastChanged: 123456,
+        watchlistLastChanged: 123456,
         version: "2.1.0",
         token: {
           hash: "abc123",
@@ -78,7 +78,7 @@ describe("Messaging - unit", ()=>{
         });
     });
 
-    it("updates file(s) in fileMetadata -> updates file(s) in watchlist even if no globalLastChanged ( transitional )", ()=>{
+    it("updates file(s) in fileMetadata -> updates file(s) in watchlist even if no watchlistLastChanged ( transitional )", ()=>{
       const msg = {
         topic: "msfileupdate",
         type: "update",

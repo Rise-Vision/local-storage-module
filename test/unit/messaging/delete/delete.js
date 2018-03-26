@@ -48,7 +48,7 @@ describe("Messaging - unit", ()=>{
         topic: "msfileupdate",
         type: "delete",
         from: "messaging-service",
-        globalLastChanged: 123456,
+        watchlistLastChanged: 123456,
         filePath: "test-bucket/test-file1"
       };
 
@@ -71,7 +71,7 @@ describe("Messaging - unit", ()=>{
         });
     });
 
-    it("deletes file in all databases and broadcasts FILE-UPDATE with DELETED status even if no globalLastChanged ( transitional )", ()=>{
+    it("deletes file in all databases and broadcasts FILE-UPDATE with DELETED status even if no watchlistLastChanged ( transitional )", ()=>{
       const msg = {
         topic: "msfileupdate",
         type: "delete",
