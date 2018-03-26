@@ -112,7 +112,7 @@ describe("lokijs - integration", ()=>{
   it("returns a default last changed value", ()=>{
     const defaultValue = db.watchlist.lastChanged();
 
-    assert.equal(defaultValue, 0);
+    assert.equal(defaultValue, '0');
   });
 
   it("sets the last changed value", ()=>{
@@ -128,7 +128,7 @@ describe("lokijs - integration", ()=>{
 
     const lastChanged = db.watchlist.lastChanged();
 
-    assert.equal(lastChanged, 0);
+    assert.equal(lastChanged, '0');
   });
 
   it("doesn't let to set lastChanged value to a less value than its current value", ()=>{
