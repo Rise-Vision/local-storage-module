@@ -66,7 +66,9 @@ describe("watchlist - unit", () => {
           const message = call.args[0];
           const metaData = call.args[1];
 
-          assert.deepEqual(message, {filePath: metaData.filePath});
+          assert.deepEqual(message, {
+            topic: "WATCH", filePath: metaData.filePath
+          });
           assert.equal(metaData.status, "UNKNOWN");
 
           switch (metaData.filePath) {
@@ -106,6 +108,7 @@ describe("watchlist - unit", () => {
         // just one file was updated
         assert.equal(watch.requestMSUpdate.callCount, 1);
         assert.deepEqual(watch.requestMSUpdate.lastCall.args[0], {
+          topic: "WATCH",
           filePath: "bucket/file1"
         });
         assert.deepEqual(watch.requestMSUpdate.lastCall.args[1], {

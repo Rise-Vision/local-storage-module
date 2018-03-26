@@ -19,7 +19,7 @@ function withUnknownStatus(metaData) {
 }
 
 function refreshUpdatedFile(metaData) {
-  const message = {filePath: metaData.filePath};
+  const message = {topic: "WATCH", filePath: metaData.filePath};
   const updatedMetaData = withUnknownStatus(metaData);
 
   return watch.requestMSUpdate(message, updatedMetaData);

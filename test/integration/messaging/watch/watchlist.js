@@ -115,6 +115,8 @@ describe("watchlist - integration", ()=>{
         commonMessaging.sendToMessagingService.calls.forEach(call =>{
           const message = call.args[0];
 
+          assert.equal(message.topic, "WATCH");
+
           switch (message.filePath) {
             case "bucket/file1": return assert.equal(message.version, "1");
             case "bucket/file2": return assert.equal(message.version, "2");
@@ -156,6 +158,7 @@ describe("watchlist - integration", ()=>{
         // 1 update
         assert.equal(commonMessaging.sendToMessagingService.callCount, 1);
         assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
+          topic: "WATCH",
           filePath: "bucket/file1",
           version: "1"
         });
