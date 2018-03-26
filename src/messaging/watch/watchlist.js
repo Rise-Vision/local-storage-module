@@ -1,6 +1,6 @@
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
-const update = require("../update/update");
+const watch = require("./watch");
 
 function requestWatchlistCompare() {
   const lastChanged = db.watchlist.lastChanged();
@@ -14,10 +14,15 @@ function addNewFile(filePath) {
   log.debug(filePath);
 }
 
-function markUpdatedFileAsStale(metaData, version) {
-  const updatedMetaData = Object.assign({}, metaData, {version});
+function withUnknownStatus(metaData) {
+  return Object.assign({}, metaData, {status: "UNKNOWN"});
+}
 
-  return update.update(updatedMetaData);
+function refreshUpdatedFile(metaData) {
+  const message = {filePath: metaData.filePath};
+  const updatedMetaData = withUnknownStatus(metaData);
+
+  return watch.requestMSUpdate(message, updatedMetaData);
 }
 
 function markMissingFilesAsUnknown(remoteWatchlist) {
@@ -27,7 +32,7 @@ function markMissingFilesAsUnknown(remoteWatchlist) {
     .filter(entry => !remoteWatchlist[entry.filePath])
     .map(entry => {
       const metaData = db.fileMetadata.get(entry.filePath);
-      const updatedMetaData = Object.assign({}, metaData, {status: "UNKNOWN"});
+      const updatedMetaData = withUnknownStatus(metaData);
 
       return db.fileMetadata.put(updatedMetaData);
   }));
@@ -49,7 +54,7 @@ function refresh(watchlist, lastChanged) {
     }
 
     return version === metaData.version ||
-      markUpdatedFileAsStale(metaData, version);
+      refreshUpdatedFile(metaData);
   }))
   .then(() => markMissingFilesAsUnknown(watchlist))
   .then(() => db.watchlist.setLastChanged(lastChanged));
