@@ -116,11 +116,11 @@ describe("lokijs - integration", ()=>{
   });
 
   it("sets the last changed value", ()=>{
-    db.watchlist.setLastChanged(123456);
+    db.watchlist.setLastChanged("123456");
 
     const lastChanged = db.watchlist.lastChanged();
 
-    assert.equal(lastChanged, 123456);
+    assert.equal(lastChanged, "123456");
   });
 
   it("sets the last changed value as undefined", ()=>{
@@ -129,5 +129,16 @@ describe("lokijs - integration", ()=>{
     const lastChanged = db.watchlist.lastChanged();
 
     assert.equal(lastChanged, 0);
+  });
+
+  it("doesn't let to set lastChanged value to a less value than it's current value", ()=>{
+    db.watchlist.setLastChanged("123456");
+    db.watchlist.setLastChanged("12345");
+    db.watchlist.setLastChanged("1234");
+    db.watchlist.setLastChanged("34");
+
+    const lastChanged = db.watchlist.lastChanged();
+
+    assert.equal(lastChanged, "123456");
   });
 });

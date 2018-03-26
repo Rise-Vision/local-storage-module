@@ -273,7 +273,7 @@ describe("DB API: Unit", ()=> {
     it("gets default lastChanged value as 0", ()=> {
       const defaultValue = db.watchlist.lastChanged();
 
-      assert.equal(defaultValue, 0);
+      assert.equal(defaultValue, "0");
     });
 
     it("sets lastChanged value", ()=> {

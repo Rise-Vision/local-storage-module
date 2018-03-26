@@ -190,7 +190,7 @@ module.exports = {
 
       return entry.lastChanged;
     },
-    setLastChanged(lastChanged = 0) {
+    setLastChanged(lastChanged = "0") {
       const previous = module.exports.watchlist.lastChanged();
 
       if (Number(previous) >= Number(lastChanged)) {
