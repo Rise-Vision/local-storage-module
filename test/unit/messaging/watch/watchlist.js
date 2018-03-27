@@ -6,7 +6,7 @@ const simple = require("simple-mock");
 const commonMessaging = require("common-display-module/messaging");
 
 const db = require("../../../../src/db/api");
-const update = require("../../../../src/messaging/update/update");
+const watch = require("../../../../src/messaging/watch/watch");
 const watchlist = require("../../../../src/messaging/watch/watchlist");
 
 global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}, all: () => {}};
@@ -37,7 +37,7 @@ describe("watchlist - unit", () => {
       simple.mock(db.owners, "get").returnWith({owners: ['licensing']});
       simple.mock(db.fileMetadata, "put").resolveWith();
       simple.mock(db.watchlist, "setLastChanged").returnWith();
-      simple.mock(update, "update").resolveWith();
+      simple.mock(watch, "requestMSUpdate").resolveWith();
     });
 
     it("refreshes the watchlist when there are changes", () => {
@@ -61,16 +61,20 @@ describe("watchlist - unit", () => {
       return watchlist.refresh(remoteWatchlist, 123456)
       .then(() => {
         // two files were updated
-        assert.equal(update.update.callCount, 2);
-        update.update.calls.forEach(call =>{
-          const entry = call.args[0];
+        assert.equal(watch.requestMSUpdate.callCount, 2);
+        watch.requestMSUpdate.calls.forEach(call =>{
+          const message = call.args[0];
+          const metaData = call.args[1];
 
-          assert.equal(entry.status, "CURRENT");
+          assert.deepEqual(message, {
+            topic: "WATCH", filePath: metaData.filePath
+          });
+          assert.equal(metaData.status, "UNKNOWN");
 
-          switch (entry.filePath) {
-            case "bucket/file1": return assert.equal(entry.version, "2");
-            case "bucket/file2": return assert.equal(entry.version, "3");
-            default: assert.fail(entry.filePath);
+          switch (metaData.filePath) {
+            case "bucket/file1": return assert.equal(metaData.version, "1");
+            case "bucket/file2": return assert.equal(metaData.version, "2");
+            default: assert.fail(metaData.filePath);
           }
         });
 
@@ -102,9 +106,15 @@ describe("watchlist - unit", () => {
       return watchlist.refresh(remoteWatchlist, 123456)
       .then(() => {
         // just one file was updated
-        assert.equal(update.update.callCount, 1);
-        assert.deepEqual(update.update.lastCall.args[0], {
-          filePath: "bucket/file1", status: "CURRENT", version: "2"
+        assert.equal(watch.requestMSUpdate.callCount, 1);
+        assert.deepEqual(watch.requestMSUpdate.lastCall.args[0], {
+          topic: "WATCH",
+          filePath: "bucket/file1"
+        });
+        assert.deepEqual(watch.requestMSUpdate.lastCall.args[1], {
+          filePath: "bucket/file1",
+          status: "UNKNOWN",
+          version: "1"
         });
 
         // one file was deleted
@@ -138,7 +148,7 @@ describe("watchlist - unit", () => {
 
       return watchlist.refresh(remoteWatchlist, 123456)
       .then(() => {
-        assert(!update.update.called);
+        assert(!watch.requestMSUpdate.called);
         assert(!db.fileMetadata.put.called);
 
         assert.equal(db.watchlist.setLastChanged.callCount, 1);
@@ -160,7 +170,7 @@ describe("watchlist - unit", () => {
 
       return watchlist.refresh({}, 123456)
       .then(() => {
-        assert(!update.update.called);
+        assert(!watch.requestMSUpdate.called);
         assert(!db.fileMetadata.put.called);
         assert(!db.watchlist.setLastChanged.called);
       });

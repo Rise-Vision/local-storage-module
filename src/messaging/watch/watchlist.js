@@ -1,6 +1,6 @@
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
-const update = require("../update/update");
+const watch = require("./watch");
 
 function requestWatchlistCompare() {
   const lastChanged = db.watchlist.lastChanged();
@@ -12,12 +12,19 @@ function requestWatchlistCompare() {
 function addNewFile(filePath) {
   // obtain owner from parent folder, and register the new file, in a following PR
   log.debug(filePath);
+
+  return Promise.resolve();
 }
 
-function markUpdatedFileAsStale(metaData, version) {
-  const updatedMetaData = Object.assign({}, metaData, {version});
+function withUnknownStatus(metaData) {
+  return Object.assign({}, metaData, {status: "UNKNOWN"});
+}
 
-  return update.update(updatedMetaData);
+function refreshUpdatedFile(metaData) {
+  const message = {topic: "WATCH", filePath: metaData.filePath};
+  const updatedMetaData = withUnknownStatus(metaData);
+
+  return watch.requestMSUpdate(message, updatedMetaData);
 }
 
 function markMissingFilesAsUnknown(remoteWatchlist) {
@@ -27,7 +34,7 @@ function markMissingFilesAsUnknown(remoteWatchlist) {
     .filter(entry => !remoteWatchlist[entry.filePath])
     .map(entry => {
       const metaData = db.fileMetadata.get(entry.filePath);
-      const updatedMetaData = Object.assign({}, metaData, {status: "UNKNOWN"});
+      const updatedMetaData = withUnknownStatus(metaData);
 
       return db.fileMetadata.put(updatedMetaData);
   }));
@@ -48,8 +55,8 @@ function refresh(watchlist, lastChanged) {
       return addNewFile(filePath);
     }
 
-    return version === metaData.version ||
-      markUpdatedFileAsStale(metaData, version);
+    return version === metaData.version ?
+      Promise.resolve() : refreshUpdatedFile(metaData);
   }))
   .then(() => markMissingFilesAsUnknown(watchlist))
   .then(() => db.watchlist.setLastChanged(lastChanged));

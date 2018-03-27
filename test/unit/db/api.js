@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint-disable no-magic-numbers */
 
 const assert = require("assert");
 const database = require("../../../src/db/lokijs/database");
@@ -196,6 +197,7 @@ describe("DB API: Unit", ()=> {
       mockCollection = {
         by: simple.stub().returnWith(JSON.parse(JSON.stringify(mockWatchlist))),
         find: simple.stub().returnWith([]),
+        findAndUpdate: simple.stub().returnWith(),
         insert: simple.stub().callFn(entry => entry),
         update: simple.stub().returnWith(),
         remove: simple.stub().returnWith()
@@ -271,7 +273,24 @@ describe("DB API: Unit", ()=> {
     it("gets default lastChanged value as 0", ()=> {
       const defaultValue = db.watchlist.lastChanged();
 
-      assert.equal(defaultValue, 0);
+      assert.equal(defaultValue, "0");
+    });
+
+    it("sets lastChanged value", ()=> {
+      db.watchlist.setLastChanged("1000");
+
+      assert.equal(mockCollection.findAndUpdate.callCount, 1);
+      assert.deepEqual(mockCollection.findAndUpdate.lastCall.args[1]({}), {
+        lastChanged: "1000"
+      });
+    });
+
+    it("doesn't let change lastChanged to a value less that its current one", ()=> {
+      simple.mock(db.watchlist, "lastChanged").returnWith(1000);
+
+      db.watchlist.setLastChanged("100");
+
+      assert(!mockCollection.findAndUpdate.called);
     });
   });
 });

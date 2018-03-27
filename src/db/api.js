@@ -186,12 +186,17 @@ module.exports = {
       const entries = allEntries("last_changed");
 
       const entry = entries.length === 0 ?
-        database.getCollection("last_changed").insert({lastChanged: 0}) : entries[0];
+        database.getCollection("last_changed").insert({lastChanged: '0'}) : entries[0];
 
       return entry.lastChanged;
     },
-    setLastChanged(lastChanged = 0) {
-      module.exports.watchlist.lastChanged();
+    setLastChanged(lastChanged = "0") {
+      const previous = module.exports.watchlist.lastChanged();
+
+      if (Number(previous) >= Number(lastChanged)) {
+        return;
+      }
+
       setAll("last_changed", {lastChanged});
     }
   }
