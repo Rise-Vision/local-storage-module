@@ -109,6 +109,16 @@ describe("lokijs - integration", ()=>{
     assert(db.owners.get(filePath).owners.includes("test-owner"));
   });
 
+  it("puts owners", ()=>{
+    const filePath = "my-bucket/my-file";
+
+    db.owners.put({filePath, owners: ["module1", "module2"]});
+    assert.deepEqual(db.owners.get(filePath).owners, ["module1", "module2"]);
+
+    db.owners.put({filePath, owners: ["module3"]});
+    assert.deepEqual(db.owners.get(filePath).owners, ["module3"]);
+  });
+
   it("returns a default last changed value", ()=>{
     const defaultValue = db.watchlist.lastChanged();
 
