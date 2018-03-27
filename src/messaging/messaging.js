@@ -7,6 +7,8 @@ const watchlist = require("./watch/watchlist");
 const licensing = require("../licensing");
 const util = require("util");
 
+const actions = {ADD: update, UPDATE: update, DELETE: deleteFile};
+
 const logError = (err, userFriendlyMessage = "", filePath) => {
   console.dir(err);
   log.error({
@@ -40,19 +42,15 @@ const handleWatchlistResult = (message) => {
 const handleMSFileUpdate = (message) => {
   if (!message.type) {return;}
 
-  if (message.type.toUpperCase() === "ADD" || message.type.toUpperCase() === "UPDATE") {
-    return update.process(message)
-      .catch((err) => {
-        logError(err, "Handle MSFILEUPDATE Error", message.filePath);
-      });
-  }
+  const type = message.type.toUpperCase();
+  const action = actions[type];
 
-  if (message.type.toUpperCase() === "DELETE") {
-    return deleteFile.process(message)
-      .catch((err) => {
-        logError(err, "Handle DELETE Error", message.filePath);
-      });
-  }
+  if (!action) {return;}
+
+  return action.process(message)
+  .catch(err => {
+    logError(err, `Handle MSFILEUPDATE ${type} Error`, message.filePath);
+  });
 };
 
 const handleClientList = (message) => {
