@@ -9,19 +9,26 @@ module.exports = {
   },
   update(message) {
     const {filePath, version, token} = message;
-    log.file(`Received updated version ${version} for ${filePath}`);
-    log.file(`Token timestamp ${token.data.timestamp}`);
-
-    if (!entry.validate({filePath, version, token})) {
-      return Promise.reject(new Error("Invalid add/update message"));
-    }
 
     return module.exports.updateWatchlistAndMetadata({
       filePath, version, token, status: "STALE"
-    });
+    })
+    .then(() => db.watchlist.setLastChanged(message.watchlistLastChanged));
   },
   process(message) {
-    return module.exports.update(message)
-    .then(() => db.watchlist.setLastChanged(message.watchlistLastChanged));
+    return module.exports.validate(message, "update")
+    .then(module.exports.update);
+  },
+  validate(message, type) {
+    const {filePath, version, token} = message;
+
+    log.file(`Received ${type} version ${version} for ${filePath}`);
+    log.file(`Token timestamp ${token.data.timestamp}`);
+
+    if (!entry.validate(message)) {
+      return Promise.reject(new Error(`Invalid ${type} message`));
+    }
+
+    return Promise.resolve(message);
   }
 };
