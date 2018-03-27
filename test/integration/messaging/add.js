@@ -46,8 +46,6 @@ describe("ADD - integration", ()=>{
   });
 
   function fillDatabase() {
-    db.watchlist.put({filePath: "bucket/directory/", version: "0"});
-
     db.owners.put({filePath: "bucket/directory/", owners: ["licensing", "display-control"]});
   }
 
