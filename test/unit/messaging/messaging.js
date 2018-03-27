@@ -5,12 +5,14 @@ const simple = require("simple-mock");
 const commonMessaging = require("common-display-module/messaging");
 
 const messaging = require("../../../src/messaging/messaging");
+const add = require("../../../src/messaging/add/add");
 const deletion = require("../../../src/messaging/delete/delete");
 const update = require("../../../src/messaging/update/update");
 
 describe("Messaging - unit", ()=> {
   beforeEach(() => {
     simple.mock(commonMessaging, "getClientList").returnWith();
+    simple.mock(add, "process").resolveWith();
     simple.mock(deletion, "process").resolveWith();
     simple.mock(update, "process").resolveWith();
   });
@@ -46,8 +48,8 @@ describe("Messaging - unit", ()=> {
 
         handler(message)
         .then(() => {
-          assert.equal(update.process.callCount, 1);
-          assert.deepEqual(update.process.lastCall.args[0], message);
+          assert.equal(add.process.callCount, 1);
+          assert.deepEqual(add.process.lastCall.args[0], message);
 
           done();
         });

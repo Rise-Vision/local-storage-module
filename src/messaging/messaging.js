@@ -1,5 +1,6 @@
 const commonMessaging = require("common-display-module/messaging");
 const config = require("../../src/config/config");
+const add = require("./add/add");
 const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
@@ -7,7 +8,7 @@ const watchlist = require("./watch/watchlist");
 const licensing = require("../licensing");
 const util = require("util");
 
-const actions = {ADD: update, UPDATE: update, DELETE: deleteFile};
+const actions = {ADD: add, UPDATE: update, DELETE: deleteFile};
 
 const logError = (err, userFriendlyMessage = "", filePath) => {
   console.dir(err);
