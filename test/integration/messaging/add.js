@@ -52,13 +52,62 @@ describe("ADD - integration", ()=>{
   }
 
   it("assigns the owners of the parent directory", () => {
-    const subdirFilePath = "bucket/directory/file1";
+    const filePath = "bucket/directory/file1";
 
     fillDatabase();
 
-    return addition.assignOwnersOfParentDirectory({filePath: subdirFilePath})
+    return addition.assignOwnersOfParentDirectory({filePath})
     .then(() => {
-      const item = db.owners.get(subdirFilePath);
+      const item = db.owners.get(filePath);
+
+      assert(item);
+      assert(item.owners);
+      assert.deepEqual(item.owners, ["licensing", "display-control"]);
+    });
+  });
+
+  it("fails if there is no owner registered for parent directory", () => {
+    const filePath = "bucket/directory/file1";
+
+    return addition.assignOwnersOfParentDirectory({filePath})
+    .then(() => assert.fail())
+    .catch(() => {});
+  });
+
+  it("adds a file to the database", () => {
+    const filePath = "bucket/directory/file1";
+
+    fillDatabase();
+
+    const token = {
+      data: {
+        timestamp: Date.now(),
+        filePath,
+        displayId: "ls-test-id"
+      },
+      hash: "abc123"
+    };
+
+    return addition.process({
+      topic: "msfileupdate",
+      type: "add",
+      filePath,
+      watchlistLastChanged: "123456",
+      version: "test-version-updated",
+      token
+    })
+    .then(() => {
+      const metaData = db.fileMetadata.get(filePath);
+
+      assert(metaData);
+      assert.equal(metaData.version, "test-version-updated");
+      assert.equal(metaData.status, "STALE");
+      assert.deepEqual(metaData.token, token);
+      assert.equal(db.watchlist.lastChanged(), "123456");
+
+      assert.equal(db.watchlist.get(filePath).version, "test-version-updated");
+
+      const item = db.owners.get(filePath);
 
       assert(item);
       assert(item.owners);
