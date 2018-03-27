@@ -143,6 +143,53 @@ describe("DB API: Unit", ()=> {
       assert.deepEqual(db.owners.get(filePath), mockOwners);
     });
 
+    it("calling put() without required entry throws error", ()=>{
+      assert.throws(() => {db.owners.put()}, Error);
+    });
+
+    it("calling put() with entry filePath that doesn't exist in collection should call insert and update", ()=>{
+      mockCollection = {
+        by: simple.stub().returnWith(),
+        insert: simple.stub().callFn(arg => Object.assign({}, arg)),
+        update: simple.stub().returnWith()
+      };
+
+      simple.mock(database, "getCollection").returnWith(mockCollection);
+
+      return db.owners.put({filePath: "path2", owners: ["module1", "module2"]})
+        .then(()=>{
+          assert(mockCollection.insert.called);
+          assert.deepEqual(mockCollection.insert.lastCall.args[0], {
+            filePath: "path2"
+          });
+
+          assert(mockCollection.update.called);
+          assert.deepEqual(mockCollection.update.lastCall.args[0], {
+            filePath: "path2", owners: ["module1", "module2"]
+          });
+        })
+    });
+
+    it("calling put() with entry filePath that exists in collection should call update", ()=>{
+      mockCollection = {
+        by: simple.stub().returnWith({filePath: "path2"}),
+        insert: simple.stub().returnWith(),
+        update: simple.stub().returnWith()
+      };
+
+      simple.mock(database, "getCollection").returnWith(mockCollection);
+
+      return db.owners.put({filePath: "path2", owners: ["module1", "module2"]})
+        .then(()=>{
+          assert(!mockCollection.insert.called);
+
+          assert(mockCollection.update.called);
+          assert.deepEqual(mockCollection.update.lastCall.args[0], {
+            filePath: "path2", owners: ["module1", "module2"]
+          });
+        })
+    });
+
     it("calling addToSet() without required entry throws error", ()=>{
       assert.throws(() => {db.owners.addToSet()}, Error);
     });
