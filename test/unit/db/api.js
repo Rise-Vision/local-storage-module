@@ -156,18 +156,17 @@ describe("DB API: Unit", ()=> {
 
       simple.mock(database, "getCollection").returnWith(mockCollection);
 
-      return db.owners.put({filePath: "path2", owners: ["module1", "module2"]})
-        .then(()=>{
-          assert(mockCollection.insert.called);
-          assert.deepEqual(mockCollection.insert.lastCall.args[0], {
-            filePath: "path2"
-          });
+      db.owners.put({filePath: "path2", owners: ["module1", "module2"]});
 
-          assert(mockCollection.update.called);
-          assert.deepEqual(mockCollection.update.lastCall.args[0], {
-            filePath: "path2", owners: ["module1", "module2"]
-          });
-        })
+      assert(mockCollection.insert.called);
+      assert.deepEqual(mockCollection.insert.lastCall.args[0], {
+        filePath: "path2"
+      });
+
+      assert(mockCollection.update.called);
+      assert.deepEqual(mockCollection.update.lastCall.args[0], {
+        filePath: "path2", owners: ["module1", "module2"]
+      });
     });
 
     it("calling put() with entry filePath that exists in collection should call update", ()=>{
@@ -179,15 +178,14 @@ describe("DB API: Unit", ()=> {
 
       simple.mock(database, "getCollection").returnWith(mockCollection);
 
-      return db.owners.put({filePath: "path2", owners: ["module1", "module2"]})
-        .then(()=>{
-          assert(!mockCollection.insert.called);
+      db.owners.put({filePath: "path2", owners: ["module1", "module2"]});
 
-          assert(mockCollection.update.called);
-          assert.deepEqual(mockCollection.update.lastCall.args[0], {
-            filePath: "path2", owners: ["module1", "module2"]
-          });
-        })
+      assert(!mockCollection.insert.called);
+
+      assert(mockCollection.update.called);
+      assert.deepEqual(mockCollection.update.lastCall.args[0], {
+        filePath: "path2", owners: ["module1", "module2"]
+      });
     });
 
     it("calling addToSet() without required entry throws error", ()=>{

@@ -54,22 +54,19 @@ describe("ADD - integration", ()=>{
 
     fillDatabase();
 
-    return addition.assignOwnersOfParentDirectory({filePath})
-    .then(() => {
-      const item = db.owners.get(filePath);
+    addition.assignOwnersOfParentDirectory({filePath});
 
-      assert(item);
-      assert(item.owners);
-      assert.deepEqual(item.owners, ["licensing", "display-control"]);
-    });
+    const item = db.owners.get(filePath);
+
+    assert(item);
+    assert(item.owners);
+    assert.deepEqual(item.owners, ["licensing", "display-control"]);
   });
 
   it("fails if there is no owner registered for parent directory", () => {
     const filePath = "bucket/directory/file1";
 
-    return addition.assignOwnersOfParentDirectory({filePath})
-    .then(() => assert.fail())
-    .catch(() => {});
+    assert.throws(() => addition.assignOwnersOfParentDirectory({filePath}), Error);
   });
 
   it("adds a file to the database", () => {

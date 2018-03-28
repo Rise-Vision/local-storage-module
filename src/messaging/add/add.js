@@ -10,10 +10,10 @@ module.exports = {
     const folderItem = db.owners.get(folderPath);
 
     if (!folderItem) {
-      return Promise.reject(new Error(`No owners registered for folder ${folderPath}`));
+      throw new Error(`No owners registered for folder ${folderPath}`);
     }
 
-    return db.owners.put({filePath, owners: folderItem.owners});
+    db.owners.put({filePath, owners: folderItem.owners});
   },
   process(message) {
     return update.validate(message, "add")

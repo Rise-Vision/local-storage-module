@@ -85,25 +85,17 @@ module.exports = {
         throw Error("missing params");
       }
 
-      return new Promise((res, rej)=>{
-        const owners = database.getCollection("owners");
+      const owners = database.getCollection("owners");
 
-        let item = owners.by("filePath", entry.filePath);
+      let item = owners.by("filePath", entry.filePath);
 
-        if (!item) {
-          item = owners.insert({filePath: entry.filePath});
-        }
+      if (!item) {
+        item = owners.insert({filePath: entry.filePath});
+      }
 
-        item.owners = entry.owners;
+      item.owners = entry.owners;
 
-        try {
-          owners.update(item);
-        } catch (err) {
-          rej(err);
-        }
-
-        res();
-      });
+      owners.update(item);
     },
     addToSet(entry) {
       if (!entry) {throw Error("missing params");}
