@@ -126,6 +126,70 @@ describe("watchlist - integration", ()=>{
       });
     });
 
+    it("refreshes the watchlist when there are changes and additions", () => {
+      fillDatabase();
+      db.owners.put({filePath: "bucket/dir/", owners: ["licensing"]});
+
+      const remoteWatchlist = {
+        "bucket/file1": "2",
+        "bucket/file2": "3",
+        "bucket/file3": "3",
+        "bucket/dir/file4": "1"
+      };
+
+      return watchlist.refresh(remoteWatchlist, 123456)
+      .then(() => {
+        const metaDataList = db.fileMetadata.allEntries()
+        .map(({filePath, status, version}) =>
+          ({filePath, status, version})
+        );
+
+        assert.deepEqual(metaDataList, [
+          {
+            filePath: "bucket/file1", status: "PENDING", version: "1"
+          },
+          {
+            filePath: "bucket/file2", status: "PENDING", version: "2"
+          },
+          {
+            filePath: "bucket/file3", status: "CURRENT", version: "3"
+          },
+          {
+            filePath: "bucket/dir/file4", status: "PENDING", version: "1"
+          }
+        ]);
+
+        assert.equal(db.watchlist.lastChanged(), 123456);
+
+        {
+          const entry = db.owners.get("bucket/dir/file4");
+          assert(entry);
+          assert.deepEqual(entry.owners, ["licensing"]);
+        }
+
+        {
+          const entry = db.watchlist.get("bucket/dir/file4");
+          assert(entry);
+          assert.deepEqual(entry.version, "1");
+        }
+
+        // 2 updates + 1 insert
+        assert.equal(commonMessaging.sendToMessagingService.callCount, 3);
+        commonMessaging.sendToMessagingService.calls.forEach(call =>{
+          const message = call.args[0];
+
+          assert.equal(message.topic, "WATCH");
+
+          switch (message.filePath) {
+            case "bucket/file1": return assert.equal(message.version, "1");
+            case "bucket/file2": return assert.equal(message.version, "2");
+            case "bucket/dir/file4": return assert.equal(message.version, "1");
+            default: assert.fail(message.filePath);
+          }
+        });
+      });
+    });
+
     it("refreshes the watchlist when there are changes and deletions", () => {
       fillDatabase();
 
