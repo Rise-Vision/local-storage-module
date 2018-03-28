@@ -11,8 +11,8 @@ function requestWatchlistCompare() {
   commonMessaging.sendToMessagingService(msMessage);
 }
 
-function addNewFile(filePath, version) {
-  const metaData = withUnknownStatus({filePath, version});
+function addNewFile(filePath) {
+  const metaData = {filePath, version: '0', status: "UNKNOWN"};
 
   addition.assignOwnersOfParentDirectory(metaData);
 
@@ -56,7 +56,7 @@ function refresh(watchlist, lastChanged) {
     const metaData = db.fileMetadata.get(filePath);
 
     if (!metaData) {
-      return addNewFile(filePath, version);
+      return addNewFile(filePath);
     }
 
     return version === metaData.version ?

@@ -166,7 +166,7 @@ describe("watchlist - unit", () => {
           switch (metaData.filePath) {
             case "bucket/file1": return assert.equal(metaData.version, "1");
             case "bucket/file2": return assert.equal(metaData.version, "2");
-            case "bucket/dir/file4": return assert.equal(metaData.version, "1");
+            case "bucket/dir/file4": return assert.equal(metaData.version, "0");
             default: assert.fail(metaData.filePath);
           }
         });
@@ -181,13 +181,13 @@ describe("watchlist - unit", () => {
         assert.equal(db.fileMetadata.put.callCount, 1);
         assert.deepEqual(db.fileMetadata.put.lastCall.args[0], {
           filePath: "bucket/dir/file4",
-          version: "1",
+          version: "0",
           status: "UNKNOWN"
         });
 
         assert.equal(db.watchlist.put.callCount, 1);
         assert.equal(db.watchlist.put.lastCall.args[0].filePath, "bucket/dir/file4");
-        assert.equal(db.watchlist.put.lastCall.args[0].version, "1");
+        assert.equal(db.watchlist.put.lastCall.args[0].version, "0");
 
         assert.equal(db.watchlist.setLastChanged.callCount, 1);
         assert.equal(db.watchlist.setLastChanged.lastCall.args[0], 123456);

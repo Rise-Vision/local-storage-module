@@ -155,7 +155,7 @@ describe("watchlist - integration", ()=>{
             filePath: "bucket/file3", status: "CURRENT", version: "3"
           },
           {
-            filePath: "bucket/dir/file4", status: "PENDING", version: "1"
+            filePath: "bucket/dir/file4", status: "PENDING", version: "0"
           }
         ]);
 
@@ -170,7 +170,7 @@ describe("watchlist - integration", ()=>{
         {
           const entry = db.watchlist.get("bucket/dir/file4");
           assert(entry);
-          assert.deepEqual(entry.version, "1");
+          assert.deepEqual(entry.version, "0");
         }
 
         // 2 updates + 1 insert
@@ -183,7 +183,7 @@ describe("watchlist - integration", ()=>{
           switch (message.filePath) {
             case "bucket/file1": return assert.equal(message.version, "1");
             case "bucket/file2": return assert.equal(message.version, "2");
-            case "bucket/dir/file4": return assert.equal(message.version, "1");
+            case "bucket/dir/file4": return assert.equal(message.version, "0");
             default: assert.fail(message.filePath);
           }
         });
