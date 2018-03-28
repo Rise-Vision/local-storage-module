@@ -2,7 +2,32 @@ const broadcastIPC = require("../broadcast-ipc");
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const entry = require("./entry");
+const addition = require("../add/add");
 const update = require("../update/update");
+
+function handleFileWatchResult(message) {
+  const {filePath, version, token} = message;
+
+  log.file(`Received version ${version} for ${filePath}`);
+
+  const status = token ? "STALE" : "CURRENT";
+
+  return update.updateWatchlistAndMetadata({filePath, version, status, token})
+  .then(()=>{
+    broadcastIPC.fileUpdate({filePath, status, version});
+  });
+}
+
+function handleFolderWatchResult(message) {
+  const {folderData, watchlistLastChanged} = message;
+
+  return Promise.all(folderData.map(fileData => {
+    addition.assignOwnersOfParentDirectory(fileData);
+
+    return handleFileWatchResult(fileData);
+  }))
+  .then(() => db.watchlist.setLastChanged(watchlistLastChanged));
+}
 
 module.exports = {
   process(message) {
@@ -31,21 +56,15 @@ module.exports = {
     });
   },
   msResult(message) {
-    const {filePath, version, token, error} = message;
-
-    log.file(`Received version ${version} for ${filePath}`);
+    const {filePath, error, folderData} = message;
 
     if (error) {
       broadcastIPC.fileUpdate({filePath, status: "NOEXIST"});
       return Promise.resolve();
     }
 
-    const status = token ? "STALE" : "CURRENT";
-
-    return update.updateWatchlistAndMetadata({filePath, version, status, token})
-    .then(()=>{
-      broadcastIPC.fileUpdate({filePath, status, version});
-    });
+    return folderData ?
+      handleFolderWatchResult(message) : handleFileWatchResult(message);
   },
   requestMSUpdate(message, metaData) {
     const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
