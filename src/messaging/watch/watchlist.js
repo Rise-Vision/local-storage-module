@@ -1,5 +1,7 @@
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
+const addition = require("../add/add");
+const update = require("../update/update");
 const watch = require("./watch");
 
 function requestWatchlistCompare() {
@@ -9,11 +11,13 @@ function requestWatchlistCompare() {
   commonMessaging.sendToMessagingService(msMessage);
 }
 
-function addNewFile(filePath) {
-  // obtain owner from parent folder, and register the new file, in a following PR
-  log.debug(filePath);
+function addNewFile(filePath, version) {
+  const metaData = withUnknownStatus({filePath, version});
 
-  return Promise.resolve();
+  addition.assignOwnersOfParentDirectory(metaData);
+
+  return update.updateWatchlistAndMetadata(metaData)
+  .then(() => refreshUpdatedFile(metaData));
 }
 
 function withUnknownStatus(metaData) {
@@ -52,7 +56,7 @@ function refresh(watchlist, lastChanged) {
     const metaData = db.fileMetadata.get(filePath);
 
     if (!metaData) {
-      return addNewFile(filePath);
+      return addNewFile(filePath, version);
     }
 
     return version === metaData.version ?
