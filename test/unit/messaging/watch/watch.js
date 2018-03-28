@@ -310,7 +310,7 @@ describe("Messaging", ()=>{
     });
 
     it("adds all files returning from a folder watch result", () => {
-      const message = Object.assign({
+      const message = {
         topic: "watch-result",
         msg: "ok",
         folderData: [
@@ -318,7 +318,7 @@ describe("Messaging", ()=>{
           {filePath: "bucket/dir/file2", version: "1", token: {}}
         ],
         watchlistLastChanged: "123456"
-      });
+      };
 
       return messageReceiveHandler(message)
       .then(()=>{
