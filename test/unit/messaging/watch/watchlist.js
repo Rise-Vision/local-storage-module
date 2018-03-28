@@ -171,6 +171,12 @@ describe("watchlist - unit", () => {
           }
         });
 
+        assert.equal(db.owners.put.callCount, 1);
+        assert.deepEqual(db.owners.put.lastCall.args[0], {
+          filePath: "bucket/dir/file4",
+          owners: ["licensing"]
+        });
+
         // addition inserts into metadata and watchlist
         assert.equal(db.fileMetadata.put.callCount, 1);
         assert.deepEqual(db.fileMetadata.put.lastCall.args[0], {
