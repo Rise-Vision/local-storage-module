@@ -80,6 +80,23 @@ module.exports = {
 
       return item;
     },
+    put(entry) {
+      if (!entry || !entry.filePath || !entry.owners) {
+        throw Error("missing params");
+      }
+
+      const owners = database.getCollection("owners");
+
+      let item = owners.by("filePath", entry.filePath);
+
+      if (!item) {
+        item = owners.insert({filePath: entry.filePath});
+      }
+
+      item.owners = entry.owners;
+
+      owners.update(item);
+    },
     addToSet(entry) {
       if (!entry) {throw Error("missing params");}
 

@@ -111,7 +111,7 @@ describe("WATCH: Integration", function() {
         topic: "msfileupdate",
         type: "update",
         filePath,
-        watchlistLastChanged: 123456,
+        watchlistLastChanged: "123456",
         version: "test-version-updated",
         token
       });
@@ -122,7 +122,7 @@ describe("WATCH: Integration", function() {
         assert.equal(api.fileMetadata.get(filePath).version, "test-version-updated");
         assert.equal(api.fileMetadata.get(filePath).status, "STALE");
         assert.deepEqual(api.fileMetadata.get(filePath).token, token);
-        assert.equal(api.watchlist.lastChanged(), 123456);
+        assert.equal(api.watchlist.lastChanged(), "123456");
 
         assert.equal(api.watchlist.get(filePath).version, "test-version-updated");
         done();
@@ -139,7 +139,7 @@ describe("WATCH: Integration", function() {
       commonMessaging.broadcastMessage({
         topic: "msfileupdate",
         type: "delete",
-        watchlistLastChanged: 123458,
+        watchlistLastChanged: "123458",
         filePath
       });
 
@@ -150,12 +150,63 @@ describe("WATCH: Integration", function() {
               assert.equal(message.status, "DELETED");
               assert(!api.fileMetadata.get(filePath));
               assert(!api.watchlist.get(filePath));
-              assert.equal(api.watchlist.lastChanged(), 123458);
+              assert.equal(api.watchlist.lastChanged(), "123458");
 
               res();
             }
           }));
       });
     });
+
+    it("should receive MSFILEUPDATE from MS for an added file to a folder and update DB", function(done) {
+      api.owners.put({
+        filePath: "messaging-service-test-bucket/test-folder/",
+        owners: ["licensing", "display-control"]
+      });
+
+      const addedFilePath = "messaging-service-test-bucket/test-folder/added.file";
+
+      const token = {
+        data: {
+          timestamp: Date.now(),
+          filePath,
+          displayId: "ls-test-id"
+        },
+        hash: "abc123"
+      };
+
+      console.log("Broadcasting message through LM to LS");
+      commonMessaging.broadcastMessage({
+        topic: "msfileupdate",
+        type: "add",
+        filePath: addedFilePath,
+        watchlistLastChanged: "123464",
+        version: "test-version-updated",
+        token
+      });
+
+      const delay = 200;
+
+      setTimeout(()=>{
+        const metaData = api.fileMetadata.get(addedFilePath);
+
+        assert(metaData);
+        assert.equal(metaData.version, "test-version-updated");
+        assert.equal(metaData.status, "STALE");
+        assert.deepEqual(metaData.token, token);
+        assert.equal(api.watchlist.lastChanged(), "123464");
+
+        assert.equal(api.watchlist.get(addedFilePath).version, "test-version-updated");
+
+        const item = api.owners.get(addedFilePath);
+
+        assert(item);
+        assert(item.owners);
+        assert.deepEqual(item.owners, ["licensing", "display-control"]);
+
+        done();
+      }, delay);
+    });
+
   });
 });
