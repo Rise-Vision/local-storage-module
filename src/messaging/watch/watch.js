@@ -19,14 +19,13 @@ function handleFileWatchResult(message) {
 }
 
 function handleFolderWatchResult(message) {
-  const {folderData, watchlistLastChanged} = message;
+  const {folderData} = message;
 
   return Promise.all(folderData.map(fileData => {
     addition.assignOwnersOfParentDirectory(fileData);
 
     return handleFileWatchResult(fileData);
-  }))
-  .then(() => db.watchlist.setLastChanged(watchlistLastChanged));
+  }));
 }
 
 module.exports = {
@@ -56,15 +55,17 @@ module.exports = {
     });
   },
   msResult(message) {
-    const {filePath, error, folderData} = message;
+    const {filePath, error, folderData, watchlistLastChanged} = message;
 
     if (error) {
       broadcastIPC.fileUpdate({filePath, status: "NOEXIST"});
       return Promise.resolve();
     }
 
-    return folderData ?
-      handleFolderWatchResult(message) : handleFileWatchResult(message);
+    const action = folderData ? handleFolderWatchResult : handleFileWatchResult;
+
+    return action(message)
+    .then(() => db.watchlist.setLastChanged(watchlistLastChanged));
   },
   requestMSUpdate(message, metaData) {
     const msMessage = Object.assign({}, message, {version: metaData.version || "0"});

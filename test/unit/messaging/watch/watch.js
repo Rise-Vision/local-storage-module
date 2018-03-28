@@ -1,6 +1,6 @@
 /* eslint-env mocha */
-/* eslint-disable max-statements, no-magic-numbers */
-/* eslint max-lines: ["off"] */
+/* eslint-disable no-magic-numbers */
+
 const messaging = require("../../../../src/messaging/messaging.js");
 const assert = require("assert");
 const db = require("../../../../src/db/api");
@@ -10,7 +10,7 @@ const commonMessaging = require("common-display-module/messaging");
 const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
 const fileController = require("../../../../src/files/file-controller");
 
-describe("Messaging", ()=>{
+describe("Watch - Unit", ()=>{
 
   const mockModuleDir = "rvplayer/modules";
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
@@ -166,7 +166,8 @@ describe("Messaging", ()=>{
     };
     const mockMessage = {
       topic: "watch-result",
-      filePath: testFilePath
+      filePath: testFilePath,
+      watchlistLastChanged: "123456"
     };
 
     beforeEach(()=>{
@@ -213,6 +214,9 @@ describe("Messaging", ()=>{
       return messageReceiveHandler(msg)
         .then(()=>{
           assert.equal(db.fileMetadata.put.lastCall.args[0].status, "CURRENT");
+
+          assert.equal(db.watchlist.setLastChanged.callCount, 1);
+          assert.equal(db.watchlist.setLastChanged.lastCall.args[0], "123456");
         });
     });
 
@@ -222,6 +226,9 @@ describe("Messaging", ()=>{
       return messageReceiveHandler(msg)
         .then(()=>{
           assert.equal(db.fileMetadata.put.lastCall.args[0].status, "STALE");
+
+          assert.equal(db.watchlist.setLastChanged.callCount, 1);
+          assert.equal(db.watchlist.setLastChanged.lastCall.args[0], "123456");
         });
     });
 
@@ -252,6 +259,10 @@ describe("Messaging", ()=>{
             status: "CURRENT",
             version: msg.version
           });
+        })
+        .then(() => {
+          assert.equal(db.watchlist.setLastChanged.callCount, 1);
+          assert.equal(db.watchlist.setLastChanged.lastCall.args[0], "123456");
         });
     });
 
@@ -288,6 +299,10 @@ describe("Messaging", ()=>{
           version: msg.version
         });
       })
+      .then(()=>{
+        assert.equal(db.watchlist.setLastChanged.callCount, 1);
+        assert.equal(db.watchlist.setLastChanged.lastCall.args[0], "123456");
+      })
     });
 
     it("Updates file metadata status as stale after downloading if version has changed", ()=>{
@@ -306,6 +321,9 @@ describe("Messaging", ()=>{
           status: "STALE",
           version: msg.version
         });
+
+        assert.equal(db.watchlist.setLastChanged.callCount, 1);
+        assert.equal(db.watchlist.setLastChanged.lastCall.args[0], "123456");
       });
     });
 
