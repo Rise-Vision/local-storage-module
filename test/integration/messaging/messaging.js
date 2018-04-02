@@ -61,6 +61,10 @@ describe("WATCH: Integration", function() {
       this.timeout(9000); // eslint-disable-line
       const expectedSavedSize = 10;
 
+      api.watchlist.clear();
+      api.fileMetadata.clear();
+      api.owners.clear();
+
       queueOneStaleFileCheck();
 
       return new Promise(res=>{
@@ -111,7 +115,7 @@ describe("WATCH: Integration", function() {
         topic: "msfileupdate",
         type: "update",
         filePath,
-        watchlistLastChanged: "123456",
+        watchlistLastChanged: "2522697262234",
         version: "test-version-updated",
         token
       });
@@ -122,7 +126,7 @@ describe("WATCH: Integration", function() {
         assert.equal(api.fileMetadata.get(filePath).version, "test-version-updated");
         assert.equal(api.fileMetadata.get(filePath).status, "STALE");
         assert.deepEqual(api.fileMetadata.get(filePath).token, token);
-        assert.equal(api.watchlist.lastChanged(), "123456");
+        assert.equal(api.watchlist.lastChanged(), "2522697262234");
 
         assert.equal(api.watchlist.get(filePath).version, "test-version-updated");
         done();
@@ -139,7 +143,7 @@ describe("WATCH: Integration", function() {
       commonMessaging.broadcastMessage({
         topic: "msfileupdate",
         type: "delete",
-        watchlistLastChanged: "123458",
+        watchlistLastChanged: "2522697262234",
         filePath
       });
 
@@ -150,7 +154,7 @@ describe("WATCH: Integration", function() {
               assert.equal(message.status, "DELETED");
               assert(!api.fileMetadata.get(filePath));
               assert(!api.watchlist.get(filePath));
-              assert.equal(api.watchlist.lastChanged(), "123458");
+              assert.equal(api.watchlist.lastChanged(), "2522697262234");
 
               res();
             }
@@ -180,7 +184,7 @@ describe("WATCH: Integration", function() {
         topic: "msfileupdate",
         type: "add",
         filePath: addedFilePath,
-        watchlistLastChanged: "123464",
+        watchlistLastChanged: "2522697262234",
         version: "test-version-updated",
         token
       });
@@ -194,7 +198,7 @@ describe("WATCH: Integration", function() {
         assert.equal(metaData.version, "test-version-updated");
         assert.equal(metaData.status, "STALE");
         assert.deepEqual(metaData.token, token);
-        assert.equal(api.watchlist.lastChanged(), "123464");
+        assert.equal(api.watchlist.lastChanged(), "2522697262234");
 
         assert.equal(api.watchlist.get(addedFilePath).version, "test-version-updated");
 
