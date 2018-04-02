@@ -22,9 +22,8 @@ function handleFolderWatchResult(message) {
   const {folderData} = message;
 
   return Promise.all(folderData.map(fileData => {
-    addition.assignOwnersOfParentDirectory(fileData);
-
-    return handleFileWatchResult(fileData);
+    return addition.assignOwnersOfParentDirectory(fileData)
+    .then(() => handleFileWatchResult(fileData));
   }));
 }
 
