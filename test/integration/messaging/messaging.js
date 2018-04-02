@@ -61,10 +61,6 @@ describe("WATCH: Integration", function() {
       this.timeout(9000); // eslint-disable-line
       const expectedSavedSize = 10;
 
-      api.watchlist.clear();
-      api.fileMetadata.clear();
-      api.owners.clear();
-
       queueOneStaleFileCheck();
 
       return new Promise(res=>{
