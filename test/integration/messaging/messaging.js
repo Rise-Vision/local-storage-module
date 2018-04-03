@@ -10,6 +10,7 @@ const os = require("os");
 const messaging = require("../../../src/messaging/messaging");
 const database = require("../../../src/db/lokijs/database");
 const api = require("../../../src/db/api");
+const ipc = require("node-ipc");
 const localMessagingModule = require("local-messaging-module");
 const path = require("path");
 const {platform} = require("rise-common-electron");
@@ -36,12 +37,15 @@ describe("WATCH: Integration", function() {
       simple.mock(commonConfig, "getModulePath").returnWith(tempModulePath);
       simple.mock(fileSystem, "getCacheDir").returnWith(tempCacheDir);
 
+      ipc.config.id = "lms";
+      ipc.config.retry = 1500;
+
       return platform.mkdirRecursively(tempDBPath)
       .then(()=>platform.mkdirRecursively(tempModulePath))
       .then(()=>platform.mkdirRecursively(tempCacheDir))
       .then(()=>platform.mkdirRecursively(fileSystem.getDownloadDir()))
       .then(()=>platform.mkdirRecursively(fileSystem.getCacheDir()))
-      .then(()=>localMessagingModule.start("ls-test-did", "ls-test-mid"))
+      .then(()=>localMessagingModule.start(ipc, "ls-test-did", "ls-test-mid"))
       .then(()=>database.start(tempDBPath, dbSaveInterval))
       .then(messaging.init);
     });
