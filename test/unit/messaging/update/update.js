@@ -7,6 +7,7 @@ const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const commonMessaging = require("common-display-module/messaging");
+const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
 
 describe("UPDATE - unit", ()=>{
 
@@ -36,7 +37,7 @@ describe("UPDATE - unit", ()=>{
     simple.restore();
   });
 
-  it("updates file(s) in fileMetadata -> updates file(s) in watchlist", ()=>{
+  it("updates file(s) in fileMetadata -> broadcasts FILE UPDATE -> updates file(s) in watchlist", ()=>{
     const msg = {
       topic: "msfileupdate",
       type: "update",
@@ -54,6 +55,8 @@ describe("UPDATE - unit", ()=>{
       }
     };
 
+    simple.mock(broadcastIPC, "fileUpdate");
+
     return messageReceiveHandler(msg)
       .then(()=>{
         assert(db.fileMetadata.put.called);
@@ -72,12 +75,19 @@ describe("UPDATE - unit", ()=>{
           token: msg.token
         });
 
+        assert(broadcastIPC.fileUpdate.called);
+        assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
+          filePath: msg.filePath,
+          status: "STALE",
+          version: msg.version
+        });
+
         assert(db.watchlist.setLastChanged.called);
         assert.equal(db.watchlist.setLastChanged.lastCall.args[0], 123456);
       });
   });
 
-  it("updates file(s) in fileMetadata -> updates file(s) in watchlist even if no watchlistLastChanged ( transitional )", ()=>{
+  it("updates file(s) in fileMetadata -> broadcasts FILE UPDATE -> updates file(s) in watchlist even if no watchlistLastChanged ( transitional )", ()=>{
     const msg = {
       topic: "msfileupdate",
       type: "update",
@@ -94,6 +104,8 @@ describe("UPDATE - unit", ()=>{
       }
     };
 
+    simple.mock(broadcastIPC, "fileUpdate");
+
     return messageReceiveHandler(msg)
       .then(()=>{
         assert(db.fileMetadata.put.called);
@@ -110,6 +122,13 @@ describe("UPDATE - unit", ()=>{
           version: msg.version,
           status: "STALE",
           token: msg.token
+        });
+
+        assert(broadcastIPC.fileUpdate.called);
+        assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], {
+          filePath: msg.filePath,
+          status: "STALE",
+          version: msg.version
         });
 
         assert(db.watchlist.setLastChanged.called);
