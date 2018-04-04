@@ -1,5 +1,6 @@
 const db = require("../../db/api");
 const entry = require("./entry");
+const broadcastIPC = require("../broadcast-ipc");
 
 module.exports = {
   updateWatchlistAndMetadata(dbEntry) {
@@ -12,6 +13,9 @@ module.exports = {
 
     return module.exports.updateWatchlistAndMetadata({
       filePath, version, token, status: "STALE"
+    })
+    .then(()=>{
+      broadcastIPC.fileUpdate({filePath, status: "STALE", version});
     })
     .then(() => db.watchlist.setLastChanged(message.watchlistLastChanged));
   },
