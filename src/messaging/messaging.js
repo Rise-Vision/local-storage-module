@@ -58,14 +58,6 @@ const handleClientList = (message) => {
   return licensing.checkIfLicensingIsAvailable(message);
 };
 
-const handleLicensingUpdate = (message) => {
-  return licensing.updateLicensingData(message);
-};
-
-const handleLicensingRequest = () => {
-  return licensing.sendLicensing();
-};
-
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
@@ -73,12 +65,8 @@ const messageReceiveHandler = (message) => {
   switch (message.topic.toUpperCase()) {
     case "CLIENT-LIST":
       return handleClientList(message);
-    case "LICENSING-UPDATE":
-      return handleLicensingUpdate(message);
     case "MSFILEUPDATE":
       return handleMSFileUpdate(message);
-    case "STORAGE-LICENSING-REQUEST":
-      return handleLicensingRequest(message);
     case "WATCH":
       return handleWatch(message);
     case "WATCH-RESULT":
