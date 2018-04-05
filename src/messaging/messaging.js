@@ -5,7 +5,6 @@ const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
 const watchlist = require("./watch/watchlist");
-const licensing = require("../licensing");
 const util = require("util");
 
 const actions = {ADD: add, UPDATE: update, DELETE: deleteFile};
@@ -54,31 +53,13 @@ const handleMSFileUpdate = (message) => {
   });
 };
 
-const handleClientList = (message) => {
-  return licensing.checkIfLicensingIsAvailable(message);
-};
-
-const handleLicensingUpdate = (message) => {
-  return licensing.updateLicensingData(message);
-};
-
-const handleLicensingRequest = () => {
-  return licensing.sendLicensing();
-};
-
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
 
   switch (message.topic.toUpperCase()) {
-    case "CLIENT-LIST":
-      return handleClientList(message);
-    case "LICENSING-UPDATE":
-      return handleLicensingUpdate(message);
     case "MSFILEUPDATE":
       return handleMSFileUpdate(message);
-    case "STORAGE-LICENSING-REQUEST":
-      return handleLicensingRequest(message);
     case "WATCH":
       return handleWatch(message);
     case "WATCH-RESULT":
@@ -94,7 +75,6 @@ module.exports = {
   init() {
     return commonMessaging.receiveMessages(config.moduleName).then((receiver) => {
       receiver.on("message", messageReceiveHandler);
-      commonMessaging.getClientList(config.moduleName);
     });
   }
 };
