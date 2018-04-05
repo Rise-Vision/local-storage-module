@@ -147,19 +147,23 @@ describe("WATCH: Integration", function() {
         filePath
       });
 
-      return new Promise(res=>{
-        commonMessaging.receiveMessages("test")
-          .then(receiver=>receiver.on("message", (message)=>{
-            if (message.topic === "FILE-UPDATE") {
-              assert.equal(message.status, "DELETED");
-              assert(!api.fileMetadata.get(filePath));
-              assert(!api.watchlist.get(filePath));
-              assert.equal(api.watchlist.lastChanged(), "2522697262234");
+      const delay = 200;
 
-              res();
-            }
-          }));
-      });
+      setTimeout(()=>{
+        return new Promise(res=>{
+          commonMessaging.receiveMessages("test")
+            .then(receiver=>receiver.on("message", (message)=>{
+              if (message.topic === "FILE-UPDATE") {
+                assert.equal(message.status, "DELETED");
+                assert(!api.fileMetadata.get(filePath));
+                assert(!api.watchlist.get(filePath));
+                assert.equal(api.watchlist.lastChanged(), "2522697262234");
+
+                res();
+              }
+            }));
+        });
+      }, delay);
     });
 
     it("should receive MSFILEUPDATE from MS for an added file to a folder and update DB", function(done) {
