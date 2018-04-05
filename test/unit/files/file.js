@@ -58,7 +58,13 @@ describe("File", ()=>{
     });
 
     it("should attempt request 3 times before broadcasting FILE-ERROR when request error occurs", ()=>{
-      simple.mock(request, "get").rejectWith();
+      simple.mock(request, "get").returnWith({
+        pause: () => {},
+        on: (type, action) => {
+          return type === 'error' ? action() : null;
+        }
+      });
+
       simple.mock(broadcastIPC, "broadcast");
 
       return file.request(testFilePath, testSignedURL)
