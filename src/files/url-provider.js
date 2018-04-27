@@ -1,7 +1,7 @@
-const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
 const request = require("request-promise-native");
 const commonConfig = require("common-display-module");
 const util = require("util");
+const broadcastIPC = require("../../src/messaging/broadcast-ipc");
 
 const SUCCESS_CODE = 200;
 
@@ -29,19 +29,20 @@ const validateToken = (token) => {
   return Promise.resolve(token);
 };
 
-const handleResponse = (response) => {
+const handleResponse = (response, displayId) => {
   if (response.statusCode !== SUCCESS_CODE) {
     return Promise.reject(new Error(`Invalid response with status code ${response.statusCode}`));
   }
-
-  return response.body;
+  const url = response.body;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}displayId=${displayId}`;
 };
 
 module.exports = {
   getURL(token) {
     return validateToken(token)
       .then(sendMessage)
-      .then(handleResponse)
+      .then(response => handleResponse(response, token.data.displayId))
       .catch(err=>{
         broadcastIPC.fileError({
           filePath: token.data.filePath,

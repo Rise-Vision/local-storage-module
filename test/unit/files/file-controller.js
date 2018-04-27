@@ -76,7 +76,7 @@ describe("File Controller", ()=>{
       .catch((err) => {
         assert(err);
         assert.equal(file.request.lastCall.args[0], testFilePath);
-        assert.equal(file.request.lastCall.args[1], "test-signed-url");
+        assert.equal(file.request.lastCall.args[1], "test-signed-url?displayId=test-display");
         assert(!file.writeToDisk.called);
       });
     });

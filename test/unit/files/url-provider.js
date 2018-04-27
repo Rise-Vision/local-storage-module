@@ -45,12 +45,12 @@ describe("URL Provider", ()=>{
     });
 
     it("should return successful signed URL", ()=>{
-      simple.mock(request, "post").resolveWith({statusCode: 200, body: "test-signed-url"});
+      simple.mock(request, "post").resolveWith({statusCode: 200, body: "test-signed-url?signature=qwerty"});
 
       return urlProvider.getURL(testToken)
         .then(url=>{
           assert(url);
-          assert.equal(url, "test-signed-url");
+          assert.equal(url, "test-signed-url?signature=qwerty&displayId=test-display-id");
         })
     });
 
