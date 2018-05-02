@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const path = require("path");
 const platform = require("rise-common-electron").platform;
 const fs = require("fs-extra");
+const fileUrl = require("file-url");
 const config = require("../../src/config/config");
 
 const DIR_CACHE = "cache";
@@ -47,6 +48,11 @@ module.exports = {
     const cacheDir = module.exports.getCacheDir();
 
     return path.join(cacheDir, fileName);
+  },
+  getLocalFileUrl(filePath, version = "") {
+    const pathInCache = module.exports.getPathInCache(filePath, version);
+
+    return fileUrl(pathInCache, {resolve: false});
   },
   isProcessing(fileName) {
     return processingList.has(fileName);
