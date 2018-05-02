@@ -29,6 +29,7 @@ describe("Broadcast IPC", ()=> {
       filePath: "test-file-path",
       version: "12345",
       ospath: "fake-os-path",
+      osurl: "file:///fake-os-path",
       status: "test-status"
     });
   });
@@ -45,6 +46,7 @@ describe("Broadcast IPC", ()=> {
       filePath: "test-file-path",
       version: "12345",
       ospath: "fake-os-path",
+      osurl: "file:///fake-os-path",
       status: "test-status"
     });
   });

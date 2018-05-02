@@ -20,7 +20,10 @@ module.exports = {
   },
   fileUpdate(data = {}) {
     log.file(`Broadcasting ${data.status} FILE-UPDATE for ${data.filePath}`);
-    const ospath = {ospath: fileSystem.getPathInCache(data.filePath, data.version)};
+    const ospath = {
+      ospath: fileSystem.getPathInCache(data.filePath, data.version),
+      osurl: fileSystem.getLocalFileUrl(data.filePath, data.version)
+    };
     const messageObj = Object.assign({}, data, data.version ? ospath : {});
     module.exports.broadcast("FILE-UPDATE", messageObj);
   },

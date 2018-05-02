@@ -39,6 +39,12 @@ describe("File System", ()=> {
     });
   });
 
+  describe("getLocalFileUrl", () => {
+    it("should provide local file url for a file in cache given a gcs filePath", ()=> {
+      assert.equal(fileSystem.getLocalFileUrl(testFilePath), `file:///${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`);
+    });
+  });
+
   describe("getFileName", () => {
     it("should return an empty string if no file path provided", () => {
       assert.equal(fileSystem.getFileName(), "");
