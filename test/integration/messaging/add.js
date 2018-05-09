@@ -55,7 +55,9 @@ describe("ADD - integration", ()=>{
     fillDatabase();
 
     return addition.assignOwnersOfParentDirectory({filePath})
-    .then(() => {
+    .then(assigned => {
+      assert(assigned);
+
       const item = db.owners.get(filePath);
 
       assert(item);
@@ -64,11 +66,11 @@ describe("ADD - integration", ()=>{
     });
   });
 
-  it("fails if there is no owner registered for parent directory", () => {
+  it("does not fail if there is no owner registered for parent directory", () => {
     const filePath = "bucket/directory/file1";
 
     return addition.assignOwnersOfParentDirectory({filePath})
-    .then(() => assert.fail(), () => {});
+    .then(assigned => assert(!assigned));
   });
 
   it("adds a file to the database", () => {

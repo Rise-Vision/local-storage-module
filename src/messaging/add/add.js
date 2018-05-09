@@ -10,15 +10,17 @@ module.exports = {
     const folderItem = db.owners.get(folderPath);
 
     if (!folderItem) {
-      return Promise.reject(new Error(`No owners registered for folder ${folderPath}`));
+      // log warning: No owners registered for folder ${folderPath}
+
+      return Promise.resolve(false);
     }
 
     db.owners.put({filePath, owners: folderItem.owners});
-    return Promise.resolve();
+    return Promise.resolve(true);
   },
   process(message) {
     return update.validate(message, "add")
     .then(module.exports.assignOwnersOfParentDirectory)
-    .then(() => update.update(message));
+    .then(assigned => assigned && update.update(message));
   }
 };
