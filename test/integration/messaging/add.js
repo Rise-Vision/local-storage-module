@@ -54,7 +54,7 @@ describe("ADD - integration", ()=>{
 
     fillDatabase();
 
-    return addition.assignOwnersOfParentDirectory('MSFILEUPDATE', {filePath})
+    return addition.assignOwnersOfParentDirectory({filePath}, 'MSFILEUPDATE')
     .then(assigned => {
       assert(assigned);
 
@@ -69,7 +69,7 @@ describe("ADD - integration", ()=>{
   it("does not fail if there is no owner registered for parent directory", () => {
     const filePath = "bucket/directory/file1";
 
-    return addition.assignOwnersOfParentDirectory('MSFILEUPDATE', {filePath})
+    return addition.assignOwnersOfParentDirectory({filePath}, 'MSFILEUPDATE')
     .then(assigned => assert(!assigned));
   });
 

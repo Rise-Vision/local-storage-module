@@ -3,7 +3,7 @@ const db = require("../../db/api");
 const update = require("../update/update");
 
 module.exports = {
-  assignOwnersOfParentDirectory(topic, message) {
+  assignOwnersOfParentDirectory(message, topic) {
     const {filePath} = message;
 
     const folderPath = `${dirname(filePath)}/`;
@@ -20,7 +20,7 @@ module.exports = {
   },
   process(message) {
     return update.validate(message, "add")
-    .then(() => module.exports.assignOwnersOfParentDirectory('MSFILEUPDATE', message))
+    .then(() => module.exports.assignOwnersOfParentDirectory(message, 'MSFILEUPDATE'))
     .then(assigned => assigned && update.update(message));
   }
 };

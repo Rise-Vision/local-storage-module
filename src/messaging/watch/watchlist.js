@@ -14,7 +14,7 @@ function requestWatchlistCompare() {
 function addNewFile(filePath) {
   const metaData = {filePath, version: '0', status: "UNKNOWN"};
 
-  return addition.assignOwnersOfParentDirectory('WATCHLIST-RESULT', metaData)
+  return addition.assignOwnersOfParentDirectory(metaData, 'WATCHLIST-RESULT')
   .then(assigned => {
      if (assigned) {
        return update.updateWatchlistAndMetadata(metaData)
