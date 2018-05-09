@@ -3,14 +3,14 @@ const db = require("../../db/api");
 const update = require("../update/update");
 
 module.exports = {
-  assignOwnersOfParentDirectory(message) {
+  assignOwnersOfParentDirectory(topic, message) {
     const {filePath} = message;
 
     const folderPath = `${dirname(filePath)}/`;
     const folderItem = db.owners.get(folderPath);
 
     if (!folderItem) {
-      log.warning(`No owners registered for folder ${folderPath}`);
+      log.warning(`No owners registered for folder ${folderPath} | topic: ${topic}`);
 
       return Promise.resolve(false);
     }
@@ -20,7 +20,7 @@ module.exports = {
   },
   process(message) {
     return update.validate(message, "add")
-    .then(module.exports.assignOwnersOfParentDirectory)
+    .then(() => module.exports.assignOwnersOfParentDirectory('MSFILEUPDATE', message))
     .then(assigned => assigned && update.update(message));
   }
 };
