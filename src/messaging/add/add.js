@@ -10,7 +10,7 @@ module.exports = {
     const folderItem = db.owners.get(folderPath);
 
     if (!folderItem) {
-      // log warning: No owners registered for folder ${folderPath}
+      log.warning(`No owners registered for folder ${folderPath}`);
 
       return Promise.resolve(false);
     }

@@ -18,7 +18,7 @@ const dbSaveInterval = 5;
 const fileStat = require("util").promisify(require("fs").stat);
 const fileSystem = require("../../../src/files/file-system");
 
-global.log = {all: ()=>{}, file: ()=>{}, debug: ()=>{}, error: ()=>{}};
+global.log = {all: ()=>{}, file: ()=>{}, debug: ()=>{}, error: ()=>{}, warning: ()=>{}};
 
 describe("WATCH: Integration", function() {
   const tmpdir = os.tmpdir();
