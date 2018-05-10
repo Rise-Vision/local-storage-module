@@ -47,6 +47,6 @@
     "lokijs": "^1.5.1",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
-    "rise-common-electron": "git://github.com/Rise-Vision/rise-common-electron.git#v2.2.5"
+    "rise-common-electron": "git://github.com/Rise-Vision/rise-common-electron.git#v2.2.9"
   }
 }

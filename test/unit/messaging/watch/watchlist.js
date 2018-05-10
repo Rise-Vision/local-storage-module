@@ -9,7 +9,7 @@ const db = require("../../../../src/db/api");
 const watch = require("../../../../src/messaging/watch/watch");
 const watchlist = require("../../../../src/messaging/watch/watchlist");
 
-global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}, all: () => {}};
+global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}, warning: ()=>{}, all: () => {}};
 
 describe("watchlist - unit", () => {
 
