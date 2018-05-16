@@ -4,3 +4,4 @@ private-keys/
 build/
 *.zip
 npm-debug.log
+.DS_Store
