@@ -10,6 +10,7 @@ const DIR_CACHE = "cache";
 const DIR_DOWNLOAD = "download";
 
 const halfGB = 512 * 1024 * 1024; // eslint-disable-line no-magic-numbers
+const CACHE_CLEANUP_THRESHOLD = 1.8 * halfGB; // eslint-disable-line no-magic-numbers
 
 const processingList = new Set();
 let downloadTotalSize = 0;
@@ -99,6 +100,34 @@ module.exports = {
   },
   createDir(dir) {
     return fs.ensureDir(dir);
+  },
+  getCacheDirEntries() {
+    const cacheDir = module.exports.getCacheDir();
+    return fs.readdir(cacheDir)
+    .then(names => names.map(it => path.join(cacheDir, it)))
+    .then(paths => {
+      return Promise.all(paths.map(it => fs.stat(it))).then(allStats => {
+        return allStats
+        .filter(it => it.isFile())
+        .sort((one, other) => one.atimeMs - other.atimeMs)
+        .map((stats, index) => ({path: paths[index], stats}));
+      });
+    });
+  },
+  clearLeastRecentlyUsedFiles() {
+    return module.exports.getAvailableSpace().then(diskSpace => {
+      if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
+        return Promise.resolve();
+      }
+      return module.exports.getCacheDirEntries().then(entries => {
+        if (entries.length === 0) {
+          return Promise.resolve();
+        }
+        const leastRecentlyUsed = entries[0];
+        return fs.remove(leastRecentlyUsed.path).then(() => {
+          return module.exports.clearLeastRecentlyUsedFiles();
+        });
+      });
+    });
   }
-
 };

@@ -1,4 +1,3 @@
-// const fileController = require("./file-controller");
 const db = require("../db/api");
 const queueCheckInterval = 5000;
 const fileController = require("./file-controller");

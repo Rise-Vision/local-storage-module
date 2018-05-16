@@ -3,9 +3,11 @@
 const assert = require("assert");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
-const fileSystem = require("../../../src/files/file-system");
 const mockfs = require("mock-fs");
+const fs = require("fs-extra");
 const platform = require("rise-common-electron").platform;
+
+const fileSystem = require("../../../src/files/file-system");
 
 describe("File System", ()=> {
 
@@ -173,6 +175,83 @@ describe("File System", ()=> {
       return fileSystem.cleanupDownloadFolder(testFilePath)
         .then(() => {
           assert(!platform.fileExists(`${expectedDataPath}download/e498da09daba1d6bb3c6e5c0f0966784`));
+        });
+    });
+
+  });
+
+  describe("clearLeastRecentlyUsedFiles", () => {
+
+    beforeEach(()=>{
+      mockfs.restore();
+    });
+
+    it("should not delete anything if it available space is greather than threshold", () => {
+      const tenGB = 10 * 1024 * 1024 * 1024;
+      simple.mock(platform, "getFreeDiskSpace").resolveWith(tenGB);
+      mockfs({
+        [`${expectedDataPath}cache`]: {
+          "e498da09daba1d6bb3c6e5c0f0966784": "some content"
+        }
+      });
+
+      assert.ok(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+
+      return fileSystem.clearLeastRecentlyUsedFiles()
+        .then(() => {
+          assert.ok(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+        });
+    });
+
+    it("should not delete anything if there is no file to be deleted", () => {
+      const halfGB = 512 * 1024 * 1024;
+      simple.mock(platform, "getFreeDiskSpace").resolveWith(halfGB);
+      simple.mock(fs, "remove").callOriginal();
+      mockfs({
+        [`${expectedDataPath}cache`]: {}
+      });
+
+      return fileSystem.clearLeastRecentlyUsedFiles()
+        .then(() => {
+          assert.equal(fs.remove.called, false);
+        });
+    });
+
+    it("should delete least recently used file until available space is greather than threshold", () => {
+      simple.mock(fs, "remove").callOriginal();
+
+      const halfGB = 512 * 1024 * 1024;
+      const oneGB = 2 * halfGB;
+      simple.mock(platform, "getFreeDiskSpace")
+        .resolveWith(halfGB)
+        .resolveWith(oneGB);
+
+      const now = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(now.getFullYear() - 1);
+
+      const oneMB = 1024 * 1024;
+      mockfs({
+        [`${expectedDataPath}cache`]: {
+          "e498da09daba1d6bb3c6e5c0f0966784": mockfs.file({
+            content: "I'm very recent",
+            atime: now,
+            size: oneMB
+          }),
+          "e498da09daba1d6bb3c6ab23kdbasf84": mockfs.file({
+            content: "I'm old",
+            atime: oneYearAgo,
+            size: oneGB
+          })
+        }
+      });
+
+      return fileSystem.clearLeastRecentlyUsedFiles()
+        .then(() => {
+          assert.equal(fs.remove.callCount, 1);
+          assert.equal(fs.remove.lastCall.args, `${expectedDataPath}cache/e498da09daba1d6bb3c6ab23kdbasf84`);
+          assert.ok(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
+          assert.equal(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6ab23kdbasf84`), false);
         });
     });
 
