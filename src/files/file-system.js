@@ -104,9 +104,10 @@ module.exports = {
   getCacheDirEntries() {
     const cacheDir = module.exports.getCacheDir();
     return fs.readdir(cacheDir)
-    .then(names => names.map(it => path.join(cacheDir, it)))
+    .then(names => names.map(name => path.join(cacheDir, name)))
     .then(paths => {
-      return Promise.all(paths.map(it => fs.stat(it))).then(allStats => {
+      const promises = paths.map(file => fs.stat(file));
+      return Promise.all(promises).then(allStats => {
         return allStats
         .filter(it => it.isFile())
         .sort((one, other) => one.atimeMs - other.atimeMs)
@@ -117,12 +118,12 @@ module.exports = {
   clearLeastRecentlyUsedFiles() {
     return module.exports.getAvailableSpace().then(diskSpace => {
       if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
-        log.file(`not cleaning cache files, diskSpace greater than threshold. diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`);
+        log.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space bigger than threshold');
         return Promise.resolve();
       }
       return module.exports.getCacheDirEntries().then(entries => {
         if (entries.length === 0) {
-          log.file(`not cleaning cache files, no entries to remove`);
+          log.file('not cleaning cache files, no entries to remove');
           return Promise.resolve();
         }
         const leastRecentlyUsed = entries[0];
