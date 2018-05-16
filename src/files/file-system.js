@@ -117,13 +117,16 @@ module.exports = {
   clearLeastRecentlyUsedFiles() {
     return module.exports.getAvailableSpace().then(diskSpace => {
       if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
+        log.file(`not cleaning cache files, diskSpace greater than threshold. diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`);
         return Promise.resolve();
       }
       return module.exports.getCacheDirEntries().then(entries => {
         if (entries.length === 0) {
+          log.file(`not cleaning cache files, no entries to remove`);
           return Promise.resolve();
         }
         const leastRecentlyUsed = entries[0];
+        log.file(`removing least recently used file: ${leastRecentlyUsed.path} ${JSON.stringify(leastRecentlyUsed.stats)}`);
         return fs.remove(leastRecentlyUsed.path).then(() => {
           return module.exports.clearLeastRecentlyUsedFiles();
         });
