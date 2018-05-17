@@ -12,6 +12,13 @@ const util = require("util");
 
 global.log = require("rise-common-electron").logger(preventBQLog ? null : externalLogger, modulePath, config.moduleName);
 
+function logError(err) {
+  log.error({
+    event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
+    version: config.getModuleVersion()
+  }, null, config.bqTableName);
+}
+
 const initialize = () => {
   return commonConfig.getDisplayId()
   .then(displayId=>{
@@ -27,7 +34,10 @@ const initialize = () => {
   })
   .then(fileSystem.cleanupDownloadFolder)
   .then(()=>fileSystem.createDir(fileSystem.getDownloadDir()))
-  .then(()=>fileSystem.createDir(fileSystem.getCacheDir()));
+  .then(()=>fileSystem.createDir(fileSystem.getCacheDir()))
+  .then(()=> {
+    return fileSystem.clearLeastRecentlyUsedFiles().catch(logError);
+  });
 };
 
 initialize()
@@ -42,9 +52,4 @@ initialize()
       log.all("started", {version}, null, config.bqTableName);
     }, config.initialLogDelay);
   })
-  .catch((err)=>{
-    log.error({
-      event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
-      version: config.getModuleVersion()
-    }, null, config.bqTableName);
-  });
+  .catch(logError);

@@ -10,6 +10,7 @@ const DIR_CACHE = "cache";
 const DIR_DOWNLOAD = "download";
 
 const halfGB = 512 * 1024 * 1024; // eslint-disable-line no-magic-numbers
+const CACHE_CLEANUP_THRESHOLD = 1.8 * halfGB; // eslint-disable-line no-magic-numbers
 
 const processingList = new Set();
 let downloadTotalSize = 0;
@@ -99,6 +100,37 @@ module.exports = {
   },
   createDir(dir) {
     return fs.ensureDir(dir);
+  },
+  getCacheDirEntries() {
+    const cacheDir = module.exports.getCacheDir();
+    return fs.readdir(cacheDir)
+    .then(names => names.map(name => path.join(cacheDir, name)))
+    .then(paths => {
+      const promises = paths.map(file => fs.stat(file).then(stats => ({path: file, stats})));
+      return Promise.all(promises).then(entries => {
+        return entries
+        .filter(entry => entry.stats.isFile())
+        .sort((one, other) => one.stats.atimeMs - other.stats.atimeMs);
+      });
+    });
+  },
+  clearLeastRecentlyUsedFiles() {
+    return module.exports.getAvailableSpace().then(diskSpace => {
+      if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
+        log.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space bigger than threshold');
+        return Promise.resolve();
+      }
+      return module.exports.getCacheDirEntries().then(entries => {
+        if (entries.length === 0) {
+          log.file('not cleaning cache files, no entries to remove');
+          return Promise.resolve();
+        }
+        const leastRecentlyUsed = entries[0];
+        log.file(`removing least recently used file: ${leastRecentlyUsed.path} ${JSON.stringify(leastRecentlyUsed.stats)}`);
+        return fs.remove(leastRecentlyUsed.path).then(() => {
+          return module.exports.clearLeastRecentlyUsedFiles();
+        });
+      });
+    });
   }
-
 };
