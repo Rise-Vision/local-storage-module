@@ -106,12 +106,11 @@ module.exports = {
     return fs.readdir(cacheDir)
     .then(names => names.map(name => path.join(cacheDir, name)))
     .then(paths => {
-      const promises = paths.map(file => fs.stat(file));
-      return Promise.all(promises).then(allStats => {
-        return allStats
-        .filter(it => it.isFile())
-        .sort((one, other) => one.atimeMs - other.atimeMs)
-        .map((stats, index) => ({path: paths[index], stats}));
+      const promises = paths.map(file => fs.stat(file).then(stats => ({path: file, stats})));
+      return Promise.all(promises).then(entries => {
+        return entries
+        .filter(entry => entry.stats.isFile())
+        .sort((one, other) => one.stats.atimeMs - other.stats.atimeMs);
       });
     });
   },
