@@ -227,21 +227,38 @@ describe("File System", ()=> {
         .resolveWith(oneGB);
 
       const now = new Date();
+
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(now.getFullYear() - 1);
+
+      const lastMonth = new Date();
+      lastMonth.setMonth(now.getMonth() - 1);
+
+      const oneHourAgo = new Date();
+      oneHourAgo.setHours(now.getHours() - 1);
 
       const oneMB = 1024 * 1024;
       mockfs({
         [`${expectedDataPath}cache`]: {
-          "e498da09daba1d6bb3c6e5c0f0966784": mockfs.file({
-            content: "I'm very recent",
+          "a498da09daba1d6bb3c6e5c0f0966784": mockfs.file({
+            content: "I'm very new",
             atime: now,
             size: oneMB
           }),
-          "e498da09daba1d6bb3c6ab23kdbasf84": mockfs.file({
+          "c498da09daba1d6bb3c6ab23kdbasf84": mockfs.file({
+            content: "I'm not too old",
+            atime: lastMonth,
+            size: oneMB
+          }),
+          "b498da09daba1d6bb3c6ab23kdbasf84": mockfs.file({
             content: "I'm old",
             atime: oneYearAgo,
             size: oneGB
+          }),
+          "d498da09daba1d6bb3c6ab23kdbasf84": mockfs.file({
+            content: "I'm new",
+            atime: oneHourAgo,
+            size: oneMB
           })
         }
       });
@@ -249,9 +266,9 @@ describe("File System", ()=> {
       return fileSystem.clearLeastRecentlyUsedFiles()
         .then(() => {
           assert.equal(fs.remove.callCount, 1);
-          assert.equal(fs.remove.lastCall.args, `${expectedDataPath}cache/e498da09daba1d6bb3c6ab23kdbasf84`);
-          assert.ok(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6e5c0f0966784`));
-          assert.equal(platform.fileExists(`${expectedDataPath}cache/e498da09daba1d6bb3c6ab23kdbasf84`), false);
+          assert.equal(fs.remove.lastCall.args, `${expectedDataPath}cache/b498da09daba1d6bb3c6ab23kdbasf84`);
+          assert.ok(platform.fileExists(`${expectedDataPath}cache/a498da09daba1d6bb3c6e5c0f0966784`));
+          assert.equal(platform.fileExists(`${expectedDataPath}cache/b498da09daba1d6bb3c6ab23kdbasf84`), false);
         });
     });
 
