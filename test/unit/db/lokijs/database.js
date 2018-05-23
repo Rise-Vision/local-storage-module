@@ -32,6 +32,7 @@ describe("lokijs", () => {
 
   it("should remove files not cached from metadata when started", ()=>{
     simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
+    simple.mock(fileSystem, "readCacheDir").resolveWith([]);
 
     return mockPersistedMetadata([{filePath: 'any', version: 'any', status: 'CURRENT'}])
     .then(() => database.start())
@@ -43,6 +44,7 @@ describe("lokijs", () => {
 
   it("should not remove non current files from metadata when started", ()=>{
     simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
+    simple.mock(fileSystem, "readCacheDir").resolveWith([]);
 
     const mockedMetadata = [
       {filePath: 'current', version: 'any', status: 'CURRENT'},
@@ -66,11 +68,10 @@ describe("lokijs", () => {
       {filePath: 'notInCache', version: 'any', status: 'CURRENT'}
     ];
 
+    simple.mock(fileSystem, "readCacheDir").resolveWith([fileSystem.getPathInCache('cached', 'any')]);
+
     return mockPersistedMetadata(mockedMetadata)
-    .then(() => {
-      simple.mock(fileSystem, "isNotCached").returnWith(false).returnWith(true);
-      return database.start()
-    })
+    .then(() => database.start())
     .then(() => {
       const metadata = database.getCollection("metadata").find();
       assert.equal(metadata.length, 1);

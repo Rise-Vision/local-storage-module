@@ -46,12 +46,18 @@ function initLokijs(dirPath, saveInterval) {
 function syncCacheMetadataWithFileSystem() {
   const metadata = db.getCollection("metadata");
 
-  metadata.find({status: "CURRENT"})
-    .filter(entry => fileSystem.isNotCached(entry.filePath, entry.version))
+  return fileSystem.readCacheDir().then(cached => {
+    metadata.find({status: "CURRENT"})
+    .filter(entry => {
+      const pathInCache = fileSystem.getPathInCache(entry.filePath, entry.version);
+      return cached.indexOf(pathInCache) < 0;
+    })
     .forEach(entry => {
       log.file(JSON.stringify(entry), "File not found in cache dir. Removing it from database");
       metadata.remove(entry)
     });
+  })
+  .catch(err => log.file(err.message, "Error when reading cache dir to sync metadata database"));
 }
 
 module.exports = {

@@ -44,14 +44,6 @@ module.exports = {
 
     return platform.fileExists(downloadPath);
   },
-  isCached(filePath, version = "") {
-    const cachePath = module.exports.getPathInCache(filePath, version);
-
-    return platform.fileExists(cachePath);
-  },
-  isNotCached(filePath, version = "") {
-    return !module.exports.isCached(filePath, version);
-  },
   getPathInCache(filePath, version = "") {
     const fileName = module.exports.getFileName(filePath, version);
     const cacheDir = module.exports.getCacheDir();
@@ -109,10 +101,13 @@ module.exports = {
   createDir(dir) {
     return fs.ensureDir(dir);
   },
-  getCacheDirEntries() {
+  readCacheDir() {
     const cacheDir = module.exports.getCacheDir();
     return fs.readdir(cacheDir)
     .then(names => names.map(name => path.join(cacheDir, name)))
+  },
+  getCacheDirEntries() {
+    return module.exports.readCacheDir()
     .then(paths => {
       const promises = paths.map(file => fs.stat(file).then(stats => ({path: file, stats})));
       return Promise.all(promises).then(entries => {
