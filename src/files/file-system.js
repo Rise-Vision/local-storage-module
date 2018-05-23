@@ -44,6 +44,14 @@ module.exports = {
 
     return platform.fileExists(downloadPath);
   },
+  isCached(filePath, version = "") {
+    const cachePath = module.exports.getPathInCache(filePath, version);
+
+    return platform.fileExists(cachePath);
+  },
+  isNotCached(filePath, version = "") {
+    return !module.exports.isCached(filePath, version);
+  },
   getPathInCache(filePath, version = "") {
     const fileName = module.exports.getFileName(filePath, version);
     const cacheDir = module.exports.getCacheDir();
