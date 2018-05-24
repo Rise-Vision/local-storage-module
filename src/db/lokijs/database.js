@@ -76,5 +76,6 @@ module.exports = {
   },
   getCollection(name) {
     return db.getCollection(name);
-  }
+  },
+  syncCacheMetadataWithFileSystem
 };
