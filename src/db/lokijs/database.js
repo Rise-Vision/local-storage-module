@@ -57,7 +57,7 @@ function syncCacheMetadataWithFileSystem() {
       metadata.remove(entry)
     });
   })
-  .catch(err => log.file(err.message, "Error when reading cache dir to sync metadata database"));
+  .catch(() => log.warning("Error when reading cache dir to sync metadata database", config.bqTableName));
 }
 
 module.exports = {
