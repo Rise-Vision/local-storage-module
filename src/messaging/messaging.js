@@ -5,37 +5,28 @@ const deleteFile = require("./delete/delete");
 const update = require("./update/update");
 const watch = require("./watch/watch");
 const watchlist = require("./watch/watchlist");
-const util = require("util");
+const logger = require("../logger");
 
 const actions = {ADD: add, UPDATE: update, DELETE: deleteFile};
-
-const logError = (err, userFriendlyMessage = "", filePath) => {
-  console.dir(err);
-  log.error({
-    event_details: err ? err.stack || util.inspect(err, {depth: 1}) : "",
-    version: config.getModuleVersion(),
-    file_path: filePath
-  }, userFriendlyMessage, config.bqTableName);
-};
 
 const handleWatch = (message) => {
   return watch.process(message)
     .catch((err) => {
-      logError(err, "Handle WATCH Error", message.filePath);
+      logger.error(err, "Handle WATCH Error", {file_path: message.filePath});
     });
 };
 
 const handleWatchResult = (message) => {
   return watch.msResult(message)
   .catch((err) => {
-    logError(err, "Handle WATCH-RESULT Error", message.filePath);
+    logger.error(err, "Handle WATCH-RESULT Error", {file_path: message.filePath});
   });
 };
 
 const handleWatchlistResult = (message) => {
   return watchlist.refresh(message.watchlist, message.lastChanged)
   .catch((err) => {
-    logError(err, "Handle WATCHLIST-RESULT Error", "");
+    logger.error(err, "Handle WATCHLIST-RESULT Error");
   });
 };
 
@@ -49,7 +40,7 @@ const handleMSFileUpdate = (message) => {
 
   return action.process(message)
   .catch(err => {
-    logError(err, `Handle MSFILEUPDATE ${type} Error`, message.filePath);
+    logger.error(err, `Handle MSFILEUPDATE ${type} Error`, {file_path: message.filePath});
   });
 };
 
@@ -67,7 +58,7 @@ const messageReceiveHandler = (message) => {
     case "WATCHLIST-RESULT":
       return handleWatchlistResult(message);
     default:
-      log.debug(`Unrecognized message topic: ${message.topic}`);
+      logger.debug(`Unrecognized message topic: ${message.topic}`);
   }
 };
 

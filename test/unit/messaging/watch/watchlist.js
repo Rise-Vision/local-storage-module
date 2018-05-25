@@ -5,13 +5,14 @@ const assert = require("assert");
 const simple = require("simple-mock");
 const commonMessaging = require("common-display-module/messaging");
 
+const logger = require("../../../../src/logger");
 const db = require("../../../../src/db/api");
 const watch = require("../../../../src/messaging/watch/watch");
 const watchlist = require("../../../../src/messaging/watch/watchlist");
 
-global.log = {file: ()=>{}, debug: ()=>{}, error: ()=>{}, warning: ()=>{}, all: () => {}};
-
 describe("watchlist - unit", () => {
+
+  beforeEach(() => simple.mock(logger, "file"));
 
   afterEach(() => simple.restore());
 
