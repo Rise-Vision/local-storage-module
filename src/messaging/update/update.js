@@ -1,6 +1,7 @@
 const db = require("../../db/api");
 const entry = require("./entry");
 const broadcastIPC = require("../broadcast-ipc");
+const logger = require("../../logger");
 
 module.exports = {
   updateWatchlistAndMetadata(dbEntry) {
@@ -26,8 +27,8 @@ module.exports = {
   validate(message, type) {
     const {filePath, version, token} = message;
 
-    log.file(`Received ${type} version ${version} for ${filePath}`);
-    log.file(`Token timestamp ${token.data.timestamp}`);
+    logger.file(`Received ${type} version ${version} for ${filePath}`);
+    logger.file(`Token timestamp ${token.data.timestamp}`);
 
     if (!entry.validate(message)) {
       return Promise.reject(new Error(`Invalid ${type} message`));

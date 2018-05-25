@@ -7,8 +7,8 @@ const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const commonMessaging = require("common-display-module/messaging");
-const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
-global.log = global.log || {};
+const broadcastIPC = require("../../../../src/messaging/broadcast-ipc");
+const logger = require("../../../../src/logger");
 
 describe("DELETE - unit", ()=>{
 
@@ -23,7 +23,7 @@ describe("DELETE - unit", ()=>{
   };
 
   beforeEach(()=>{
-    simple.mock(log, "file").returnWith();
+    simple.mock(logger, "file").returnWith();
     simple.mock(commonMessaging, "broadcastMessage").returnWith();
     simple.mock(commonMessaging, "receiveMessages").resolveWith(mockReceiver);
     simple.mock(commonConfig, "getLocalStoragePath").returnWith("test-local-storage-path/");

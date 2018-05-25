@@ -1,6 +1,7 @@
 const {dirname} = require("path");
 const db = require("../../db/api");
 const update = require("../update/update");
+const logger = require("../../logger");
 
 module.exports = {
   assignOwnersOfParentDirectory(message, topic) {
@@ -10,7 +11,7 @@ module.exports = {
     const folderItem = db.owners.get(folderPath);
 
     if (!folderItem) {
-      log.warning(`No owners registered for folder ${folderPath} | topic: ${topic}`);
+      logger.warning(`No owners registered for folder ${folderPath} | topic: ${topic}`);
 
       return Promise.resolve(false);
     }
