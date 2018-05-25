@@ -85,6 +85,7 @@ module.exports = {
     .then(()=>module.exports.broadcastAfterDownload(version, filePath))
     .catch(err=>{
       module.exports.removeFromProcessing(filePath);
+      db.fileMetadata.delete(filePath);
       return Promise.reject(err);
     });
   },

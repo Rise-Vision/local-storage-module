@@ -49,6 +49,7 @@ module.exports = {
           msg: "Could not retrieve signed URL",
           detail: err ? err.stack || util.inspect(err, {depth: 1}) : ""
         });
+        return Promise.reject(err);
       });
   }
 };

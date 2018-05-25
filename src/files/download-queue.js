@@ -1,3 +1,4 @@
+const util = require("util");
 const db = require("../db/api");
 const queueCheckInterval = 5000;
 const fileController = require("./file-controller");
@@ -12,7 +13,7 @@ module.exports = {
     return fileController.download(staleEntries[0])
     .then(module.exports.checkStaleFiles.bind(null, timer))
     .catch((err)=>{
-      log.error(err);
+      log.error(err ? err.message || util.inspect(err, {depth: 1}) : "");
       return intervalCheck();
     });
 
