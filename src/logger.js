@@ -23,4 +23,10 @@ function warning(detail) {
   originalWarningFn(detail, config.bqTableName);
 }
 
-module.exports = Object.assign(log, {error, warning});
+const originalAllFn = log.all;
+function all(event, detail = {}) {
+  const basicDetail = {version: config.getModuleVersion()};
+  originalAllFn(event, Object.assign(basicDetail, detail), null, config.bqTableName);
+}
+
+module.exports = Object.assign({}, log, {all, error, warning});

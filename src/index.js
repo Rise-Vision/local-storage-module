@@ -34,10 +34,8 @@ initialize()
   .then(watchlist.requestWatchlistCompare)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{
-    const version = config.getModuleVersion();
-
     setTimeout(()=>{
-      logger.all("started", {version}, null, config.bqTableName);
+      logger.all("started");
     }, config.initialLogDelay);
   })
   .catch(logger.error);

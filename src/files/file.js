@@ -4,7 +4,7 @@ const commonConfig = require("common-display-module");
 const util = require("util");
 const fileSystem = require("./file-system");
 const config = require("../config/config");
-const broadcastIPC = require("../messaging/broadcast-ipc.js");
+const broadcastIPC = require("../messaging/broadcast-ipc");
 const logger = require("../logger");
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
