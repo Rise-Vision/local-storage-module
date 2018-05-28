@@ -37,6 +37,7 @@ describe("File Controller", ()=>{
       simple.mock(file, "writeToDisk").resolveWith();
       simple.mock(db.fileMetadata, "get").returnWith({version: "1"});
       simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
+      simple.mock(db.fileMetadata, "delete");
     });
 
     it("should reject and broadcast FILE-ERROR and not get signed url when no available space", ()=>{
@@ -78,6 +79,17 @@ describe("File Controller", ()=>{
         assert.equal(file.request.lastCall.args[0], testFilePath);
         assert.equal(file.request.lastCall.args[1], "test-signed-url?displayId=test-display");
         assert(!file.writeToDisk.called);
+      });
+    });
+
+    it("should remove file metadata when there's an error", ()=>{
+      simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
+      simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
+      simple.mock(requestPromise, "post").resolveWith({statusCode: 403, body: "test issue"});
+
+      return fileController.download({filePath: testFilePath, token: testToken})
+      .catch(() => {
+        assert.ok(db.fileMetadata.delete.called);
       });
     });
 
