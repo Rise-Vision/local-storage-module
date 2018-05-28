@@ -5,6 +5,7 @@ const platform = require("rise-common-electron").platform;
 const fs = require("fs-extra");
 const fileUrl = require("file-url");
 const config = require("../../src/config/config");
+const logger = require("../logger");
 
 const DIR_CACHE = "cache";
 const DIR_DOWNLOAD = "download";
@@ -120,16 +121,16 @@ module.exports = {
   clearLeastRecentlyUsedFiles() {
     return module.exports.getAvailableSpace().then(diskSpace => {
       if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
-        log.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space bigger than threshold');
+        logger.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space bigger than threshold');
         return Promise.resolve();
       }
       return module.exports.getCacheDirEntries().then(entries => {
         if (entries.length === 0) {
-          log.file('not cleaning cache files, no entries to remove');
+          logger.file('not cleaning cache files, no entries to remove');
           return Promise.resolve();
         }
         const leastRecentlyUsed = entries[0];
-        log.file(`removing least recently used file: ${leastRecentlyUsed.path} ${JSON.stringify(leastRecentlyUsed.stats)}`);
+        logger.file(`removing least recently used file: ${leastRecentlyUsed.path} ${JSON.stringify(leastRecentlyUsed.stats)}`);
         return fs.remove(leastRecentlyUsed.path).then(() => {
           return module.exports.clearLeastRecentlyUsedFiles();
         });

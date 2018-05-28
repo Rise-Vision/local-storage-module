@@ -1,10 +1,11 @@
-const config = require("../config/config");
-const broadcastIPC = require("../messaging/broadcast-ipc.js");
 const request = require("request");
-const fileSystem = require("./file-system");
 const fs = require("fs");
 const commonConfig = require("common-display-module");
 const util = require("util");
+const fileSystem = require("./file-system");
+const config = require("../config/config");
+const broadcastIPC = require("../messaging/broadcast-ipc");
+const logger = require("../logger");
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
 const requestRetries = 2;
@@ -19,7 +20,7 @@ const requestFile = (signedURL) => {
   };
 
   return new Promise((res, rej)=>{
-    log.file(`Downloading ${signedURL}`);
+    logger.file(`Downloading ${signedURL}`);
 
     const req = request.get(options);
     req.pause();
@@ -57,7 +58,7 @@ module.exports = {
     const fileSize = response.headers["content-length"];
     const pathInDownload = fileSystem.getPathInDownload(filePath, version);
 
-    log.file(`Writing ${pathInDownload} for ${filePath}`);
+    logger.file(`Writing ${pathInDownload} for ${filePath}`);
 
     fileSystem.addToDownloadTotalSize(fileSize);
 
@@ -82,7 +83,7 @@ module.exports = {
       response.pipe(file);
 
       function handleError(err) {
-        log.file(err && err.stack ? err.stack : err)
+        logger.file(err && err.stack ? err.stack : err)
         fileSystem.deleteFileFromDownload(filePath, version);
         fileSystem.removeFromDownloadTotalSize(fileSize);
 

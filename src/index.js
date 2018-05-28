@@ -5,19 +5,7 @@ const watchlist = require("./messaging/watch/watchlist");
 const commonConfig = require("common-display-module");
 const downloadQueue = require("./files/download-queue");
 const config = require("./config/config");
-const preventBQLog = process.env.RISE_PREVENT_BQ_LOG;
-const externalLogger = require("common-display-module/external-logger")(config.bqProjectName, config.bqDatasetName, config.bqFailedEntryFile);
-const modulePath = commonConfig.getModulePath(config.moduleName);
-const util = require("util");
-
-global.log = require("rise-common-electron").logger(preventBQLog ? null : externalLogger, modulePath, config.moduleName);
-
-function logError(err) {
-  log.error({
-    event_details: err ? err.message || util.inspect(err, {depth: 1}) : "",
-    version: config.getModuleVersion()
-  }, null, config.bqTableName);
-}
+const logger = require("./logger");
 
 const initialize = () => {
   return commonConfig.getDisplayId()
@@ -29,14 +17,14 @@ const initialize = () => {
     config.setDisplayId(displayId);
     config.setModuleVersion(commonConfig.getModuleVersion(config.moduleName));
 
-    log.resetLogFiles(maxFileSizeBytes);
-    log.setDisplaySettings({displayid: displayId});
+    logger.resetLogFiles(maxFileSizeBytes);
+    logger.setDisplaySettings({displayid: displayId});
   })
   .then(fileSystem.cleanupDownloadFolder)
   .then(()=>fileSystem.createDir(fileSystem.getDownloadDir()))
   .then(()=>fileSystem.createDir(fileSystem.getCacheDir()))
   .then(()=> {
-    return fileSystem.clearLeastRecentlyUsedFiles().catch(logError);
+    return fileSystem.clearLeastRecentlyUsedFiles().catch(logger.error);
   });
 };
 
@@ -46,10 +34,8 @@ initialize()
   .then(watchlist.requestWatchlistCompare)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{
-    const version = config.getModuleVersion();
-
     setTimeout(()=>{
-      log.all("started", {version}, null, config.bqTableName);
+      logger.all("started");
     }, config.initialLogDelay);
   })
-  .catch(logError);
+  .catch(logger.error);

@@ -11,6 +11,7 @@ const mockfs = require("mock-fs");
 const nock = require("nock");
 const platform = require("rise-common-electron").platform;
 const fileSystem = require("../../../src/files/file-system");
+const logger = require("../../../src/logger");
 
 describe("File", ()=>{
 
@@ -25,7 +26,7 @@ describe("File", ()=>{
   describe("request", ()=> {
     beforeEach(()=>{
       simple.mock(commonMessaging, "broadcastMessage").returnWith();
-      simple.mock(global.log, "file").returnWith();
+      simple.mock(logger, "file").returnWith();
     });
 
     afterEach(()=>{
@@ -81,7 +82,7 @@ describe("File", ()=>{
     beforeEach(()=>{
       simple.mock(commonMessaging, "broadcastMessage").returnWith();
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
-      simple.mock(global.log, "file").returnWith();
+      simple.mock(logger, "file").returnWith();
 
       // Mock the file system.
       mockfs({

@@ -7,8 +7,9 @@ const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const commonMessaging = require("common-display-module/messaging");
-const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
+const broadcastIPC = require("../../../../src/messaging/broadcast-ipc");
 const fileController = require("../../../../src/files/file-controller");
+const logger = require("../../../../src/logger");
 
 describe("Watch - Unit", ()=>{
 
@@ -40,7 +41,7 @@ describe("Watch - Unit", ()=>{
       simple.mock(commonMessaging, "broadcastMessage").returnWith();
       simple.mock(db.owners, "get").returnWith({owners: ["test"]});
       simple.mock(commonMessaging, "receiveMessages").resolveWith(mockReceiver);
-      simple.mock(global.log, "file").returnWith();
+      simple.mock(logger, "file").returnWith();
 
       return messaging.init();
     });
@@ -184,7 +185,7 @@ describe("Watch - Unit", ()=>{
       simple.mock(broadcastIPC, "fileUpdate");
       simple.mock(fileController, "addToProcessing");
       simple.mock(fileController, "removeFromProcessing");
-      simple.mock(global.log, "file").returnWith();
+      simple.mock(logger, "file").returnWith();
 
       fileController.removeFromProcessing(testFilePath);
 

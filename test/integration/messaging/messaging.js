@@ -17,8 +17,7 @@ const {platform} = require("rise-common-electron");
 const dbSaveInterval = 5;
 const fileStat = require("util").promisify(require("fs").stat);
 const fileSystem = require("../../../src/files/file-system");
-
-global.log = {all: ()=>{}, file: ()=>{}, debug: ()=>{}, error: ()=>{}, warning: ()=>{}};
+const logger = require("../../../src/logger");
 
 describe("WATCH: Integration", function() {
   const tmpdir = os.tmpdir();
@@ -29,6 +28,11 @@ describe("WATCH: Integration", function() {
 
   describe("Connected to Messaging Service through Local Messaging", ()=>{
     before(()=>{
+      simple.mock(logger, "all");
+      simple.mock(logger, "file");
+      simple.mock(logger, "debug");
+      simple.mock(logger, "error");
+      simple.mock(logger, "warning");
       simple.mock(commonConfig, "getDisplaySettingsSync").returnWith({
         displayid: "ls-test-id", displayId: "ls-test-id"
       });

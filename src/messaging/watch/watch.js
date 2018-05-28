@@ -4,11 +4,12 @@ const db = require("../../db/api");
 const entry = require("./entry");
 const addition = require("../add/add");
 const update = require("../update/update");
+const logger = require("../../logger");
 
 function handleFileWatchResult(message) {
   const {filePath, version, token} = message;
 
-  log.file(`Received version ${version} for ${filePath}`);
+  logger.file(`Received version ${version} for ${filePath}`);
 
   const status = token ? "STALE" : "CURRENT";
 
@@ -31,7 +32,7 @@ module.exports = {
   process(message) {
     const {filePath, from} = message;
 
-    log.file(`Received watch for ${filePath}`);
+    logger.file(`Received watch for ${filePath}`);
 
     if (!entry.validate({filePath, owner: from})) {
       return Promise.reject(new Error("Invalid watch message"));

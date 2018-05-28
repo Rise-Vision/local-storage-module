@@ -5,6 +5,7 @@ const config = require("../../../src/config/config");
 const loki = require("lokijs");
 const path = require("path");
 const fileSystem = require("../../files/file-system");
+const logger = require("../../logger");
 
 const defaultSaveInterval = 4000;
 
@@ -53,11 +54,11 @@ function syncCacheMetadataWithFileSystem() {
       return cached.indexOf(pathInCache) < 0;
     })
     .forEach(entry => {
-      log.file(JSON.stringify(entry), "File not found in cache dir. Removing it from database");
+      logger.file(JSON.stringify(entry), "File not found in cache dir. Removing it from database");
       metadata.remove(entry)
     });
   })
-  .catch(() => log.warning("Error when reading cache dir to sync metadata database", config.bqTableName));
+  .catch(() => logger.warning("Error when reading cache dir to sync metadata database"));
 }
 
 module.exports = {
