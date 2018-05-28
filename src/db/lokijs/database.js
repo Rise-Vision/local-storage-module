@@ -54,8 +54,8 @@ function syncCacheMetadataWithFileSystem() {
       return cached.indexOf(pathInCache) < 0;
     })
     .forEach(entry => {
-      logger.file(JSON.stringify(entry), "File not found in cache dir. Removing it from database");
-      metadata.remove(entry)
+      logger.file(JSON.stringify(entry), "File not found in cache dir. Marking it as unknown in the database");
+      metadata.update(Object.assign({}, entry, {status: "UNKNOWN", version: "0"}));
     });
   })
   .catch(() => logger.warning("Error when reading cache dir to sync metadata database"));

@@ -59,19 +59,20 @@ describe("lokijs", () => {
       database.close();
     });
 
-    it("should remove files not cached from metadata", ()=>{
+    it("should set unknown state for files not cached", ()=>{
       simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
       simple.mock(fileSystem, "readCacheDir").resolveWith([]);
 
-      return mockPersistedMetadata([{filePath: 'any', version: 'any', status: 'CURRENT'}])
+      return mockPersistedMetadata([{filePath: 'notCached', version: 'any', status: 'CURRENT'}])
       .then(() => database.syncCacheMetadataWithFileSystem())
       .then(() => {
-        const metadata = database.getCollection("metadata").find();
-        assert.equal(metadata.length, 0);
-      });
+        const changed = database.getCollection("metadata").findOne({status: 'UNKNOWN'});
+        assert.equal(changed.filePath, 'notCached');
+        assert.equal(changed.version, '0');
+      })
     });
 
-    it("should not remove non current files from metadata", ()=>{
+    it("should not change non current files", ()=>{
       simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
       simple.mock(fileSystem, "readCacheDir").resolveWith([]);
 
@@ -85,11 +86,16 @@ describe("lokijs", () => {
       .then(() => database.syncCacheMetadataWithFileSystem())
       .then(() => {
         const metadata = database.getCollection("metadata").find();
-        assert.equal(metadata.length, 2);
+        assert.equal(metadata.length, 3);
+
+        const stale = database.getCollection("metadata").findOne({status: 'STALE'});
+        assert.equal(stale.filePath, 'stale');
+        const other = database.getCollection("metadata").findOne({status: 'OTHER'});
+        assert.equal(other.filePath, 'other');
       });
     });
 
-    it("should not remove cached current files from metadata", ()=>{
+    it("should not change cached current files", ()=>{
       simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
 
       const mockedMetadata = [
@@ -102,8 +108,11 @@ describe("lokijs", () => {
       return mockPersistedMetadata(mockedMetadata)
       .then(() => database.syncCacheMetadataWithFileSystem())
       .then(() => {
-        const metadata = database.getCollection("metadata").find();
-        assert.equal(metadata.length, 1);
+        const current = database.getCollection("metadata").findOne({status: 'CURRENT'});
+        assert.equal(current.filePath, 'cached');
+        const unknown = database.getCollection("metadata").findOne({status: 'UNKNOWN'});
+        assert.equal(unknown.filePath, 'notInCache');
+        assert.equal(unknown.version, '0');
       });
     });
 
