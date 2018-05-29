@@ -59,8 +59,7 @@ describe("URL Provider", ()=>{
       simple.mock(broadcastIPC, "broadcast");
 
       return urlProvider.getURL(testToken)
-        .then(url=>{
-          assert(!url);
+        .catch(() => {
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "Could not retrieve signed URL");
@@ -72,8 +71,7 @@ describe("URL Provider", ()=>{
       simple.mock(broadcastIPC, "broadcast");
 
       return urlProvider.getURL(testToken)
-        .then(url=>{
-          assert(!url);
+        .catch(() => {
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
           assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "Could not retrieve signed URL");
