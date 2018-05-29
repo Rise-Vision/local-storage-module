@@ -72,8 +72,7 @@ module.exports = {
     downloadTotalSize -= parseInt(size, 10);
   },
   getAvailableSpace() {
-    return platform.getFreeDiskSpace(module.exports.getCacheDir())
-    .catch(err=>console.log(err));
+    return platform.getFreeDiskSpace(module.exports.getCacheDir());
   },
   isThereAvailableSpace(spaceOnDisk, fileSize = 0) {
     if (spaceOnDisk === 0) {return false;}
