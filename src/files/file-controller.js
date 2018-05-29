@@ -18,6 +18,9 @@ const checkAvailableDiskSpace = (filePath, fileSize = 0) => {
     }
 
     return true;
+  }).catch(err => {
+    broadcastIPC.fileError({filePath, msg: "Failed to retrieve available space"});
+    return Promise.reject(err);
   });
 };
 
@@ -27,13 +30,15 @@ const validateResponse = (filePath, response) => {
       const fileSize = response.headers["content-length"];
 
       checkAvailableDiskSpace(filePath, fileSize)
-        .then((availableSpace) => {
-          if (!availableSpace) {
-            rej(new Error("Insufficient disk space"));
-          }
+      .then((availableSpace) => {
+        if (!availableSpace) {
+          rej(new Error("Insufficient disk space"));
+        }
 
-          res(response);
-        });
+        res(response);
+      }).catch(err => {
+        rej(err);
+      });
     } else {
       broadcastIPC.fileError({
         filePath,

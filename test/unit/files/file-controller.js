@@ -167,5 +167,16 @@ describe("File Controller", ()=>{
         });
       });
     });
+
+    it("should reject and broadcast FILE-ERROR and not get signed url when available space fails", ()=>{
+      simple.mock(fileSystem, "getAvailableSpace").rejectWith("OS error");
+
+      return fileController.download({filePath: testFilePath, token: testToken})
+      .catch((err) => {
+        assert(err.startsWith("OS error"));
+        assert.equal(broadcastIPC.fileError.lastCall.args[0].filePath, testFilePath);
+        assert(!urlProvider.getURL.called);
+      });
+    });
   });
 });
