@@ -3,6 +3,7 @@ const fileSystem = require("./file-system");
 const urlProvider = require("./url-provider");
 const broadcastIPC = require("../../src/messaging/broadcast-ipc.js");
 const db = require("../db/api");
+const logger = require("../logger");
 
 const SUCCESS_CODE = 200;
 
@@ -90,6 +91,8 @@ module.exports = {
     .then(()=>module.exports.broadcastAfterDownload(version, filePath))
     .catch(err=>{
       module.exports.removeFromProcessing(filePath);
+
+      logger.error(err, "Error on download", {file_path: filePath});
 
       return db.fileMetadata.put({filePath, status: "UNKNOWN", version: "0"})
         .then(() => Promise.reject(err))

@@ -4,11 +4,13 @@ const assert = require("assert");
 const simple = require("simple-mock");
 const file = require("../../../src/files/file");
 const urlProvider = require("../../../src/files/url-provider");
-const fileController = require("../../../src/files/file-controller");
 const fileSystem = require("../../../src/files/file-system");
 const db = require("../../../src/db/api");
 const requestPromise = require("request-promise-native");
 const broadcastIPC = require("../../../src/messaging/broadcast-ipc.js");
+const logger = require("../../../src/logger");
+
+const fileController = require("../../../src/files/file-controller");
 
 describe("File Controller", ()=>{
 
@@ -37,6 +39,7 @@ describe("File Controller", ()=>{
       simple.mock(file, "writeToDisk").resolveWith();
       simple.mock(db.fileMetadata, "get").returnWith({version: "1"});
       simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
+      simple.mock(logger, "error");
     });
 
     it("should reject and broadcast FILE-ERROR and not get signed url when no available space", ()=>{
@@ -75,6 +78,21 @@ describe("File Controller", ()=>{
         assert.ok(db.fileMetadata.put.called);
         const updates = db.fileMetadata.put.lastCall.args[0];
         assert.deepEqual(updates, {filePath: testFilePath, status: "UNKNOWN", version: "0"});
+      });
+    });
+
+    it("should log error", ()=>{
+      simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
+      simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
+      simple.mock(requestPromise, "post").resolveWith({statusCode: 403, body: "test issue"});
+
+      return fileController.download({filePath: testFilePath, token: testToken})
+      .catch(() => {
+        assert.ok(logger.error.called);
+        const [err, message, filePath] = logger.error.lastCall.args;
+        assert.equal(err.message, "Invalid response with status code 403");
+        assert.equal(message, "Error on download");
+        assert.deepEqual(filePath, {file_path: testFilePath});
       });
     });
 

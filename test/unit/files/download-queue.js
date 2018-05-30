@@ -5,7 +5,6 @@ const simple = require("simple-mock");
 const fileController = require("../../../src/files/file-controller");
 const queue = require("../../../src/files/download-queue");
 const db = require("../../../src/db/api");
-const logger = require("../../../src/logger");
 
 describe("Download Queue", ()=>{
   beforeEach(()=>{
@@ -57,7 +56,6 @@ describe("Download Queue", ()=>{
   it("retries on interval after a download failure", ()=>{
     simple.mock(db.fileMetadata, "getStale").returnWith([{filePath: "my-file-0"}])
     simple.mock(fileController, "download").rejectWith("test-error");
-    simple.mock(logger, "error").returnWith();
 
     let callCount = 0;
     return queue.checkStaleFiles((cb)=>{
@@ -66,7 +64,6 @@ describe("Download Queue", ()=>{
     })
     .then(()=>{
       assert.equal(callCount, 5);
-      assert.equal(logger.error.callCount, 5);
     });
   });
 });
