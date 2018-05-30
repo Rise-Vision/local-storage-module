@@ -65,6 +65,19 @@ describe("File Controller", ()=>{
       });
     });
 
+    it("should set metadata with state unknown and version 0 when there's an error", ()=>{
+      simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
+      simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
+      simple.mock(requestPromise, "post").resolveWith({statusCode: 403, body: "test issue"});
+
+      return fileController.download({filePath: testFilePath, token: testToken})
+      .catch(() => {
+        assert.ok(db.fileMetadata.put.called);
+        const updates = db.fileMetadata.put.lastCall.args[0];
+        assert.deepEqual(updates, {filePath: testFilePath, status: "UNKNOWN", version: "0"});
+      });
+    });
+
     it("should reject and and not write file when file request returns invalid response", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);

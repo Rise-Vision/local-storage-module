@@ -8,7 +8,8 @@ const broadcastIPC = require("../messaging/broadcast-ipc");
 const logger = require("../logger");
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
-const requestRetries = 2;
+const defaultRetryTimeout = 3000;
+const requestRetries = 4;
 
 const requestFile = (signedURL) => {
   const proxy = commonConfig.getProxyAgents();
@@ -33,14 +34,16 @@ const requestFile = (signedURL) => {
   });
 };
 
+
 module.exports = {
-  request(filePath, signedURL, retries = requestRetries) {
+  request(filePath, signedURL, retries = requestRetries, retryTimeout = defaultRetryTimeout) { // eslint-disable-line max-params
     if (!filePath || !signedURL) {throw Error("Invalid file request params");}
 
     return requestFile(signedURL)
     .catch(err=> {
       if (retries > 0) {
-        return module.exports.request(filePath, signedURL, retries - 1);
+        return new Promise((resolve) => setTimeout(resolve, retryTimeout))
+        .then(() => module.exports.request(filePath, signedURL, retries - 1, retryTimeout));
       }
 
       broadcastIPC.fileError({
