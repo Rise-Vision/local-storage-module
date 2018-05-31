@@ -148,6 +148,7 @@ module.exports = {
         .then(() => riseCacheFileExists);
       }
       return false;
-    });
+    })
+    .catch(() => false);
   }
 };

@@ -319,6 +319,18 @@ describe("File System", ()=> {
       });
     });
 
+    it("should return false when it fails", () => {
+      simple.mock(commonConfig, "getInstallDir").returnWith("rvplayer");
+      simple.mock(fs, "pathExists").rejectWith();
+
+      const filePath = testFilePath;
+      const version = "1";
+
+      return fileSystem.reuseRiseCacheFile(filePath, version).then(fileReused => {
+        assert.equal(fileReused, false);
+      });
+    });
+
   });
 
 });
