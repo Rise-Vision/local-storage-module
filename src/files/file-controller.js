@@ -7,7 +7,7 @@ const logger = require("../logger");
 
 const SUCCESS_CODE = 200;
 
-const checkAvailableDiskSpace = (filePath, fileSize = 0) => {
+function checkAvailableDiskSpace(filePath, fileSize = 0) {
   return fileSystem.getAvailableSpace()
   .then(spaceInDisk=>{
     const availableSpace = fileSystem.isThereAvailableSpace(spaceInDisk, fileSize);
@@ -23,9 +23,9 @@ const checkAvailableDiskSpace = (filePath, fileSize = 0) => {
     broadcastIPC.fileError({filePath, msg: "Failed to retrieve available space"});
     return Promise.reject(err);
   });
-};
+}
 
-const validateResponse = (filePath, response) => {
+function validateResponse(filePath, response) {
   return new Promise((res, rej) => {
     if (response.statusCode === SUCCESS_CODE) {
       const fileSize = response.headers["content-length"];
@@ -49,7 +49,21 @@ const validateResponse = (filePath, response) => {
       rej(new Error(`Invalid response with status code ${response.statusCode}`));
     }
   });
-};
+}
+
+function performDownload(entry) {
+  const {filePath, version, token} = entry;
+
+  return urlProvider.getURL(token)
+  .then((signedURL)=>{
+    if (!signedURL) {
+      return Promise.reject(Error("No signed URL"));
+    }
+    return file.request(filePath, signedURL);
+  })
+  .then(response=>validateResponse(filePath, response))
+  .then(response=>file.writeToDisk(filePath, version, response));
+}
 
 module.exports = {
   addToProcessing(filePath, version) {
@@ -65,7 +79,7 @@ module.exports = {
     fileSystem.removeFromProcessingList(fileName);
   },
   download(entry) {
-    const {filePath, version, token} = entry;
+    const {filePath, version} = entry;
 
     if (module.exports.isProcessing(filePath)) {return Promise.resolve();}
 
@@ -77,16 +91,12 @@ module.exports = {
         return Promise.reject(Error("Insufficient disk space"));
       }
 
-      return urlProvider.getURL(token);
+      return fileSystem.reuseRiseCacheFile(filePath, version).then(fileReused => {
+        if (!fileReused) {
+          return performDownload(entry);
+        }
+      });
     })
-    .then((signedURL)=>{
-      if (!signedURL) {
-        return Promise.reject(Error("No signed URL"));
-      }
-      return file.request(filePath, signedURL);
-    })
-    .then(response=>validateResponse(filePath, response))
-    .then(response=>file.writeToDisk(filePath, version, response))
     .then(()=>module.exports.removeFromProcessing(filePath))
     .then(()=>module.exports.broadcastAfterDownload(version, filePath))
     .catch(err=>{

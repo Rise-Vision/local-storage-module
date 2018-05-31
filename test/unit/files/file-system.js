@@ -274,4 +274,51 @@ describe("File System", ()=> {
 
   });
 
+  describe("reuseRiseCacheFile", () => {
+
+    it("should move existing Rise Cache file to LS cache dir", () => {
+      simple.mock(commonConfig, "getInstallDir").returnWith("rvplayer");
+
+      const expectedRiseCacheFileName = "70d47bd20c0a82387db09a9916db8e2f";
+      mockfs({
+        [`${expectedDataPath}cache`]: {},
+        "rvplayer/RiseCache/cache": {
+          [expectedRiseCacheFileName]: "some content"
+        }
+      });
+
+      const filePath = testFilePath;
+      const version = "1";
+
+      const expetedLocalStorageFileName = "942256ccfb32786ce803dc3c10f7ae5a";
+
+      return fileSystem.reuseRiseCacheFile(filePath, version).then(fileReused => {
+        assert.ok(fileReused);
+        assert.ok(fs.pathExistsSync(`${expectedDataPath}cache/${expetedLocalStorageFileName}`));
+      });
+    });
+
+    it("should not move files when Rise Cache entry doesn't exist", () => {
+      simple.mock(commonConfig, "getInstallDir").returnWith("rvplayer");
+
+      mockfs({
+        [`${expectedDataPath}cache`]: {},
+        "rvplayer/RiseCache/cache": {
+          "d498da09daba1d6bb3c6ab23kdbasf84": "some content"
+        }
+      });
+
+      const filePath = testFilePath;
+      const version = "1";
+
+      const expetedLocalStorageFileName = "942256ccfb32786ce803dc3c10f7ae5a";
+
+      return fileSystem.reuseRiseCacheFile(filePath, version).then(fileReused => {
+        assert.equal(fileReused, false);
+        assert.equal(fs.pathExistsSync(`${expectedDataPath}cache/${expetedLocalStorageFileName}`), false);
+      });
+    });
+
+  });
+
 });
