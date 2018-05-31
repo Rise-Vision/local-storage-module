@@ -121,7 +121,7 @@ module.exports = {
   clearLeastRecentlyUsedFiles() {
     return module.exports.getAvailableSpace().then(diskSpace => {
       if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
-        logger.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space bigger than threshold');
+        logger.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space greater than threshold');
         return Promise.resolve();
       }
       return module.exports.getCacheDirEntries().then(entries => {
