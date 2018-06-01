@@ -1,6 +1,6 @@
 const request = require("request");
 const fs = require("fs");
-const commonConfig = require("common-display-module");
+const proxy = require("./proxy");
 const util = require("util");
 const fileSystem = require("./file-system");
 const config = require("../config/config");
@@ -12,12 +12,11 @@ const defaultRetryTimeout = 3000;
 const requestRetries = 4;
 
 const requestFile = (signedURL) => {
-  const proxy = commonConfig.getProxyAgents();
   const options = {
     uri: signedURL,
     timeout: config.secondMillis * twoMinTimeout,
     resolveWithFullResponse: true,
-    proxy: proxy.httpsAgent || proxy.httpAgent || null
+    proxy: proxy.getProxyUri()
   };
 
   return new Promise((res, rej)=>{

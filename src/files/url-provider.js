@@ -1,5 +1,5 @@
 const request = require("request-promise-native");
-const commonConfig = require("common-display-module");
+const proxy = require("./proxy")
 const util = require("util");
 const broadcastIPC = require("../../src/messaging/broadcast-ipc");
 
@@ -7,7 +7,6 @@ const SUCCESS_CODE = 200;
 
 const sendMessage = (token) => {
   const {data, hash} = token;
-  const proxy = commonConfig.getProxyAgents();
   const options = {
     uri: "https://services.risevision.com/urlprovider/",
     body: {
@@ -16,7 +15,7 @@ const sendMessage = (token) => {
     },
     json: true,
     resolveWithFullResponse: true,
-    proxy: proxy.httpsAgent || proxy.httpAgent || null
+    proxy: proxy.getProxyUri()
   };
   return request.post(options);
 };
