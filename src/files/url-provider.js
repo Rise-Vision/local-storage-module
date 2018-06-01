@@ -16,7 +16,7 @@ const sendMessage = (token) => {
     },
     json: true,
     resolveWithFullResponse: true,
-    proxy: proxy.httpsAgent || proxy.httpAgent || null
+    proxy: (proxy.httpsAgent && proxy.httpsAgent.proxyUri) || (proxy.httpAgent && proxy.httpAgent.proxyUri) || null // eslint-disable-line no-extra-parens
   };
   return request.post(options);
 };

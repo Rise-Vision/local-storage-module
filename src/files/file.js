@@ -17,7 +17,7 @@ const requestFile = (signedURL) => {
     uri: signedURL,
     timeout: config.secondMillis * twoMinTimeout,
     resolveWithFullResponse: true,
-    proxy: proxy.httpsAgent || proxy.httpAgent || null
+    proxy: (proxy.httpsAgent && proxy.httpsAgent.proxyUri) || (proxy.httpAgent && proxy.httpAgent.proxyUri) || null // eslint-disable-line no-extra-parens
   };
 
   return new Promise((res, rej)=>{
