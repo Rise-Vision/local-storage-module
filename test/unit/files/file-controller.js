@@ -40,6 +40,7 @@ describe("File Controller", ()=>{
       simple.mock(db.fileMetadata, "get").returnWith({version: "1"});
       simple.mock(db.fileMetadata, "put").callFn(putObj=>Promise.resolve(putObj));
       simple.mock(logger, "error");
+      simple.mock(fileSystem, "reuseRiseCacheFile").resolveWith(false);
     });
 
     it("should reject and broadcast FILE-ERROR and not get signed url when no available space", ()=>{
@@ -209,5 +210,22 @@ describe("File Controller", ()=>{
         assert(!urlProvider.getURL.called);
       });
     });
+
+    it("should skip download and reuse existing Rise Cache file", ()=>{
+      simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
+      simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
+      fileSystem.reuseRiseCacheFile.resolveWith(true);
+      simple.mock(file, "request");
+      simple.mock(urlProvider, "getURL");
+
+      fileController.addToProcessing(testFilePath);
+
+      return fileController.download({filePath: testFilePath, token: testToken})
+      .then(() => {
+        assert.equal(urlProvider.getURL.called, false);
+        assert.equal(file.request.called, false);
+      });
+    });
+
   });
 });

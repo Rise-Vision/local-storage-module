@@ -7,6 +7,7 @@ const fileUrl = require("file-url");
 const config = require("../../src/config/config");
 const logger = require("../logger");
 
+const RISE_CACHE_DIR = "RiseCache";
 const DIR_CACHE = "cache";
 const DIR_DOWNLOAD = "download";
 
@@ -120,7 +121,7 @@ module.exports = {
   clearLeastRecentlyUsedFiles() {
     return module.exports.getAvailableSpace().then(diskSpace => {
       if (diskSpace > CACHE_CLEANUP_THRESHOLD) {
-        logger.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space bigger than threshold');
+        logger.file(`diskSpace: ${diskSpace}, threshold: ${CACHE_CLEANUP_THRESHOLD}`, 'not cleaning cache files, disk space greater than threshold');
         return Promise.resolve();
       }
       return module.exports.getCacheDirEntries().then(entries => {
@@ -135,5 +136,19 @@ module.exports = {
         });
       });
     });
+  },
+  reuseRiseCacheFile(filePath, version) {
+    const riseCacheFileName = crypto.createHash("md5").update(unescape(`/${filePath}`)).digest("hex");
+    const riseCacheFilePath = path.join(commonConfig.getInstallDir(), RISE_CACHE_DIR, DIR_CACHE, riseCacheFileName);
+    return fs.pathExists(riseCacheFilePath).then(riseCacheFileExists => {
+      if (riseCacheFileExists) {
+        const localStorageFilePath = path.join(module.exports.getCacheDir(), module.exports.getFileName(filePath, version));
+        logger.file(`${riseCacheFilePath} ${localStorageFilePath}`, `Reusing Rise Cache file for ${filePath} ${version}`);
+        return fs.move(riseCacheFilePath, localStorageFilePath)
+        .then(() => riseCacheFileExists);
+      }
+      return false;
+    })
+    .catch(() => false);
   }
 };
