@@ -15,6 +15,7 @@ describe("Watch - Unit", ()=>{
 
   const mockModuleDir = "rvplayer/modules";
   const testFilePath = "test-bucket/test-folder/test-file.jpg";
+  const testFolderPath = "test-bucket/test-folder/";
   const testToken = {
     hash: "abc123",
     data: {
@@ -50,7 +51,7 @@ describe("Watch - Unit", ()=>{
       simple.restore();
     });
 
-    it("adds to owners list -> broadcasts FILEUPDATE -> does not call remote watch, when local file is STALE", ()=> {
+    it("adds to owners list -> broadcasts FILE-UPDATE -> does not call remote watch, when local file is STALE", ()=> {
       const mockMetadata = {
         status: "STALE",
         version: "1.0.0"
@@ -82,7 +83,7 @@ describe("Watch - Unit", ()=>{
         });
     });
 
-    it("adds to owners list -> broadcasts FILEUPDATE -> does not call remote watch, when local file is CURRENT", ()=> {
+    it("adds to owners list -> broadcasts FILE-UPDATE -> does not call remote watch, when local file is CURRENT", ()=> {
       const mockMetadata = {
         status: "CURRENT",
         version: "1.0.0"
@@ -154,6 +155,100 @@ describe("Watch - Unit", ()=>{
         assert(commonMessaging.sendToMessagingService.called);
       });
     });
+
+    it("calls remote watch when folder has not been watched yet", () => {
+      const mockMetadata = null;
+
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.owners, "addToSet").resolveWith();
+
+      const msg = {
+        topic: "watch",
+        from: "test-module",
+        filePath: testFolderPath
+      };
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.ok(commonMessaging.sendToMessagingService.called);
+      });
+    });
+
+    it("does not call remote watch when folder has already been watched", () => {
+      const mockMetadata = {filePath: testFolderPath};
+      const mockFolderFiles = [];
+
+      simple.mock(db.fileMetadata, "getFolderFiles").returnWith(mockFolderFiles);
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.owners, "addToSet").resolveWith();
+
+      const msg = {
+        topic: "watch",
+        from: "test-module",
+        filePath: testFolderPath
+      };
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.equal(commonMessaging.sendToMessagingService.called, false);
+      });
+    });
+
+    it("broacasts FILE-UPDATE of local folder files", () => {
+      const mockMetadata = {filePath: testFolderPath};
+      const current = {filePath: `${testFolderPath}current.png`, status: "CURRENT", version: "1"};
+      const another = {filePath: `${testFolderPath}another.png`, status: "CURRENT", version: "3"};
+      const mockFolderFiles = [another, current];
+
+      simple.mock(db.fileMetadata, "getFolderFiles").returnWith(mockFolderFiles);
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.owners, "addToSet").resolveWith();
+      simple.mock(broadcastIPC, "fileUpdate");
+
+      const msg = {
+        topic: "watch",
+        from: "test-module",
+        filePath: testFolderPath
+      };
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.equal(broadcastIPC.fileUpdate.callCount, 2);
+        assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], current);
+        assert.deepEqual(broadcastIPC.fileUpdate.firstCall.args[0], another);
+      });
+    });
+
+    it("requests MS update of local folder files with status UNKNOWN", () => {
+      const mockMetadata = {filePath: testFolderPath};
+      const current = {filePath: `${testFolderPath}current.png`, status: "CURRENT", version: "1"};
+      const unknown = {filePath: `${testFolderPath}unknown.png`, status: "UNKNOWN", version: "0"};
+      const mockFolderFiles = [unknown, current];
+
+      simple.mock(db.fileMetadata, "getFolderFiles").returnWith(mockFolderFiles);
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.owners, "addToSet").resolveWith();
+      simple.mock(broadcastIPC, "fileUpdate");
+      simple.mock(commonMessaging, "sendToMessagingService").returnWith();
+
+      const msg = {
+        topic: "watch",
+        from: "test-module",
+        filePath: testFolderPath
+      };
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.ok(commonMessaging.sendToMessagingService.called);
+        assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
+          filePath: unknown.filePath,
+          version: unknown.version
+        });
+      });
+    });
   });
 
   describe("WATCH-RESULT", ()=>{
@@ -197,7 +292,7 @@ describe("Watch - Unit", ()=>{
       simple.restore();
     });
 
-    it("should broadcast FILEUPDATE with NOEXIST status when error providing from MS", ()=>{
+    it("should broadcast FILE-UPDATE with NOEXIST status when error providing from MS", ()=>{
       const msg = Object.assign({}, mockMessage, {errorMsg: "NOEXIST"});
 
       return messageReceiveHandler(msg)
@@ -234,7 +329,7 @@ describe("Watch - Unit", ()=>{
         });
     });
 
-    it("[CURRENT] adds to fileMetaData -> adds to watchlist -> broadcasts FILEUPDATE", ()=>{
+    it("[CURRENT] adds to fileMetaData -> adds to watchlist -> broadcasts FILE-UPDATE", ()=>{
       const msg = Object.assign({}, mockMessage, {version: "1.0.0"});
 
       return messageReceiveHandler(msg)
@@ -268,7 +363,7 @@ describe("Watch - Unit", ()=>{
         });
     });
 
-    it("[STALE] adds to fileMetaData -> adds to watchlist -> broadcasts FILEUPDATE -> download", ()=>{
+    it("[STALE] adds to fileMetaData -> adds to watchlist -> broadcasts FILE-UPDATE -> download", ()=>{
       const mockMetadata = {
         version: "1.0.0"
       };

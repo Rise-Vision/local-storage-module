@@ -50,6 +50,11 @@ module.exports = {
         res(entry);
       });
     },
+    getFolderFiles(folderPath) {
+      return database.getCollection("metadata").where(entry => {
+        return entry.filePath.startsWith(folderPath) && !entry.filePath.endsWith("/");
+      })
+    },
     getStale: ()=>database.getCollection("metadata").find({status: "STALE"}),
     delete(filePath) {
       if (!filePath) {throw Error("missing params");}
