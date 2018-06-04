@@ -115,7 +115,7 @@ describe("Watch - Unit", ()=>{
     });
 
     it("calls remote watch when the local file is not present", ()=>{
-      const mockMetadata = {};
+      const mockMetadata = null;
 
       simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
       simple.mock(db.fileMetadata, "put").resolveWith();
@@ -135,6 +135,7 @@ describe("Watch - Unit", ()=>{
 
     it("calls remote watch when the local file state is UNKNOWN", ()=>{
       const mockMetadata = {
+        filePath: testFilePath,
         status: "UNKNOWN"
       };
 
