@@ -197,7 +197,7 @@ describe("Watch - Unit", ()=>{
     });
 
     it("should broadcast FILEUPDATE with NOEXIST status when error providing from MS", ()=>{
-      const msg = Object.assign({}, mockMessage, {error: 404});
+      const msg = Object.assign({}, mockMessage, {errorMsg: "NOEXIST"});
 
       return messageReceiveHandler(msg)
         .then(()=>{

@@ -55,10 +55,10 @@ module.exports = {
     });
   },
   msResult(message) {
-    const {filePath, error, folderData, watchlistLastChanged} = message;
+    const {filePath, errorCode, errorMsg, folderData, watchlistLastChanged} = message;
 
-    if (error) {
-      broadcastIPC.fileUpdate({filePath, status: "NOEXIST"});
+    if (errorCode || errorMsg) {
+      broadcastIPC.fileUpdate({filePath, status: errorMsg || errorCode});
       return Promise.resolve();
     }
 
