@@ -200,25 +200,24 @@ describe("File Controller", ()=>{
       });
     });
 
-    it("should reject and broadcast FILE-ERROR and not get signed url when available space fails", ()=>{
+    it("should perform download when available space fails", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").rejectWith("OS error");
+      simple.mock(urlProvider, "getURL").resolveWith("test-url");
+      simple.mock(file, "request").resolveWith({statusCode: 200, headers: {"Content-length": 100000}});
 
       return fileController.download({filePath: testFilePath, token: testToken})
-      .catch((err) => {
-        assert(err.startsWith("OS error"));
-        assert.equal(broadcastIPC.fileError.lastCall.args[0].filePath, testFilePath);
-        assert(!urlProvider.getURL.called);
+      .then(() => {
+        assert.equal(urlProvider.getURL.called, true);
+        assert.equal(file.request.called, true);
       });
     });
 
     it("should skip download and reuse existing Rise Cache file", ()=>{
       simple.mock(fileSystem, "getAvailableSpace").resolveWith(0);
       simple.mock(fileSystem, "isThereAvailableSpace").returnWith(true);
-      fileSystem.reuseRiseCacheFile.resolveWith(true);
+      simple.mock(fileSystem, "reuseRiseCacheFile").resolveWith(true);
       simple.mock(file, "request");
       simple.mock(urlProvider, "getURL");
-
-      fileController.addToProcessing(testFilePath);
 
       return fileController.download({filePath: testFilePath, token: testToken})
       .then(() => {

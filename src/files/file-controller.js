@@ -20,8 +20,8 @@ function checkAvailableDiskSpace(filePath, fileSize = 0) {
 
     return true;
   }).catch(err => {
-    broadcastIPC.fileError({filePath, msg: "Failed to retrieve available space"});
-    return Promise.reject(err);
+    logger.error(err, "Error getting available space", {file_path: filePath});
+    return true;
   });
 }
 
