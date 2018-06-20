@@ -326,7 +326,7 @@ describe("DB API: Unit", ()=> {
 
       assert.equal(mockCollection.findAndUpdate.callCount, 1);
       assert.deepEqual(mockCollection.findAndUpdate.lastCall.args[1]({}), {
-        lastChanged: "1000"
+        lastChanged: "1000", runtimeSequence: 1
       });
     });
 
