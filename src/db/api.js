@@ -257,7 +257,7 @@ module.exports = {
 
       const currentSequence = module.exports.watchlist.runtimeSequence();
 
-      return watchSequence + MAX_EXPIRE_COUNT < currentSequence;
+      return watchSequence + MAX_EXPIRE_COUNT <= currentSequence;
     }
   }
 

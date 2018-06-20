@@ -119,36 +119,77 @@ describe("lokijs - integration", ()=>{
     assert.deepEqual(db.owners.get(filePath).owners, ["module3"]);
   });
 
-  it("returns a default last changed value", ()=>{
-    const defaultValue = db.watchlist.lastChanged();
+  describe("lastChanged", () => {
+    it("returns a default last changed value", ()=>{
+      const defaultValue = db.watchlist.lastChanged();
 
-    assert.equal(defaultValue, '0');
+      assert.equal(defaultValue, '0');
+    });
+
+    it("sets the last changed value", ()=>{
+      db.watchlist.setLastChanged("123456");
+
+      const lastChanged = db.watchlist.lastChanged();
+
+      assert.equal(lastChanged, "123456");
+    });
+
+    it("sets the last changed value as undefined", ()=>{
+      db.watchlist.setLastChanged();
+
+      const lastChanged = db.watchlist.lastChanged();
+
+      assert.equal(lastChanged, '0');
+    });
+
+    it("doesn't let to set lastChanged value to a less value than its current value", ()=>{
+      db.watchlist.setLastChanged("123456");
+      db.watchlist.setLastChanged("12345");
+      db.watchlist.setLastChanged("1234");
+      db.watchlist.setLastChanged("34");
+
+      const lastChanged = db.watchlist.lastChanged();
+
+      assert.equal(lastChanged, "123456");
+    });
   });
 
-  it("sets the last changed value", ()=>{
-    db.watchlist.setLastChanged("123456");
+  describe("runtimeSequence", () => {
+    it("returns a default runtime sequence value", ()=>{
+      const defaultValue = db.watchlist.runtimeSequence();
 
-    const lastChanged = db.watchlist.lastChanged();
+      assert.equal(defaultValue, 1);
+    });
 
-    assert.equal(lastChanged, "123456");
+    it("increases the runtime sequence value", () => {
+      db.watchlist.increaseRuntimeSequence();
+
+      const runtimeSequence = db.watchlist.runtimeSequence();
+
+      assert.equal(runtimeSequence, 2);
+    });
+
+    it("does not indicate a metadata entry should be expired if it doesn't have a watchSequence field", () => {
+      const shouldBeExpired = db.watchlist.shouldBeExpired({});
+
+      assert(!shouldBeExpired);
+    });
+
+    it("does not indicate a metadata entry should be expired if its watchSequence field value is close to the runtime sequence value", () => {
+      db.watchlist.increaseRuntimeSequence();
+
+      const shouldBeExpired = db.watchlist.shouldBeExpired({watchSequence: 1});
+
+      assert(!shouldBeExpired);
+    });
+
+    it("indicates a metadata entry should be expired if its watchSequence field value is MAX_EXPIRE_COUNT less than the runtime sequence value", () => {
+      Array(5).fill().forEach(db.watchlist.increaseRuntimeSequence);
+
+      const shouldBeExpired = db.watchlist.shouldBeExpired({watchSequence: 1});
+
+      assert(shouldBeExpired);
+    });
   });
 
-  it("sets the last changed value as undefined", ()=>{
-    db.watchlist.setLastChanged();
-
-    const lastChanged = db.watchlist.lastChanged();
-
-    assert.equal(lastChanged, '0');
-  });
-
-  it("doesn't let to set lastChanged value to a less value than its current value", ()=>{
-    db.watchlist.setLastChanged("123456");
-    db.watchlist.setLastChanged("12345");
-    db.watchlist.setLastChanged("1234");
-    db.watchlist.setLastChanged("34");
-
-    const lastChanged = db.watchlist.lastChanged();
-
-    assert.equal(lastChanged, "123456");
-  });
 });
