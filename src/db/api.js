@@ -152,7 +152,7 @@ module.exports = {
   watchlist: {
     clear() {
       clear("watchlist");
-      clear("last_changed");
+      clear("parameters");
     },
     allEntries: ()=>allEntries("watchlist"),
     get(filePath, field = "") {
@@ -204,13 +204,28 @@ module.exports = {
         res();
       });
     },
+    parameters() {
+      const entries = allEntries("parameters");
+
+      if (entries.length > 0) {
+        return entries[0];
+      }
+
+      const parameters = database.getCollection("parameters");
+      return parameters.insert({lastChanged: '0'});
+    },
+    setParameter(key, value) {
+      const parameters = module.exports.watchlist.parameters();
+
+      const entry = {
+        lastChanged: parameters.lastChanged,
+        [key]: value
+      };
+
+      setAll("parameters", entry);
+    },
     lastChanged() {
-      const entries = allEntries("last_changed");
-
-      const entry = entries.length === 0 ?
-        database.getCollection("last_changed").insert({lastChanged: '0'}) : entries[0];
-
-      return entry.lastChanged;
+      return module.exports.watchlist.parameters().lastChanged;
     },
     setLastChanged(lastChanged = "0") {
       const previous = module.exports.watchlist.lastChanged();
@@ -219,7 +234,7 @@ module.exports = {
         return;
       }
 
-      setAll("last_changed", {lastChanged});
+      module.exports.watchlist.setParameter('lastChanged', lastChanged);
     }
   }
 
