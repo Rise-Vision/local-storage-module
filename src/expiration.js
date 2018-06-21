@@ -4,6 +4,7 @@ const logger = require("./logger");
 const SEQUENCE_TIMEOUT = 30 * 60 * 60 * 1000; // eslint-disable-line no-magic-numbers
 
 function clean(filePath) {
+  console.log(filePath);
   return Promise.resolve(filePath);
 }
 

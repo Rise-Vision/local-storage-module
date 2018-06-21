@@ -33,7 +33,7 @@ describe("expiration - integration", () => {
   });
 
   beforeEach(() => {
-    simple.mock(expiration, "clear").resolveWith();
+    simple.mock(expiration, "clean").resolveWith();
   })
 
   afterEach(() => {
@@ -57,7 +57,26 @@ describe("expiration - integration", () => {
 
     return expiration.cleanExpired()
     .then(() => {
-      assert.equal(expiration.clear.callCount, 0);
+      assert.equal(expiration.clean.callCount, 0);
+    });
+  });
+
+  it("expires file entries if they have gone stale", ()=>{
+    const testEntries = [
+      {filePath: "a.txt", status: "STALE", version: "1"},
+      {filePath: "b.txt", status: "CURRENT", watchSequence: 1},
+      {filePath: "c.txt", status: "CURRENT", watchSequence: 1}
+    ];
+
+    db.fileMetadata.put(testEntries[0]);
+    db.fileMetadata.put(testEntries[1]);
+    db.fileMetadata.put(testEntries[2]);
+
+    Array(5).fill().forEach(db.watchlist.increaseRuntimeSequence);
+
+    return expiration.cleanExpired()
+    .then(() => {
+      assert.equal(expiration.clean.callCount, 2);
     });
   });
 
