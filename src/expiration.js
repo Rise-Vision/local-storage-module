@@ -1,13 +1,10 @@
 const db = require("./db/api");
+const fileSystem = require("./files/file-system");
 const logger = require("./logger");
 
 const SEQUENCE_TIMEOUT = 30 * 60 * 60 * 1000; // eslint-disable-line no-magic-numbers
 
-function cleanContentsIfFolder(filePath) {
-  if (!filePath.endsWith("/")) {
-    return Promise.resolve();
-  }
-
+function cleanFolderContents(filePath) {
   const folderFileNames = db.fileMetadata.getFolderFiles(filePath)
   .map(entry => entry.filePath);
 
@@ -15,23 +12,49 @@ function cleanContentsIfFolder(filePath) {
 }
 
 function clean(filePath) {
-  return cleanContentsIfFolder(filePath)
-  .then(() => db.deleteAllDataFor(filePath));
+  return Promise.resolve()
+  .then(() => {
+    const version = db.watchlist.get(filePath, "version");
+    const isFolder = filePath.endsWith("/");
+
+    return (isFolder ? cleanFolderContents(filePath) : Promise.resolve())
+    .then(() => {
+      logger.all('expiration', `removing entry and contents for ${filePath} | ${version}`);
+
+      db.deleteAllDataFor(filePath);
+    })
+    .then(() => {
+      if (isFolder || !version) {
+        return;
+      }
+
+      return fileSystem.removeCacheFile(filePath, version)
+      .catch(error => logger.warning(error.stack));
+    });
+  })
+  .catch(error => logger.error(error, `Error while cleaning expired file: ${filePath}`));
 }
 
 function cleanExpired() {
   return Promise.resolve()
   .then(() => {
+    logger.all('expiration', 'checking expired entries and files');
+
     const expired = db.fileMetadata.find({watchSequence: {"$gt": 0}})
     .filter(db.watchlist.shouldBeExpired);
 
     return Promise.all(expired.map(entry => clean(entry.filePath)));
   })
+  .then(() => logger.all('expiration', 'ending check'))
   .catch(error => logger.error(error, 'Error while cleaning expired entries and files'));
 }
 
 function scheduleIncreaseSequence(schedule = setTimeout) {
-  schedule(() => db.watchlist.increaseRuntimeSequence(), SEQUENCE_TIMEOUT);
+  schedule(() => {
+    const updatedSequence = db.watchlist.increaseRuntimeSequence();
+
+    logger.all('increasing runtime sequence', updatedSequence.toString());
+  }, SEQUENCE_TIMEOUT);
 }
 
 module.exports = {

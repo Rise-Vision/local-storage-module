@@ -118,6 +118,12 @@ module.exports = {
       });
     });
   },
+  removeCacheFile(filePath, version) {
+    const cacheFile = module.exports.getPathInCache(filePath, version);
+
+    logger.file(`removing cache file ${cacheFile}`);
+    return fs.remove(cacheFile);
+  },
   clearLeastRecentlyUsedFiles() {
     return module.exports.getAvailableSpace().then(diskSpace => {
       if (diskSpace > CACHE_CLEANUP_THRESHOLD) {

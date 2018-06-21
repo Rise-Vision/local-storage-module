@@ -270,6 +270,8 @@ module.exports = {
       const nextSequence = currentSequence + 1;
 
       module.exports.watchlist.setParameter('runtimeSequence', nextSequence);
+
+      return nextSequence;
     },
     shouldBeExpired(metadataEntry) {
       const {watchSequence} = metadataEntry;

@@ -5,6 +5,7 @@ const assert = require("assert");
 const database = require("../../src/db/lokijs/database");
 const db = require("../../src/db/api");
 const expiration = require("../../src/expiration");
+const fileSystem = require("../../src/files/file-system");
 const path = require("path");
 const {platform} = require("rise-common-electron");
 const os = require("os");
@@ -34,6 +35,7 @@ describe("expiration - integration", () => {
 
   beforeEach(() => {
     simple.mock(expiration, "clean").resolveWith();
+    simple.mock(fileSystem, "removeCacheFile").resolveWith();
   })
 
   afterEach(() => {
@@ -46,9 +48,9 @@ describe("expiration - integration", () => {
 
   it("doesn't expire entries if their watchSequence is current", ()=>{
     const testEntries = [
-      {filePath: "a.txt", status: "STALE", version: "1"},
-      {filePath: "b.txt", status: "CURRENT", watchSequence: 1},
-      {filePath: "folder/", watchSequence: 1}
+      {filePath: "a.txt", status: "STALE", version: "1.1"},
+      {filePath: "b.txt", status: "CURRENT", watchSequence: 1, version: "1.1"},
+      {filePath: "folder/", watchSequence: 1, version: "1.1"}
     ];
 
     db.fileMetadata.put(testEntries[0]);
@@ -62,14 +64,15 @@ describe("expiration - integration", () => {
     .then(() => {
       assert.equal(db.fileMetadata.allEntries().length, 3);
       assert.equal(db.watchlist.allEntries().length, 3);
+      assert(!fileSystem.removeCacheFile.called);
     });
   });
 
   it("expires file entries if their watchSequence is too old", ()=>{
     const testEntries = [
-      {filePath: "a.txt", status: "STALE", version: "1"},
-      {filePath: "b.txt", status: "CURRENT", watchSequence: 1},
-      {filePath: "c.txt", status: "CURRENT", watchSequence: 1}
+      {filePath: "a.txt", status: "STALE", version: "1.1"},
+      {filePath: "b.txt", status: "CURRENT", watchSequence: 1, version: "1.1"},
+      {filePath: "c.txt", status: "CURRENT", watchSequence: 1, version: "1.1"}
     ];
 
     db.fileMetadata.put(testEntries[0]);
@@ -90,15 +93,24 @@ describe("expiration - integration", () => {
       const watchlistEntries = db.watchlist.allEntries();
       assert.equal(watchlistEntries.length, 1);
       assert.equal(watchlistEntries[0].filePath, "a.txt");
+
+      assert.equal(fileSystem.removeCacheFile.callCount, 2);
+      fileSystem.removeCacheFile.calls.forEach(call => {
+        const filePath = call.args[0];
+        const version = call.args[1];
+
+        assert(['b.txt', 'c.txt'].includes(filePath));
+        assert.equal(version, "1.1");
+      });
     });
   });
 
   it("expires folder entries if their watchSequence is too old", ()=>{
     const testEntries = [
-      {filePath: "a.txt", status: "STALE", version: "1"},
+      {filePath: "a.txt", status: "STALE", version: "1.1"},
       {filePath: "folder/", watchSequence: 1},
-      {filePath: "folder/b.txt", status: "CURRENT"},
-      {filePath: "folder/c.txt", status: "CURRENT"}
+      {filePath: "folder/b.txt", status: "CURRENT", version: "1.1"},
+      {filePath: "folder/c.txt", status: "CURRENT", version: "1.1"}
     ];
 
     db.fileMetadata.put(testEntries[0]);
@@ -121,6 +133,15 @@ describe("expiration - integration", () => {
       const watchlistEntries = db.watchlist.allEntries();
       assert.equal(watchlistEntries.length, 1);
       assert.equal(watchlistEntries[0].filePath, "a.txt");
+
+      assert.equal(fileSystem.removeCacheFile.callCount, 2);
+      fileSystem.removeCacheFile.calls.forEach(call => {
+        const filePath = call.args[0];
+        const version = call.args[1];
+
+        assert(['folder/b.txt', 'folder/c.txt'].includes(filePath));
+        assert.equal(version, "1.1");
+      });
     });
   });
 
