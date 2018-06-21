@@ -22,6 +22,9 @@ module.exports = {
     clear: ()=>clear("metadata"),
     allEntries: ()=>allEntries("metadata"),
     setAll: (updateObj)=>setAll("metadata", updateObj),
+    find(filter) {
+      return database.getCollection("metadata").find(filter);
+    },
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 

@@ -83,6 +83,36 @@ describe("lokijs - integration", ()=>{
       assert.deepEqual(db.fileMetadata.allEntries()[1].filePath, "my-bucket/my-other-file");
       assert.deepEqual(db.fileMetadata.allEntries()[1].status, "UNKNOWN");
     });
+
+    it("finds all entries with watchSequence assigned", ()=>{
+      const testEntries = [
+        {
+          filePath: "my-bucket/my-file",
+          status: "STALE",
+          version: "1"
+        },
+        {
+          filePath: "my-bucket/my-other-file",
+          status: "CURRENT",
+          watchSequence: 1
+        },
+        {
+          filePath: "my-bucket/my-last-file",
+          status: "CURRENT",
+          watchSequence: 23
+        }
+      ];
+
+      db.fileMetadata.put(testEntries[0]);
+      db.fileMetadata.put(testEntries[1]);
+      db.fileMetadata.put(testEntries[2]);
+
+      const entries = db.fileMetadata.find({watchSequence: {"$gt": 0}});
+      assert.equal(entries.length, 2);
+
+      const all = db.fileMetadata.allEntries();
+      assert.equal(all.length, 3);
+    });
   });
 
   describe("watchlist", () => {
