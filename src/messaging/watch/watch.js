@@ -91,7 +91,8 @@ module.exports = {
     }
 
     return db.owners.addToSet({filePath, owner: from})
-    .then(() => processFileOrFolderWatch(message));
+    .then(() => processFileOrFolderWatch(message))
+    .then(() => db.fileMetadata.updateWatchSequence(filePath));
   },
   msResult(message) {
     const {filePath, errorCode, errorMsg, folderData, watchlistLastChanged} = message;

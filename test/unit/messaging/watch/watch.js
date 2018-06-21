@@ -40,6 +40,7 @@ describe("Watch - Unit", ()=>{
       simple.mock(commonMessaging, "sendToMessagingService").returnWith();
       simple.mock(commonConfig, "getModuleDir").returnWith(mockModuleDir);
       simple.mock(commonMessaging, "broadcastMessage").returnWith();
+      simple.mock(db.fileMetadata, "updateWatchSequence").resolveWith();
       simple.mock(db.owners, "get").returnWith({owners: ["test"]});
       simple.mock(commonMessaging, "receiveMessages").resolveWith(mockReceiver);
       simple.mock(logger, "file").returnWith();
@@ -80,6 +81,9 @@ describe("Watch - Unit", ()=>{
           });
 
           assert.equal(commonMessaging.sendToMessagingService.callCount, 0);
+
+          assert(db.fileMetadata.updateWatchSequence.called);
+          assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFilePath);
         });
     });
 
@@ -112,6 +116,9 @@ describe("Watch - Unit", ()=>{
           });
 
           assert.equal(commonMessaging.sendToMessagingService.callCount, 0);
+
+          assert(db.fileMetadata.updateWatchSequence.called);
+          assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFilePath);
         });
     });
 
@@ -131,6 +138,9 @@ describe("Watch - Unit", ()=>{
       return messageReceiveHandler(msg)
       .then(()=>{
         assert(commonMessaging.sendToMessagingService.called);
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFilePath);
       });
     });
 
@@ -153,6 +163,9 @@ describe("Watch - Unit", ()=>{
       return messageReceiveHandler(msg)
       .then(()=>{
         assert(commonMessaging.sendToMessagingService.called);
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFilePath);
       });
     });
 
@@ -172,6 +185,9 @@ describe("Watch - Unit", ()=>{
       return messageReceiveHandler(msg)
       .then(()=>{
         assert.ok(commonMessaging.sendToMessagingService.called);
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
       });
     });
 
@@ -192,6 +208,9 @@ describe("Watch - Unit", ()=>{
       return messageReceiveHandler(msg)
       .then(()=>{
         assert.equal(commonMessaging.sendToMessagingService.called, false);
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
       });
     });
 
@@ -218,6 +237,9 @@ describe("Watch - Unit", ()=>{
         assert.equal(broadcastIPC.fileUpdate.callCount, 2);
         assert.deepEqual(broadcastIPC.fileUpdate.lastCall.args[0], current);
         assert.deepEqual(broadcastIPC.fileUpdate.firstCall.args[0], another);
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
       });
     });
 
@@ -247,6 +269,9 @@ describe("Watch - Unit", ()=>{
           filePath: unknown.filePath,
           version: unknown.version
         });
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
       });
     });
   });
