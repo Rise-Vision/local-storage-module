@@ -110,6 +110,8 @@ describe("lokijs - integration", ()=>{
       const entries = db.fileMetadata.find({watchSequence: {"$gt": 0}});
       assert.equal(entries.length, 2);
 
+      entries.forEach(entry => assert(entry.watchSequence));
+
       const all = db.fileMetadata.allEntries();
       assert.equal(all.length, 3);
     });

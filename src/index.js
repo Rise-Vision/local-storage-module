@@ -32,12 +32,13 @@ const initialize = () => {
 initialize()
   .then(database.start)
   .then(messaging.init)
+  .then(expiration.cleanExpired)
   .then(watchlist.requestWatchlistCompare)
-  .then(expiration.scheduleIncreaseSequence)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{
     setTimeout(()=>{
       logger.all("started");
     }, config.initialLogDelay);
   })
+  .then(expiration.scheduleIncreaseSequence)
   .catch(logger.error);
