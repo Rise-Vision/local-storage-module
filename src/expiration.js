@@ -3,18 +3,20 @@ const logger = require("./logger");
 
 const SEQUENCE_TIMEOUT = 30 * 60 * 60 * 1000; // eslint-disable-line no-magic-numbers
 
+function cleanContentsIfFolder(filePath) {
+  if (!filePath.endsWith("/")) {
+    return Promise.resolve();
+  }
+
+  const folderFileNames = db.fileMetadata.getFolderFiles(filePath)
+  .map(entry => entry.filePath);
+
+  return Promise.all(folderFileNames.map(clean));
+}
+
 function clean(filePath) {
-  return db.deleteAllDataFor(filePath)
-  .then(() => {
-    if (!filePath.endsWith("/")) {
-      return;
-    }
-
-    const folderFileNames = db.fileMetadata.getFolderFiles(filePath)
-    .map(entry => entry.filePath);
-
-    return Promise.all(folderFileNames.map(clean))
-  });
+  return cleanContentsIfFolder(filePath)
+  .then(() => db.deleteAllDataFor(filePath));
 }
 
 function cleanExpired() {
