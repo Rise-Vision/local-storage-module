@@ -77,13 +77,13 @@ module.exports = {
       });
     },
     updateWatchSequence(filePath) {
-      const watchSequence = module.exports.watchlist.runtimeSequence();
-
       const metadata = module.exports.fileMetadata.get(filePath);
 
       if (!metadata) {
         return Promise.reject(Error(`filePath not in local database ${filePath}`));
       }
+
+      const watchSequence = module.exports.watchlist.runtimeSequence();
 
       return module.exports.fileMetadata.put({filePath, watchSequence});
     }
