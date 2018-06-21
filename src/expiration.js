@@ -19,7 +19,7 @@ function clean(filePath) {
 
     return (isFolder ? cleanFolderContents(filePath) : Promise.resolve())
     .then(() => {
-      logger.all('expiration', `removing entry and contents for ${filePath} | ${version}`);
+      logger.all('expiration', `removing metadata and contents for ${filePath} | ${version}`);
 
       db.deleteAllDataFor(filePath);
     })
@@ -32,13 +32,13 @@ function clean(filePath) {
       .catch(error => logger.warning(error.stack));
     });
   })
-  .catch(error => logger.error(error, `Error while cleaning expired file: ${filePath}`));
+  .catch(error => logger.error(error, `Error while removing expired file metadata: ${filePath}`));
 }
 
 function cleanExpired() {
   return Promise.resolve()
   .then(() => {
-    logger.all('expiration', 'checking expired entries and files');
+    logger.all('expiration', 'checking expired metadata and files');
 
     const expired = db.fileMetadata.find({watchSequence: {"$gt": 0}})
     .filter(db.watchlist.shouldBeExpired);
