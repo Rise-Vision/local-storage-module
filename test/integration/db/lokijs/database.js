@@ -206,6 +206,14 @@ describe("lokijs - integration", ()=>{
       });
     });
 
+    it("throws an error if it tries to update a watch sequence over a non registered filePath", ()=>{
+      const filePath = 'my-bucket/my-file';
+
+      return db.fileMetadata.updateWatchSequence(filePath)
+      .then(() => assert.fail())
+      .catch(() => {});
+    });
+
   });
 
 });
