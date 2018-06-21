@@ -75,12 +75,9 @@ function processFileOrFolderWatch(message) {
 
   const existingMetadata = db.fileMetadata.get(filePath);
   const isFolder = filePath.endsWith("/");
+  const action = isFolder ? processFolderWatch : processFileWatch;
 
-  if (isFolder) {
-    return processFolderWatch(message, existingMetadata);
-  }
-
-  return processFileWatch(message, existingMetadata);
+  return action(message, existingMetadata);
 }
 
 module.exports = {
