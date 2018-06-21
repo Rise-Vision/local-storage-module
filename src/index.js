@@ -5,6 +5,7 @@ const watchlist = require("./messaging/watch/watchlist");
 const commonConfig = require("common-display-module");
 const downloadQueue = require("./files/download-queue");
 const config = require("./config/config");
+const expiration = require("./expiration");
 const logger = require("./logger");
 
 const initialize = () => {
@@ -32,6 +33,7 @@ initialize()
   .then(database.start)
   .then(messaging.init)
   .then(watchlist.requestWatchlistCompare)
+  .then(expiration.scheduleIncreaseSequence)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{
     setTimeout(()=>{
