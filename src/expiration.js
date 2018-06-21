@@ -2,7 +2,7 @@ const db = require("./db/api");
 const fileSystem = require("./files/file-system");
 const logger = require("./logger");
 
-const SEQUENCE_TIMEOUT = 30 * 60 * 60 * 1000; // eslint-disable-line no-magic-numbers
+const SEQUENCE_TIMEOUT = 30 * 60 * 1000; // eslint-disable-line no-magic-numbers
 
 function cleanFolderContents(filePath) {
   const folderFileNames = db.fileMetadata.getFolderFiles(filePath)
