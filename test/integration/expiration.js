@@ -44,7 +44,7 @@ describe("expiration - integration", () => {
     db.watchlist.clear();
   });
 
-  it("doesn't expire entries if they haven't gone stale", ()=>{
+  it("doesn't expire entries if their watchSequence is current", ()=>{
     const testEntries = [
       {filePath: "a.txt", status: "STALE", version: "1"},
       {filePath: "b.txt", status: "CURRENT", watchSequence: 1},
@@ -61,7 +61,7 @@ describe("expiration - integration", () => {
     });
   });
 
-  it("expires file entries if they have gone stale", ()=>{
+  it("expires file entries if their watchSequence is too old", ()=>{
     const testEntries = [
       {filePath: "a.txt", status: "STALE", version: "1"},
       {filePath: "b.txt", status: "CURRENT", watchSequence: 1},

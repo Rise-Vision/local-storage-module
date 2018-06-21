@@ -254,4 +254,36 @@ describe("lokijs - integration", ()=>{
 
   });
 
+  describe("all data", () => {
+    it("deletes all data for a given filePath", () => {
+      db.fileMetadata.put({
+        filePath: "my-bucket/my-file",
+        status: "STALE",
+        version: "1"
+      });
+      db.fileMetadata.put({
+        filePath: "my-bucket/my-other-file",
+        status: "CURRENT",
+        version: "2"
+      });
+      db.watchlist.put({
+        filePath: "my-bucket/my-file",
+        version: "1"
+      });
+      db.watchlist.put({
+        filePath: "my-bucket/my-other-file",
+        version: "2"
+      });
+      db.owners.put({filePath: "my-bucket/my-file", owners: ["module1"]});
+      db.owners.put({filePath: "my-bucket/my-other-file", owners: ["module1"]});
+
+      return db.deleteAllDataFor("my-bucket/my-file")
+      .then(() => {
+        assert.equal(db.fileMetadata.allEntries().length, 1);
+        assert.equal(db.owners.allEntries().length, 1);
+        assert.equal(db.watchlist.allEntries().length, 1);
+      });
+    });
+  });
+
 });

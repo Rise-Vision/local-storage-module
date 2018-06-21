@@ -17,7 +17,16 @@ function setAll(collection, updateObj) {
   .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
 }
 
+function deleteAllDataFor(filePath) {
+  return Promise.all([
+    module.exports.fileMetadata.delete(filePath),
+    module.exports.owners.delete(filePath),
+    module.exports.watchlist.delete(filePath)
+  ]);
+}
+
 module.exports = {
+  deleteAllDataFor,
   fileMetadata: {
     clear: ()=>clear("metadata"),
     allEntries: ()=>allEntries("metadata"),
@@ -92,6 +101,7 @@ module.exports = {
     }
   },
   owners: {
+    allEntries: ()=>allEntries("owners"),
     clear: ()=>clear("owners"),
     get(filePath) {
       if (!filePath) {throw Error("missing params");}
@@ -144,7 +154,6 @@ module.exports = {
 
         res();
       });
-
     },
     delete(filePath) {
       if (!filePath) {throw Error("missing params");}
