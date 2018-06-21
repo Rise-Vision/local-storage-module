@@ -75,6 +75,17 @@ module.exports = {
 
         res();
       });
+    },
+    updateWatchSequence(filePath) {
+      const watchSequence = module.exports.watchlist.runtimeSequence();
+
+      const metadata = module.exports.fileMetadata.get(filePath);
+
+      if (!metadata) {
+        return Promise.reject(Error(`filePath not in local database ${filePath}`));
+      }
+
+      return module.exports.fileMetadata.put({filePath, watchSequence});
     }
   },
   owners: {

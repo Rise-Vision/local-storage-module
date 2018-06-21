@@ -355,6 +355,16 @@ describe("DB API: Unit", ()=> {
           lastChanged: "0", runtimeSequence: 2
         });
       });
+
+      it("updates watchSequence", ()=> {
+        return db.fileMetadata.updateWatchSequence('test-path')
+        .then(() => {
+          assert(mockCollection.update.called);
+          assert.deepEqual(mockCollection.update.lastCall.args[0], {
+            filePath: "test-path", version: "1.0.0", watchSequence: 1
+          });
+        });
+      });
     });
 
   });

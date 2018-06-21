@@ -190,6 +190,22 @@ describe("lokijs - integration", ()=>{
 
       assert(shouldBeExpired);
     });
+
+    it("updates watchSequence", ()=>{
+      const filePath = 'my-bucket/my-file';
+      const testEntry = {
+        filePath, status: "STALE", version: "1"
+      };
+
+      return db.fileMetadata.put(testEntry)
+      .then(() => db.fileMetadata.updateWatchSequence(filePath))
+      .then(() => {
+        const sequence = db.fileMetadata.get(filePath, 'watchSequence');
+
+        assert.equal(sequence, 1);
+      });
+    });
+
   });
 
 });
