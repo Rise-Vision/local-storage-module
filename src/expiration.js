@@ -21,7 +21,7 @@ function clean(filePath) {
     .then(() => {
       logger.all('expiration', `removing metadata and contents for ${filePath} | ${version}`);
 
-      db.deleteAllDataFor(filePath);
+      return db.deleteAllDataFor(filePath);
     })
     .then(() => {
       if (isFolder || !version) {
