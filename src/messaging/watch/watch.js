@@ -70,6 +70,19 @@ function requestMSUpdate(message, metaData) {
   });
 }
 
+function processFileOrFolderWatch(message) {
+  const {filePath} = message;
+
+  const existingMetadata = db.fileMetadata.get(filePath);
+  const isFolder = filePath.endsWith("/");
+
+  if (isFolder) {
+    return processFolderWatch(message, existingMetadata);
+  }
+
+  return processFileWatch(message, existingMetadata);
+}
+
 module.exports = {
   process(message) {
     const {filePath, from} = message;
@@ -81,14 +94,7 @@ module.exports = {
     }
 
     return db.owners.addToSet({filePath, owner: from})
-    .then(()=>{
-      const existingMetadata = db.fileMetadata.get(filePath);
-      const isFolder = filePath.endsWith("/");
-      if (isFolder) {
-        return processFolderWatch(message, existingMetadata);
-      }
-      return processFileWatch(message, existingMetadata);
-    });
+    .then(() => processFileOrFolderWatch(message));
   },
   msResult(message) {
     const {filePath, errorCode, errorMsg, folderData, watchlistLastChanged} = message;
