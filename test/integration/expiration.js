@@ -54,10 +54,14 @@ describe("expiration - integration", () => {
     db.fileMetadata.put(testEntries[0]);
     db.fileMetadata.put(testEntries[1]);
     db.fileMetadata.put(testEntries[2]);
+    db.watchlist.put(testEntries[0]);
+    db.watchlist.put(testEntries[1]);
+    db.watchlist.put(testEntries[2]);
 
     return expiration.cleanExpired()
     .then(() => {
-      assert.equal(expiration.clean.callCount, 0);
+      assert.equal(db.fileMetadata.allEntries().length, 3);
+      assert.equal(db.watchlist.allEntries().length, 3);
     });
   });
 
@@ -71,12 +75,21 @@ describe("expiration - integration", () => {
     db.fileMetadata.put(testEntries[0]);
     db.fileMetadata.put(testEntries[1]);
     db.fileMetadata.put(testEntries[2]);
+    db.watchlist.put(testEntries[0]);
+    db.watchlist.put(testEntries[1]);
+    db.watchlist.put(testEntries[2]);
 
     Array(5).fill().forEach(db.watchlist.increaseRuntimeSequence);
 
     return expiration.cleanExpired()
     .then(() => {
-      assert.equal(expiration.clean.callCount, 2);
+      const metadataEntries = db.fileMetadata.allEntries();
+      assert.equal(metadataEntries.length, 1);
+      assert.equal(metadataEntries[0].filePath, "a.txt");
+
+      const watchlistEntries = db.watchlist.allEntries();
+      assert.equal(watchlistEntries.length, 1);
+      assert.equal(watchlistEntries[0].filePath, "a.txt");
     });
   });
 
