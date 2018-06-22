@@ -177,7 +177,7 @@ module.exports = {
   watchlist: {
     clear() {
       clear("watchlist");
-      clear("parameters");
+      clear("runtime_info");
     },
     allEntries: ()=>allEntries("watchlist"),
     get(filePath, field = "") {
@@ -229,29 +229,29 @@ module.exports = {
         res();
       });
     },
-    parameters() {
-      const entries = allEntries("parameters");
+    runtimeInfo() {
+      const entries = allEntries("runtime_info");
 
       if (entries.length > 0) {
         return entries[0];
       }
 
-      const parameters = database.getCollection("parameters");
-      return parameters.insert({lastChanged: '0', runtimeSequence: 1});
+      const runtimeInfo = database.getCollection("runtime_info");
+      return runtimeInfo.insert({lastChanged: '0', runtimeSequence: 1});
     },
     setParameter(key, value) {
-      const parameters = module.exports.watchlist.parameters();
+      const runtimeInfo = module.exports.watchlist.runtimeInfo();
 
       const entry = {
-        lastChanged: parameters.lastChanged,
-        runtimeSequence: parameters.runtimeSequence,
+        lastChanged: runtimeInfo.lastChanged,
+        runtimeSequence: runtimeInfo.runtimeSequence,
         [key]: value
       };
 
-      setAll("parameters", entry);
+      setAll("runtime_info", entry);
     },
     lastChanged() {
-      return module.exports.watchlist.parameters().lastChanged;
+      return module.exports.watchlist.runtimeInfo().lastChanged;
     },
     setLastChanged(lastChanged = "0") {
       const previous = module.exports.watchlist.lastChanged();
@@ -263,7 +263,7 @@ module.exports = {
       module.exports.watchlist.setParameter('lastChanged', lastChanged);
     },
     runtimeSequence() {
-      return module.exports.watchlist.parameters().runtimeSequence;
+      return module.exports.watchlist.runtimeInfo().runtimeSequence;
     },
     increaseRuntimeSequence() {
       const currentSequence = module.exports.watchlist.runtimeSequence();
