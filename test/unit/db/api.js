@@ -315,27 +315,57 @@ describe("DB API: Unit", ()=> {
         });
     });
 
-    it("gets default lastChanged value as 0", ()=> {
-      const defaultValue = db.watchlist.lastChanged();
+    describe("lastChanged", () => {
+      it("gets default lastChanged value as 0", ()=> {
+        const defaultValue = db.watchlist.lastChanged();
 
-      assert.equal(defaultValue, "0");
-    });
+        assert.equal(defaultValue, "0");
+      });
 
-    it("sets lastChanged value", ()=> {
-      db.watchlist.setLastChanged("1000");
+      it("sets lastChanged value", ()=> {
+        db.watchlist.setLastChanged("1000");
 
-      assert.equal(mockCollection.findAndUpdate.callCount, 1);
-      assert.deepEqual(mockCollection.findAndUpdate.lastCall.args[1]({}), {
-        lastChanged: "1000"
+        assert.equal(mockCollection.findAndUpdate.callCount, 1);
+        assert.deepEqual(mockCollection.findAndUpdate.lastCall.args[1]({}), {
+          lastChanged: "1000", runtimeSequence: 1
+        });
+      });
+
+      it("doesn't let change lastChanged to a value less that its current one", ()=> {
+        simple.mock(db.watchlist, "lastChanged").returnWith(1000);
+
+        db.watchlist.setLastChanged("100");
+
+        assert(!mockCollection.findAndUpdate.called);
       });
     });
 
-    it("doesn't let change lastChanged to a value less that its current one", ()=> {
-      simple.mock(db.watchlist, "lastChanged").returnWith(1000);
+    describe("runtimeSequence", () => {
+      it("gets default runtimeSequence value as 1", ()=> {
+        const defaultValue = db.watchlist.runtimeSequence();
 
-      db.watchlist.setLastChanged("100");
+        assert.equal(defaultValue, 1);
+      });
 
-      assert(!mockCollection.findAndUpdate.called);
+      it("increases runtimeSequence value", ()=> {
+        db.watchlist.increaseRuntimeSequence();
+
+        assert.equal(mockCollection.findAndUpdate.callCount, 1);
+        assert.deepEqual(mockCollection.findAndUpdate.lastCall.args[1]({}), {
+          lastChanged: "0", runtimeSequence: 2
+        });
+      });
+
+      it("updates watchSequence", ()=> {
+        return db.fileMetadata.updateWatchSequence('test-path')
+        .then(() => {
+          assert(mockCollection.update.called);
+          assert.deepEqual(mockCollection.update.lastCall.args[0], {
+            filePath: "test-path", version: "1.0.0", watchSequence: 1
+          });
+        });
+      });
     });
+
   });
 });

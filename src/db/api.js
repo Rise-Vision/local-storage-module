@@ -2,6 +2,8 @@
 
 const database = require("./lokijs/database");
 
+const MAX_EXPIRE_COUNT = 5;
+
 function allEntries(collection) {
   return database.getCollection(collection).find();
 }
@@ -15,11 +17,23 @@ function setAll(collection, updateObj) {
   .findAndUpdate({}, (doc)=>Object.assign(doc, updateObj));
 }
 
+function deleteAllDataFor(filePath) {
+  return Promise.all([
+    module.exports.fileMetadata.delete(filePath),
+    module.exports.owners.delete(filePath),
+    module.exports.watchlist.delete(filePath)
+  ]);
+}
+
 module.exports = {
+  deleteAllDataFor,
   fileMetadata: {
     clear: ()=>clear("metadata"),
     allEntries: ()=>allEntries("metadata"),
     setAll: (updateObj)=>setAll("metadata", updateObj),
+    find(filter) {
+      return database.getCollection("metadata").find(filter);
+    },
     get(filePath, field = "") {
       if (!filePath) {throw Error("missing params");}
 
@@ -73,9 +87,21 @@ module.exports = {
 
         res();
       });
+    },
+    updateWatchSequence(filePath) {
+      const metadata = module.exports.fileMetadata.get(filePath);
+
+      if (!metadata) {
+        return Promise.reject(Error(`filePath not in local database ${filePath}`));
+      }
+
+      const watchSequence = module.exports.watchlist.runtimeSequence();
+
+      return module.exports.fileMetadata.put({filePath, watchSequence});
     }
   },
   owners: {
+    allEntries: ()=>allEntries("owners"),
     clear: ()=>clear("owners"),
     get(filePath) {
       if (!filePath) {throw Error("missing params");}
@@ -128,7 +154,6 @@ module.exports = {
 
         res();
       });
-
     },
     delete(filePath) {
       if (!filePath) {throw Error("missing params");}
@@ -152,7 +177,7 @@ module.exports = {
   watchlist: {
     clear() {
       clear("watchlist");
-      clear("last_changed");
+      clear("runtime_info");
     },
     allEntries: ()=>allEntries("watchlist"),
     get(filePath, field = "") {
@@ -204,13 +229,29 @@ module.exports = {
         res();
       });
     },
+    runtimeInfo() {
+      const entries = allEntries("runtime_info");
+
+      if (entries.length > 0) {
+        return entries[0];
+      }
+
+      const runtimeInfo = database.getCollection("runtime_info");
+      return runtimeInfo.insert({lastChanged: '0', runtimeSequence: 1});
+    },
+    setParameter(key, value) {
+      const runtimeInfo = module.exports.watchlist.runtimeInfo();
+
+      const entry = {
+        lastChanged: runtimeInfo.lastChanged,
+        runtimeSequence: runtimeInfo.runtimeSequence,
+        [key]: value
+      };
+
+      setAll("runtime_info", entry);
+    },
     lastChanged() {
-      const entries = allEntries("last_changed");
-
-      const entry = entries.length === 0 ?
-        database.getCollection("last_changed").insert({lastChanged: '0'}) : entries[0];
-
-      return entry.lastChanged;
+      return module.exports.watchlist.runtimeInfo().lastChanged;
     },
     setLastChanged(lastChanged = "0") {
       const previous = module.exports.watchlist.lastChanged();
@@ -219,7 +260,29 @@ module.exports = {
         return;
       }
 
-      setAll("last_changed", {lastChanged});
+      module.exports.watchlist.setParameter('lastChanged', lastChanged);
+    },
+    runtimeSequence() {
+      return module.exports.watchlist.runtimeInfo().runtimeSequence;
+    },
+    increaseRuntimeSequence() {
+      const currentSequence = module.exports.watchlist.runtimeSequence();
+      const nextSequence = currentSequence + 1;
+
+      module.exports.watchlist.setParameter('runtimeSequence', nextSequence);
+
+      return nextSequence;
+    },
+    shouldBeExpired(metadataEntry) {
+      const {watchSequence} = metadataEntry;
+
+      if (!watchSequence) {
+        return false;
+      }
+
+      const currentSequence = module.exports.watchlist.runtimeSequence();
+
+      return watchSequence + MAX_EXPIRE_COUNT <= currentSequence;
     }
   }
 
