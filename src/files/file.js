@@ -1,6 +1,6 @@
 const request = require("request");
 const fs = require("fs");
-const proxy = require("./proxy");
+const proxy = require("common-display-module/proxy");
 const util = require("util");
 const fileSystem = require("./file-system");
 const config = require("../config/config");
