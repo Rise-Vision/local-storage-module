@@ -1,5 +1,5 @@
 const request = require("request-promise-native");
-const proxy = require("./proxy")
+const proxy = require("common-display-module/proxy");
 const util = require("util");
 const broadcastIPC = require("../../src/messaging/broadcast-ipc");
 
