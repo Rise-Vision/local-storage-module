@@ -33,7 +33,7 @@ function processFileWatch(message, existingMetadata) {
   const metadata = existingMetadata || {filePath: message.filePath};
   metadata.status = metadata.status || "UNKNOWN";
 
-  if (metadata.status === "UNKNOWN") {
+  if (metadata.status === "UNKNOWN" || metadata.status === "PENDING") {
     return requestMSUpdate(message, metadata);
   }
 

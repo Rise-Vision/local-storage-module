@@ -274,6 +274,38 @@ describe("Watch - Unit", ()=>{
         assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
       });
     });
+
+    it("requests MS update of local folder files with status PENDING", () => {
+      const mockMetadata = {filePath: testFolderPath};
+      const current = {filePath: `${testFolderPath}current.png`, status: "CURRENT", version: "1"};
+      const unknown = {filePath: `${testFolderPath}unknown.png`, status: "PENDING", version: "0"};
+      const mockFolderFiles = [unknown, current];
+
+      simple.mock(db.fileMetadata, "getFolderFiles").returnWith(mockFolderFiles);
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.owners, "addToSet").resolveWith();
+      simple.mock(broadcastIPC, "fileUpdate");
+      simple.mock(commonMessaging, "sendToMessagingService").returnWith();
+
+      const msg = {
+        topic: "watch",
+        from: "test-module",
+        filePath: testFolderPath
+      };
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.ok(commonMessaging.sendToMessagingService.called);
+        assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
+          filePath: unknown.filePath,
+          version: unknown.version
+        });
+
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
+      });
+    });
   });
 
   describe("WATCH-RESULT", ()=>{
