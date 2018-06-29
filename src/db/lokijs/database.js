@@ -61,6 +61,16 @@ function syncCacheMetadataWithFileSystem() {
   .catch(() => logger.warning("Error when reading cache dir to sync metadata database"));
 }
 
+// eslint-disable-line TODO remove this on next release
+function clearPendingEntries() {
+  const metadata = db.getCollection("metadata");
+  metadata.find({status: "PENDING"})
+  .forEach(entry => {
+    logger.file(JSON.stringify(entry), "Marking PENDING as UNKNOWN in the database");
+    metadata.update(Object.assign({}, entry, {status: "UNKNOWN"}));
+  });
+}
+
 module.exports = {
   close(cb) {
     if (db) {
@@ -73,7 +83,9 @@ module.exports = {
     }
   },
   start(dirPath = null, saveInterval = defaultSaveInterval) {
-    return initLokijs(dirPath, saveInterval).then(() => syncCacheMetadataWithFileSystem());
+    return initLokijs(dirPath, saveInterval)
+      .then(() => syncCacheMetadataWithFileSystem())
+      .then(() => clearPendingEntries());
   },
   getCollection(name) {
     return db.getCollection(name);

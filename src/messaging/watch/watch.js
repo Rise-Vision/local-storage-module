@@ -59,10 +59,6 @@ function processFolderWatch(message, existingMetadata) {
 
 function requestMSUpdate(message, metaData) {
   const msMessage = Object.assign({}, message, {version: metaData.version || "0"});
-  const isFolder = metaData.filePath.endsWith("/");
-  if (!isFolder) {
-    metaData.status = metaData.status === "UNKNOWN" ? "PENDING" : metaData.status;
-  }
 
   return db.fileMetadata.put(metaData)
   .then(()=>{

@@ -98,10 +98,10 @@ describe("watchlist - integration", ()=>{
 
         assert.deepEqual(metaDataList, [
           {
-            filePath: "bucket/file1", status: "PENDING", version: "1"
+            filePath: "bucket/file1", status: "UNKNOWN", version: "1"
           },
           {
-            filePath: "bucket/file2", status: "PENDING", version: "2"
+            filePath: "bucket/file2", status: "UNKNOWN", version: "2"
           },
           {
             filePath: "bucket/file3", status: "CURRENT", version: "3"
@@ -146,16 +146,16 @@ describe("watchlist - integration", ()=>{
 
         assert.deepEqual(metaDataList, [
           {
-            filePath: "bucket/file1", status: "PENDING", version: "1"
+            filePath: "bucket/file1", status: "UNKNOWN", version: "1"
           },
           {
-            filePath: "bucket/file2", status: "PENDING", version: "2"
+            filePath: "bucket/file2", status: "UNKNOWN", version: "2"
           },
           {
             filePath: "bucket/file3", status: "CURRENT", version: "3"
           },
           {
-            filePath: "bucket/dir/file4", status: "PENDING", version: "0"
+            filePath: "bucket/dir/file4", status: "UNKNOWN", version: "0"
           }
         ]);
 
@@ -207,7 +207,7 @@ describe("watchlist - integration", ()=>{
 
         assert.deepEqual(metaDataList, [
           {
-            filePath: "bucket/file1", status: "PENDING", version: "1"
+            filePath: "bucket/file1", status: "UNKNOWN", version: "1"
           },
           {
             filePath: "bucket/file2", status: "UNKNOWN", version: "2"
