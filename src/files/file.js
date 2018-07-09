@@ -6,14 +6,22 @@ const fileSystem = require("./file-system");
 const config = require("../config/config");
 const broadcastIPC = require("../messaging/broadcast-ipc");
 const logger = require("../logger");
+const urlParse = require('url').parse;
 
 const twoMinTimeout = 60 * 2; // eslint-disable-line no-magic-numbers
 const defaultRetryTimeout = 3000;
 const requestRetries = 4;
 
 const requestFile = (signedURL) => {
+
+  // As per https://github.com/request/request/issues/2390 we need to manually undo the ' escape
+  const uri = urlParse(signedURL);
+  uri.pathname = uri.pathname.replace('%27', "'")
+  uri.path = uri.path.replace('%27', "'")
+  uri.href = uri.href.replace('%27', "'")
+
   const options = {
-    uri: signedURL,
+    uri,
     timeout: config.secondMillis * twoMinTimeout,
     resolveWithFullResponse: true,
     proxy: proxy.getProxyUri()
