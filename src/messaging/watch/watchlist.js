@@ -39,8 +39,9 @@ function markMissingFilesAsUnknown(remoteWatchlist) {
 
   return Promise.all(localWatchlist
     .filter(entry => !remoteWatchlist[entry.filePath])
-    .map(entry => {
-      const metaData = db.fileMetadata.get(entry.filePath);
+    .map(entry => db.fileMetadata.get(entry.filePath))
+    .filter(entry => entry && entry.filePath)
+    .map(metaData => {
       const updatedMetaData = withUnknownStatus(metaData);
 
       return db.fileMetadata.put(updatedMetaData);
