@@ -266,6 +266,7 @@ describe("Watch - Unit", ()=>{
       .then(()=>{
         assert.ok(commonMessaging.sendToMessagingService.called);
         assert.deepEqual(commonMessaging.sendToMessagingService.lastCall.args[0], {
+          topic: "watch",
           filePath: unknown.filePath,
           version: unknown.version
         });
