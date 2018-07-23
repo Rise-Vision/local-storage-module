@@ -72,6 +72,19 @@ describe("lokijs", () => {
       })
     });
 
+    it("should set version to 0 for files with unknown state that are not cached", ()=>{
+      simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
+      simple.mock(fileSystem, "readCacheDir").resolveWith([]);
+
+      return mockPersistedMetadata([{filePath: 'notCached', version: 'any', status: 'UNKNOWN'}])
+      .then(() => database.syncCacheMetadataWithFileSystem())
+      .then(() => {
+        const changed = database.getCollection("metadata").findOne({status: 'UNKNOWN'});
+        assert.equal(changed.filePath, 'notCached');
+        assert.equal(changed.version, '0');
+      })
+    });
+
     it("should not change non current files", ()=>{
       simple.mock(commonConfig, "getModulePath").returnWith(tempDir);
       simple.mock(fileSystem, "readCacheDir").resolveWith([]);
