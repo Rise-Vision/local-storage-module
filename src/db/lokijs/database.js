@@ -48,7 +48,8 @@ function syncCacheMetadataWithFileSystem() {
   const metadata = db.getCollection("metadata");
 
   return fileSystem.readCacheDir().then(cached => {
-    metadata.find({status: {'$in': ["CURRENT", "UNKNOWN"]}})
+    const validPersistedFileStates = ["CURRENT", "UNKNOWN"];
+    metadata.find({status: {'$in': validPersistedFileStates}})
     .filter(entry => {
       const pathInCache = fileSystem.getPathInCache(entry.filePath, entry.version);
       return cached.indexOf(pathInCache) < 0;
