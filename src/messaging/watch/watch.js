@@ -33,6 +33,8 @@ function processFileWatch(message, existingMetadata) {
   const metadata = existingMetadata || {filePath: message.filePath};
   metadata.status = metadata.status || "UNKNOWN";
 
+  logger.file(`processing watch for file ${JSON.stringify(metadata)}`);
+
   if (metadata.status === "UNKNOWN") {
     return requestMSUpdate(message, metadata);
   }
@@ -49,7 +51,7 @@ function processFolderWatch(message, existingMetadata) {
   if (existingMetadata) {
     const folderFiles = db.fileMetadata.getFolderFiles(folderPath);
     logger.file(JSON.stringify(folderFiles), `Processing watch for existing folder ${folderPath}`);
-    const promises = folderFiles.map(fileMetadata => processFileWatch({filePath: fileMetadata.filePath}, fileMetadata));
+    const promises = folderFiles.map(fileMetadata => processFileWatch({filePath: fileMetadata.filePath, topic: 'watch'}, fileMetadata));
     return Promise.all(promises);
   }
 
