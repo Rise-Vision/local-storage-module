@@ -16,9 +16,9 @@ const requestFile = (signedURL) => {
 
   // As per https://github.com/request/request/issues/2390 we need to manually undo the ' escape
   const uri = urlParse(signedURL);
-  uri.pathname = uri.pathname.replace('%27', "'")
-  uri.path = uri.path.replace('%27', "'")
-  uri.href = uri.href.replace('%27', "'")
+  uri.pathname = uri.pathname.replace(/%27/g, "'")
+  uri.path = uri.path.replace(/%27/g, "'")
+  uri.href = uri.href.replace(/%27/g, "'")
 
   const options = {
     uri,
