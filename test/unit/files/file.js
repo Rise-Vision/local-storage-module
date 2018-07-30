@@ -76,6 +76,21 @@ describe("File", ()=>{
         })
     });
 
+    it("should not escape ' character on signed url", ()=>{
+      const mock = simple.mock(request, "get");
+
+      const pathWithApostrophe = "/test-'file'.jpg";
+      const testSignedURLWithApostrophe = `http://test-signed-url.com${pathWithApostrophe}`;
+
+      file.request(testFilePath, testSignedURLWithApostrophe, 4, 0);
+
+      console.log(mock.calls[0].args[0].uri);
+
+      assert.equal(mock.calls[0].args[0].uri.pathname, pathWithApostrophe);
+      assert.equal(mock.calls[0].args[0].uri.path, pathWithApostrophe);
+      assert.equal(mock.calls[0].args[0].uri.href, testSignedURLWithApostrophe);
+    });
+
   });
 
   describe("writeToDisk", ()=> {
