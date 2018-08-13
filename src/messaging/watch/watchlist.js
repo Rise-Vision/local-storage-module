@@ -1,6 +1,5 @@
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
-const addition = require("../add/add");
 const update = require("../update/update");
 const watch = require("./watch");
 
@@ -14,7 +13,7 @@ function requestWatchlistCompare() {
 function addNewFile(filePath) {
   const metaData = {filePath, version: '0', status: "UNKNOWN"};
 
-  return addition.assignOwnersOfParentDirectory(metaData, 'WATCHLIST-RESULT')
+  return update.assignOwnersOfParentDirectory(metaData, 'WATCHLIST-RESULT')
   .then(assigned => {
      if (assigned) {
        return update.updateWatchlistAndMetadata(metaData)

@@ -2,7 +2,6 @@ const broadcastIPC = require("../broadcast-ipc");
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const entry = require("./entry");
-const addition = require("../add/add");
 const update = require("../update/update");
 const logger = require("../../logger");
 
@@ -24,7 +23,7 @@ function handleFolderWatchResult(message) {
   const {folderData} = message;
 
   return Promise.all(folderData.map(fileData => {
-    return addition.assignOwnersOfParentDirectory(fileData, 'WATCH-RESULT')
+    return update.assignOwnersOfParentDirectory(fileData, 'WATCH-RESULT')
     .then(assigned => assigned && handleFileWatchResult(fileData));
   }));
 }

@@ -7,6 +7,7 @@ const db = require("../../../../src/db/api");
 const simple = require("simple-mock");
 const commonConfig = require("common-display-module");
 const commonMessaging = require("common-display-module/messaging");
+const add = require("../../../../src/messaging/add/add.js");
 const broadcastIPC = require("../../../../src/messaging/broadcast-ipc.js");
 
 describe("UPDATE - unit", ()=>{
@@ -136,4 +137,36 @@ describe("UPDATE - unit", ()=>{
       });
   });
 
+  it("ensures folder watchers are owners in case a deletion was received previously due to trashing", ()=>{
+    const msg = {
+      topic: "msfileupdate",
+      type: "update",
+      from: "messaging-service",
+      filePath: "test-bucket/test-file1",
+      version: "2.1.0",
+      token: {
+        hash: "abc123",
+        data: {
+          displayId: "test-display",
+          date: Date.now(),
+          filePath: "test-bucket/test-file1"
+        }
+      }
+    };
+
+    simple.mock(broadcastIPC, "fileUpdate");
+    simple.mock(db.owners, "put").returnWith();
+    simple.mock(db.owners, "get").returnWith({owners: ["test-owner"]});
+
+    return messageReceiveHandler(msg)
+    .then(()=>{
+      console.log(add);
+      assert(db.owners.put.called);
+
+      assert.deepEqual(db.owners.put.lastCall.args[0], {
+        filePath: msg.filePath,
+        owners: ["test-owner"]
+      });
+    });
+  });
 });

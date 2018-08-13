@@ -10,6 +10,7 @@ const simple = require("simple-mock");
 const database = require("../../../src/db/lokijs/database");
 const db = require("../../../src/db/api");
 const addition = require("../../../src/messaging/add/add");
+const update = require("../../../src/messaging/update/update");
 
 const dbSaveInterval = 5;
 
@@ -54,7 +55,7 @@ describe("ADD - integration", ()=>{
 
     fillDatabase();
 
-    return addition.assignOwnersOfParentDirectory({filePath}, 'MSFILEUPDATE')
+    return update.assignOwnersOfParentDirectory({filePath}, 'MSFILEUPDATE')
     .then(assigned => {
       assert(assigned);
 
@@ -69,7 +70,7 @@ describe("ADD - integration", ()=>{
   it("does not fail if there is no owner registered for parent directory", () => {
     const filePath = "bucket/directory/file1";
 
-    return addition.assignOwnersOfParentDirectory({filePath}, 'MSFILEUPDATE')
+    return update.assignOwnersOfParentDirectory({filePath}, 'MSFILEUPDATE')
     .then(assigned => assert(!assigned));
   });
 

@@ -1,4 +1,5 @@
 const db = require("../../db/api");
+const {dirname} = require("path");
 const entry = require("./entry");
 const broadcastIPC = require("../broadcast-ipc");
 const logger = require("../../logger");
@@ -22,7 +23,8 @@ module.exports = {
   },
   process(message) {
     return module.exports.validate(message, "update")
-    .then(module.exports.update);
+    .then(()=>module.exports.assignOwnersOfParentDirectory(message, 'MSFILEUPDATE'))
+    .then(()=>module.exports.update(message));
   },
   validate(message, type) {
     const {filePath, version, token} = message;
@@ -35,5 +37,20 @@ module.exports = {
     }
 
     return Promise.resolve(message);
+  },
+  assignOwnersOfParentDirectory(message, topic) {
+    const {filePath} = message;
+
+    const folderPath = `${dirname(filePath)}/`;
+    const folderItem = db.owners.get(folderPath);
+
+    if (!folderItem) {
+      logger.warning(`No owners registered for folder ${folderPath} | topic: ${topic}`);
+
+      return Promise.resolve(false);
+    }
+
+    db.owners.put({filePath, owners: folderItem.owners});
+    return Promise.resolve(true);
   }
 };
