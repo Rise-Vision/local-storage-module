@@ -38,6 +38,8 @@ const handleMSFileUpdate = (message) => {
 
   if (!action) {return;}
 
+  logger.all(`MS file ${type} received`, {file_path: message.filePath});
+
   return action.process(message)
   .catch(err => {
     logger.error(err, `Handle MSFILEUPDATE ${type} Error`, {file_path: message.filePath});
