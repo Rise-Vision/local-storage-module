@@ -2,8 +2,6 @@
 
 const database = require("./lokijs/database");
 
-const MAX_EXPIRE_COUNT = 5;
-
 function allEntries(collection) {
   return database.getCollection(collection).find();
 }
@@ -272,17 +270,6 @@ module.exports = {
       module.exports.watchlist.setParameter('runtimeSequence', nextSequence);
 
       return nextSequence;
-    },
-    shouldBeExpired(metadataEntry) {
-      const {watchSequence} = metadataEntry;
-
-      if (!watchSequence) {
-        return false;
-      }
-
-      const currentSequence = module.exports.watchlist.runtimeSequence();
-
-      return watchSequence + MAX_EXPIRE_COUNT <= currentSequence;
     }
   }
 

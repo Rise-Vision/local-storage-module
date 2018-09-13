@@ -207,28 +207,6 @@ describe("lokijs - integration", ()=>{
       assert.equal(runtimeSequence, 2);
     });
 
-    it("does not indicate a metadata entry should be expired if it doesn't have a watchSequence field", () => {
-      const shouldBeExpired = db.watchlist.shouldBeExpired({});
-
-      assert(!shouldBeExpired);
-    });
-
-    it("does not indicate a metadata entry should be expired if its watchSequence field value is close to the runtime sequence value", () => {
-      db.watchlist.increaseRuntimeSequence();
-
-      const shouldBeExpired = db.watchlist.shouldBeExpired({watchSequence: 1});
-
-      assert(!shouldBeExpired);
-    });
-
-    it("indicates a metadata entry should be expired if its watchSequence field value is MAX_EXPIRE_COUNT less than the runtime sequence value", () => {
-      Array(5).fill().forEach(db.watchlist.increaseRuntimeSequence);
-
-      const shouldBeExpired = db.watchlist.shouldBeExpired({watchSequence: 1});
-
-      assert(shouldBeExpired);
-    });
-
     it("updates watchSequence", ()=>{
       const filePath = 'my-bucket/my-file';
       const testEntry = {

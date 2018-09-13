@@ -6,7 +6,7 @@
   "scripts": {
     "build": "eslint . && webpack",
     "postbuild": "rimraf build/local-storage && rimraf build/*.zip",
-    "test": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/**",
+    "test": "npm run test-unit && npm run test-integration",
     "test-integration": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/integration/**",
     "test-unit": "eslint . && mocha -r test/mocha-env.js -t 20000 --recursive --exit test/unit/**"
   },
