@@ -1,4 +1,4 @@
-/* eslint-disable max-statements */
+/* eslint-disable max-statements, max-lines */
 
 const database = require("./lokijs/database");
 
@@ -270,6 +270,31 @@ module.exports = {
       module.exports.watchlist.setParameter('runtimeSequence', nextSequence);
 
       return nextSequence;
+    }
+  },
+  expired: {
+    clear: ()=>clear("expired"),
+    allEntries: ()=>allEntries("expired"),
+    put(filePath) {
+      if (!filePath) {throw Error("missing params");}
+
+      return new Promise((res, rej)=>{
+        const expired = database.getCollection("expired");
+
+        let item = expired.by("filePath", filePath);
+
+        if (!item) {
+          item = expired.insert({filePath});
+        }
+
+        try {
+          expired.update(item);
+        } catch (err) {
+          rej(err);
+        }
+
+        res();
+      });
     }
   }
 

@@ -6,6 +6,7 @@ const update = require("./update/update");
 const watch = require("./watch/watch");
 const watchlist = require("./watch/watchlist");
 const logger = require("../logger");
+const db = require("../db/api");
 
 const actions = {ADD: add, UPDATE: update, DELETE: deleteFile};
 
@@ -46,6 +47,8 @@ const handleMSFileUpdate = (message) => {
   });
 };
 
+const handleUnwatchResult = () => db.expired.clear();
+
 const messageReceiveHandler = (message) => {
   if (!message) {return;}
   if (!message.topic) {return;}
@@ -59,6 +62,8 @@ const messageReceiveHandler = (message) => {
       return handleWatchResult(message);
     case "WATCHLIST-RESULT":
       return handleWatchlistResult(message);
+    case "UNWATCH-RESULT":
+      return handleUnwatchResult(message);
     default:
       logger.debug(`Unrecognized message topic: ${message.topic}`);
   }

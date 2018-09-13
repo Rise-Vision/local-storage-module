@@ -1,3 +1,4 @@
+const commonMessaging = require("common-display-module/messaging");
 const db = require("./db/api");
 const fileSystem = require("./files/file-system");
 const logger = require("./logger");
@@ -24,6 +25,7 @@ function clean(filePath) {
 
       return db.deleteAllDataFor(filePath);
     })
+    .then(() => db.expired.put(filePath))
     .then(() => {
       if (isFolder || !version) {
         return;
@@ -70,8 +72,19 @@ function shouldBeExpired(metadataEntry) {
   return watchSequence + MAX_EXPIRE_COUNT <= currentSequence;
 }
 
+function requestUnwatchExpired() {
+  const filePaths = db.expired.allEntries().map(entry => entry.filePath);
+
+  if (filePaths.length > 0) {
+    logger.all('unwatch expired files', JSON.stringify(filePaths));
+    const msMessage = {topic: "UNWATCH", filePaths};
+    commonMessaging.sendToMessagingService(msMessage);
+  }
+}
+
 module.exports = {
   cleanExpired,
   scheduleIncreaseSequence,
-  shouldBeExpired
+  shouldBeExpired,
+  requestUnwatchExpired
 };
