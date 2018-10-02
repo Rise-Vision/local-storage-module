@@ -1,6 +1,7 @@
 const commonMessaging = require("common-display-module/messaging");
 const db = require("../../db/api");
 const update = require("../update/update");
+const del = require("../delete/delete");
 const watch = require("./watch");
 
 function requestWatchlistCompare() {
@@ -59,11 +60,16 @@ function refresh(watchlist, lastChanged) {
     const metaData = db.fileMetadata.get(filePath);
 
     if (!metaData) {
+      if (version === "0") {
+        return Promise.resolve();
+      }
+
       return addNewFile(filePath);
     }
 
-    return version === metaData.version ?
-      Promise.resolve() : refreshUpdatedFile(metaData);
+    return version === metaData.version ? Promise.resolve() :
+      version === "0" ? del.process(metaData) :
+      refreshUpdatedFile(metaData);
   }))
   .then(() => markMissingFilesAsUnknown(watchlist))
   .then(() => db.watchlist.setLastChanged(lastChanged));
