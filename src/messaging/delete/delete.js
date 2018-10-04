@@ -16,8 +16,6 @@ module.exports = {
     });
 
     return db.fileMetadata.delete(filePath)
-      .then(() => db.owners.delete(filePath))
-      .then(() => db.watchlist.delete(filePath))
-      .then(() => db.watchlist.setLastChanged(watchlistLastChanged));
+    .then(() => db.watchlist.setLastChanged(watchlistLastChanged));
   }
 };
