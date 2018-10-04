@@ -55,10 +55,6 @@ describe("DELETE - unit", ()=>{
       .then(()=>{
         assert(db.fileMetadata.delete.called);
         assert.equal(db.fileMetadata.delete.lastCall.args[0], msg.filePath);
-        assert(db.owners.delete.called);
-        assert.equal(db.owners.delete.lastCall.args[0], msg.filePath);
-        assert(db.watchlist.delete.called);
-        assert.equal(db.watchlist.delete.lastCall.args[0], msg.filePath);
 
         assert(broadcastIPC.broadcast.called);
         assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
@@ -82,10 +78,6 @@ describe("DELETE - unit", ()=>{
       .then(()=>{
         assert(db.fileMetadata.delete.called);
         assert.equal(db.fileMetadata.delete.lastCall.args[0], msg.filePath);
-        assert(db.owners.delete.called);
-        assert.equal(db.owners.delete.lastCall.args[0], msg.filePath);
-        assert(db.watchlist.delete.called);
-        assert.equal(db.watchlist.delete.lastCall.args[0], msg.filePath);
 
         assert(broadcastIPC.broadcast.called);
         assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-UPDATE");
