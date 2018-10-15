@@ -76,7 +76,7 @@ function requestUnwatchExpired() {
   const filePaths = db.expired.allEntries().map(entry => entry.filePath);
 
   if (filePaths.length > 0) {
-    logger.all('unwatch expired files', JSON.stringify(filePaths));
+    logger.all('unwatch expired files', filePaths);
     const msMessage = {topic: "UNWATCH", filePaths};
     commonMessaging.sendToMessagingService(msMessage);
   }

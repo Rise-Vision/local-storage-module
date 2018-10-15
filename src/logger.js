@@ -26,7 +26,8 @@ function warning(detail) {
 const originalAllFn = log.all;
 function all(event, detail = {}) {
   const basicDetail = {version: config.getModuleVersion()};
-  originalAllFn(event, Object.assign(basicDetail, detail), null, config.bqTableName);
+  const detailObject = typeof detail === 'string' ? Object.assign(basicDetail, {'event_details': detail}) : Object.assign(basicDetail, detail);
+  originalAllFn(event, detailObject, null, config.bqTableName);
 }
 
 module.exports = Object.assign({}, log, {all, error, warning});
