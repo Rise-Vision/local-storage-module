@@ -44,6 +44,7 @@ describe("expiration - integration", () => {
     db.fileMetadata.clear();
     db.owners.clear();
     db.watchlist.clear();
+    db.expired.clear();
   });
 
   it("doesn't expire entries if their watchSequence is current", ()=>{

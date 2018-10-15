@@ -44,6 +44,7 @@ describe("watch - integration", ()=>{
     db.fileMetadata.clear();
     db.owners.clear();
     db.watchlist.clear();
+    db.expired.clear();
   });
 
   describe("WATCH-RESULT", () => {

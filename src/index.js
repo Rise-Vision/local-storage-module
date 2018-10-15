@@ -33,6 +33,7 @@ initialize()
   .then(database.start)
   .then(messaging.init)
   .then(expiration.cleanExpired)
+  .then(expiration.requestUnwatchExpired)
   .then(watchlist.requestWatchlistCompare)
   .then(downloadQueue.checkStaleFiles)
   .then(()=>{

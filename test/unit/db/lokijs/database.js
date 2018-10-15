@@ -39,6 +39,7 @@ describe("lokijs", () => {
       assert.ok(database.getCollection("metadata"));
       assert.ok(database.getCollection("owners"));
       assert.ok(database.getCollection("watchlist"));
+      assert.ok(database.getCollection("expired"));
     });
   });
 

@@ -1,4 +1,4 @@
-const COLLECTIONS = ["metadata", "runtime_info", "owners", "watchlist"];
+const COLLECTIONS = ["metadata", "runtime_info", "owners", "watchlist", "expired"];
 
 const commonConfig = require("common-display-module");
 const config = require("../../../src/config/config");
