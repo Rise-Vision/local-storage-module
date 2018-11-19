@@ -55,7 +55,7 @@ function processFolderWatch(message, existingMetadata) {
   }
 
   logger.file(`Requesting MS update for folder ${folderPath}`);
-  return requestMSUpdate(message, {filePath: folderPath});
+  return requestMSUpdate(message, {filePath: folderPath, version: "0"});
 }
 
 function requestMSUpdate(message, metaData) {
