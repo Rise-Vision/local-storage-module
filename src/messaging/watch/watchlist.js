@@ -3,11 +3,13 @@ const db = require("../../db/api");
 const update = require("../update/update");
 const del = require("../delete/delete");
 const watch = require("./watch");
+const logger = require("../../logger");
 
 function requestWatchlistCompare() {
   const lastChanged = db.watchlist.lastChanged();
   const msMessage = {topic: "WATCHLIST-COMPARE", lastChanged};
 
+  logger.file(`Sending WATCHLIST-COMPARE against ${lastChanged}`);
   commonMessaging.sendToMessagingService(msMessage);
 }
 
@@ -50,6 +52,7 @@ function markMissingFilesAsUnknown(remoteWatchlist) {
 
 function refresh(watchlist, lastChanged) {
   const filePaths = Object.keys(watchlist);
+  logger.file(`Received WATCHLIST-RESULT for ${lastChanged} with count: ${filePaths.length}`);
 
   if (filePaths.length === 0) {
     return Promise.resolve();

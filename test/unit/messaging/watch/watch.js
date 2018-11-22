@@ -191,7 +191,30 @@ describe("Watch - Unit", ()=>{
       });
     });
 
-    it("does not call remote watch when folder has already been watched", () => {
+    it("does not call remote watch when folder has already been watched on a non empty folder", () => {
+      const mockMetadata = {filePath: testFolderPath};
+      const mockFolderFiles = [{filePath: testFolderPath, status: "CURRENT"}];
+
+      simple.mock(db.fileMetadata, "getFolderFiles").returnWith(mockFolderFiles);
+      simple.mock(db.fileMetadata, "get").returnWith(mockMetadata);
+      simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.owners, "addToSet").resolveWith();
+
+      const msg = {
+        topic: "watch",
+        from: "test-module",
+        filePath: testFolderPath
+      };
+
+      return messageReceiveHandler(msg)
+      .then(()=>{
+        assert.equal(commonMessaging.sendToMessagingService.called, false);
+        assert(db.fileMetadata.updateWatchSequence.called);
+        assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
+      });
+    });
+
+    it("calls remote watch when folder has already been watched on an empty folder", () => {
       const mockMetadata = {filePath: testFolderPath};
       const mockFolderFiles = [];
 
@@ -207,13 +230,12 @@ describe("Watch - Unit", ()=>{
 
       return messageReceiveHandler(msg)
       .then(()=>{
-        assert.equal(commonMessaging.sendToMessagingService.called, false);
+        assert.equal(commonMessaging.sendToMessagingService.called, true);
 
         assert(db.fileMetadata.updateWatchSequence.called);
         assert.equal(db.fileMetadata.updateWatchSequence.lastCall.args[0], testFolderPath);
       });
     });
-
     it("broacasts FILE-UPDATE of local folder files", () => {
       const mockMetadata = {filePath: testFolderPath};
       const current = {filePath: `${testFolderPath}current.png`, status: "CURRENT", version: "1"};
