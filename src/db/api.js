@@ -67,6 +67,11 @@ module.exports = {
         return entry.filePath.startsWith(folderPath) && !entry.filePath.endsWith("/");
       })
     },
+    getAllFolders() {
+      return database.getCollection("metadata").where(entry => {
+        return entry.filePath.endsWith("/");
+      })
+    },
     isVersionMismatch(filePath, version) {
       const entry = database.getCollection("metadata").by("filePath", filePath);
 
