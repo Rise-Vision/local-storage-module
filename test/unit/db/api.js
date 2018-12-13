@@ -61,6 +61,17 @@ describe("DB API: Unit", ()=> {
       assert.throws(() => {db.fileMetadata.put()}, Error);
     });
 
+    it("returns compares filePath supplied version against version in metadata", ()=>{
+      mockCollection = {
+        by: simple.stub().returnWith({filePath, version: "99"})
+      }
+
+      simple.mock(database, "getCollection").returnWith(mockCollection);
+
+      assert(db.fileMetadata.isVersionMismatch(filePath, "98"));
+      assert(!db.fileMetadata.isVersionMismatch(filePath, "99"));
+    });
+
     it("calling put() with entry filePath that doesn't exist in collection should call insert and update", ()=>{
       const filePath2 = "test-path-2";
       mockCollection = {
