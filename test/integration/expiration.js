@@ -36,6 +36,7 @@ describe("expiration - integration", () => {
   beforeEach(() => {
     simple.mock(expiration, "clean").resolveWith();
     simple.mock(fileSystem, "removeCacheFile").resolveWith();
+    db.fileMetadata.clear();
   })
 
   afterEach(() => {
