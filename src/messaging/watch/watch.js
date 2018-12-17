@@ -10,7 +10,9 @@ function handleFileWatchResult(message) {
 
   logger.file(`Received version ${version} for ${filePath}`);
 
-  const status = token ? "STALE" : "CURRENT";
+  const status = token && db.fileMetadata.isVersionMismatch(filePath, version) ?
+    "STALE" :
+    "CURRENT";
 
   return update.updateWatchlistAndMetadata({filePath, version, status, token})
   .then(()=>{

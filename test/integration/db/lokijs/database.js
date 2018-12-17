@@ -61,6 +61,25 @@ describe("lokijs - integration", ()=>{
       assert.equal(db.fileMetadata.getStale()[0].filePath, "my-bucket/my-file");
     });
 
+    it("retrieves all folder entries", ()=>{
+      const testEntries = [
+        {
+          filePath: "my-bucket/my-folder/",
+          version: "0"
+        },
+        {
+          filePath: "my-bucket/my-other-folder/",
+          version: "0"
+        }
+      ];
+
+      db.fileMetadata.put(testEntries[0]);
+      db.fileMetadata.put(testEntries[1]);
+      assert.equal(db.fileMetadata.getAllFolders().length, 2);
+      assert(db.fileMetadata.getAllFolders().some(entry=>entry.filePath === "my-bucket/my-other-folder/"));
+      assert(db.fileMetadata.getAllFolders().some(entry=>entry.filePath === "my-bucket/my-folder/"));
+    });
+
     it("updates all entries with new field values", ()=>{
       const testEntries = [
         {

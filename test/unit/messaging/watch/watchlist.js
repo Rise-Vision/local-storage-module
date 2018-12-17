@@ -37,11 +37,41 @@ describe("watchlist - unit", () => {
     beforeEach(() => {
       simple.mock(db.owners, "get").returnWith({owners: ['licensing']});
       simple.mock(db.fileMetadata, "put").resolveWith();
+      simple.mock(db.fileMetadata, "getAllFolders").returnWith([]);
       simple.mock(db.watchlist, "put").resolveWith();
       simple.mock(db.watchlist, "setLastChanged").returnWith();
       simple.mock(watch, "requestMSUpdate").resolveWith();
     });
 
+    it("rewatches folders that are present in local metadata but missing from remote watchlist", ()=>{
+      const folderPath = "my-bucket/my-folder/";
+
+      simple.mock(db.fileMetadata, "getAllFolders").reset();
+      simple.mock(db.fileMetadata, "getAllFolders")
+      .returnWith([{filePath: folderPath, version: "0"}]);
+
+      const testEntries = [
+        {filePath: "bucket/my-test-file", status: "CURRENT", version: "1"},
+        {filePath: "bucket/file2", status: "CURRENT", version: "2"},
+        {filePath: "bucket/file3", status: "CURRENT", version: "3"}
+      ];
+
+      simple.mock(db.fileMetadata, "get").callFn(filePath =>
+        testEntries.find(entry => entry.filePath === filePath)
+      );
+      simple.mock(db.watchlist, "allEntries").returnWith(testEntries);
+
+      const remoteWatchlist = {
+        "bucket/file2": "3",
+        "bucket/file3": "3"
+      };
+
+      return watchlist.refresh(remoteWatchlist, 123456)
+      .then(()=>{
+        assert(watch.requestMSUpdate.lastCall.args[0].filePath, folderPath);
+      });
+
+    });
     it("refreshes the watchlist when there are changes", () => {
       const testEntries = [
         {filePath: "bucket/file1", status: "CURRENT", version: "1"},
