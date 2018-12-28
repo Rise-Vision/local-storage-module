@@ -1,5 +1,5 @@
+/* eslint-disable max-params */
 const request = require("request");
-const fs = require("fs");
 const proxy = require("common-display-module/proxy");
 const util = require("util");
 const fileSystem = require("./file-system");
@@ -41,7 +41,6 @@ const requestFile = (signedURL) => {
   });
 };
 
-
 module.exports = {
   request(filePath, signedURL, retries = requestRetries, retryTimeout = defaultRetryTimeout) { // eslint-disable-line max-params
     if (!filePath || !signedURL) {throw Error("Invalid file request params");}
@@ -66,45 +65,26 @@ module.exports = {
     if (!filePath || !response) {throw Error("Invalid write to disk params")}
 
     const fileSize = response.headers["content-length"];
-    const pathInDownload = fileSystem.getPathInDownload(filePath, version);
-
-    logger.file(`Writing ${pathInDownload} for ${filePath}`);
 
     fileSystem.addToDownloadTotalSize(fileSize);
 
-    return new Promise((res, rej) => {
-      const file = fs.createWriteStream(pathInDownload)
-      .on("finish", () => {
-        file.close(() => {
-          fileSystem.moveFileFromDownloadToCache(filePath, version)
-          .then(() => {
-            fileSystem.removeFromDownloadTotalSize(fileSize);
-            res();
-          })
-          .catch(err=>{
-            handleError(err);
-          })
-        });
-      })
-      .on("error", (err) => {
-        handleError(err);
+    return fileSystem.writeStreamToDownloadFolder(response, filePath, version)
+    .then(() => {
+      return fileSystem.moveFileFromDownloadToCache(filePath, version)
+      .then(() => fileSystem.removeFromDownloadTotalSize(fileSize));
+    })
+    .catch(err => handleError(err));
+
+    function handleError(err) {
+      logger.file(err && err.stack ? err.stack : err)
+      fileSystem.deleteFileFromDownload(filePath, version);
+      fileSystem.removeFromDownloadTotalSize(fileSize);
+
+      broadcastIPC.fileError({
+        filePath,
+        msg: "File I/O Error",
+        detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
       });
-
-      response.pipe(file);
-
-      function handleError(err) {
-        logger.file(err && err.stack ? err.stack : err)
-        fileSystem.deleteFileFromDownload(filePath, version);
-        fileSystem.removeFromDownloadTotalSize(fileSize);
-
-        broadcastIPC.fileError({
-          filePath,
-          msg: "File I/O Error",
-          detail: err ? err.message || util.inspect(err, {depth: 1}) : ""
-        });
-
-        rej(new Error("File I/O Error"));
-      }
-    });
+    }
   }
 };

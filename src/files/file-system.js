@@ -85,6 +85,19 @@ module.exports = {
     const spaceLeft = spaceOnDisk - downloadTotalSize - module.exports.getDiskThreshold() - fileSize;
     return spaceLeft > 0;
   },
+  writeStreamToDownloadFolder(stream, filePath, version) {
+    const pathInDownload = module.exports.getPathInDownload(filePath, version);
+
+    logger.file(`Writing ${pathInDownload} for ${filePath}`);
+
+    return new Promise((res, rej) => {
+      const file = fs.createWriteStream(pathInDownload)
+      .on("finish", () => file.close(res))
+      .on("error", rej);
+
+      stream.pipe(file);
+    });
+  },
   moveFileFromDownloadToCache(filePath, version) {
     return fs.move(module.exports.getPathInDownload(filePath, version), module.exports.getPathInCache(filePath, version), {overwrite: true});
   },
