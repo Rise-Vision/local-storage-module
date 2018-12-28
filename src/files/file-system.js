@@ -6,6 +6,7 @@ const fs = require("fs-extra");
 const fileUrl = require("file-url");
 const config = require("../../src/config/config");
 const logger = require("../logger");
+const hashStreamValidation = require('hash-stream-validation');
 
 const RISE_CACHE_DIR = "RiseCache";
 const DIR_CACHE = "cache";
@@ -96,6 +97,36 @@ module.exports = {
       .on("error", rej);
 
       stream.pipe(file);
+    });
+  },
+  checkDownloadFileIntegrity(hashHeader, filePath, version) {
+    if (!hashHeader) {
+      return Promise.resolve();
+    }
+
+    const md5Hash = hashHeader.split(',').find(it => it.indexOf('md5=') >= 0)
+    if (!md5Hash) {
+      return Promise.resolve();
+    }
+
+    const pathInDownload = module.exports.getPathInDownload(filePath, version);
+    const hashValue = md5Hash.substring('md5='.length + 1);
+    const validateStream = hashStreamValidation();
+
+    return new Promise((res, rej) => {
+      fs.createReadStream(pathInDownload)
+      .on('error', rej)
+      .pipe(validateStream)
+      .on('data', () => {})
+      .on('end', () => {
+        const hashValueMatches = validateStream.test('md5', hashValue);
+        logger.file(`Hash ${hashValue} matches ${hashValueMatches} for file ${pathInDownload}`);
+        if (hashValueMatches) {
+          res();
+        } else {
+          rej(new Error('Hash value does not match'));
+        }
+      });
     });
   },
   moveFileFromDownloadToCache(filePath, version) {

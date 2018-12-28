@@ -65,10 +65,12 @@ module.exports = {
     if (!filePath || !response) {throw Error("Invalid write to disk params")}
 
     const fileSize = response.headers["content-length"];
+    const hashHeader = response.headers["x-goog-hash"];
 
     fileSystem.addToDownloadTotalSize(fileSize);
 
     return fileSystem.writeStreamToDownloadFolder(response, filePath, version)
+    .then(() => fileSystem.checkDownloadFileIntegrity(hashHeader, filePath, version))
     .then(() => {
       return fileSystem.moveFileFromDownloadToCache(filePath, version)
       .then(() => fileSystem.removeFromDownloadTotalSize(fileSize));
