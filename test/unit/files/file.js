@@ -165,6 +165,26 @@ describe("File", ()=>{
         });
     });
 
+    it("should write file to download folder, encrypt file name, and move to cache folder when hash matches", () => {
+      nock(testSignedURL)
+        .get("/test-file.png")
+        .replyWithFile(200, "test-file.png", {"Content-length": "10", "x-goog-hash": "md5=test"});
+
+      simple.mock(fileSystem, "removeFromDownloadTotalSize");
+      simple.mock(fileSystem, "checkDownloadFileIntegrity").resolveWith();
+
+      return file.request(testFilePath, `${testSignedURL}/test-file.png`)
+        .then(response=>file.writeToDisk(testFilePath, testVersion, response))
+        .then(()=>{
+
+          assert(fileSystem.removeFromDownloadTotalSize.called);
+          assert.equal(fileSystem.removeFromDownloadTotalSize.lastCall.args[0], 10);
+
+          assert(!platform.fileExists(`${testModulePath}download/${filePathVersionHash}`));
+          assert(platform.fileExists(`${testModulePath}cache/${filePathVersionHash}`));
+        });
+    });
+
     it("should delete file from download folder and broadcast FILE-ERROR when I/O error", () => {
       nock(testSignedURL)
         .get("/test-file.png")
@@ -181,6 +201,34 @@ describe("File", ()=>{
 
           assert(fileSystem.removeFromDownloadTotalSize.called);
           assert.equal(fileSystem.removeFromDownloadTotalSize.lastCall.args[0], 10);
+
+          assert(broadcastIPC.broadcast.called);
+          assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
+          assert.equal(broadcastIPC.broadcast.lastCall.args[1].msg, "File I/O Error");
+
+          setTimeout(()=>{
+            assert(!platform.fileExists(`${testModulePath}download/${filePathVersionHash}`));
+            assert(!platform.fileExists(`${testModulePath}cache/${filePathVersionHash}`));
+          }, 200);
+        });
+    });
+
+    it("should delete file from download folder and broadcast FILE-ERROR when hash does not match", () => {
+      nock(testSignedURL)
+        .get("/test-file.png")
+        .replyWithFile(200, "test-file.png", {"Content-length": "11", "x-goog-hash": "md5=test"});
+
+      simple.mock(fileSystem, "checkDownloadFileIntegrity").rejectWith(new Error('Hash value does not match'));
+      simple.mock(fileSystem, "removeFromDownloadTotalSize");
+      simple.mock(broadcastIPC, "broadcast");
+
+      return file.request(testFilePath, `${testSignedURL}/test-file.png`)
+        .then(response=>file.writeToDisk(testFilePath, testVersion, response))
+        .catch((err)=>{
+          assert(err);
+
+          assert(fileSystem.removeFromDownloadTotalSize.called);
+          assert.equal(fileSystem.removeFromDownloadTotalSize.lastCall.args[0], 11);
 
           assert(broadcastIPC.broadcast.called);
           assert.equal(broadcastIPC.broadcast.lastCall.args[0], "FILE-ERROR");
