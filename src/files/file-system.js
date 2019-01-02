@@ -104,14 +104,14 @@ module.exports = {
       return Promise.resolve();
     }
 
-    const md5Hash = hashHeader.split(',').find(it => it.indexOf('md5=') >= 0)
+    const md5Hash = hashHeader.split(',').find(it => it.includes('md5='))
     if (!md5Hash) {
       return Promise.resolve();
     }
 
     const pathInDownload = module.exports.getPathInDownload(filePath, version);
     const hashValue = md5Hash.substring('md5='.length + 1);
-    const validateStream = hashStreamValidation();
+    const validateStream = hashStreamValidation({crc32c: false});
 
     return new Promise((res, rej) => {
       fs.createReadStream(pathInDownload)
