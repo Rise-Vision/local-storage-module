@@ -6,6 +6,7 @@ const fs = require("fs-extra");
 const fileUrl = require("file-url");
 const config = require("../../src/config/config");
 const logger = require("../logger");
+const hashStreamValidation = require('hash-stream-validation');
 
 const RISE_CACHE_DIR = "RiseCache";
 const DIR_CACHE = "cache";
@@ -84,6 +85,49 @@ module.exports = {
 
     const spaceLeft = spaceOnDisk - downloadTotalSize - module.exports.getDiskThreshold() - fileSize;
     return spaceLeft > 0;
+  },
+  writeStreamToDownloadFolder(stream, filePath, version) {
+    const pathInDownload = module.exports.getPathInDownload(filePath, version);
+
+    logger.file(`Writing ${pathInDownload} for ${filePath}`);
+
+    return new Promise((res, rej) => {
+      const file = fs.createWriteStream(pathInDownload)
+      .on("finish", () => file.close(res))
+      .on("error", rej);
+
+      stream.pipe(file);
+    });
+  },
+  checkDownloadFileIntegrity(hashHeader, filePath, version) {
+    if (!hashHeader) {
+      return Promise.resolve();
+    }
+
+    const md5Hash = hashHeader.split(',').find(it => it.includes('md5='))
+    if (!md5Hash) {
+      return Promise.resolve();
+    }
+
+    const pathInDownload = module.exports.getPathInDownload(filePath, version);
+    const hashValue = md5Hash.substring('md5='.length + 1);
+    const validateStream = hashStreamValidation({crc32c: false});
+
+    return new Promise((res, rej) => {
+      fs.createReadStream(pathInDownload)
+      .on('error', rej)
+      .pipe(validateStream)
+      .on('data', () => {})
+      .on('end', () => {
+        const hashValueMatches = validateStream.test('md5', hashValue);
+        logger.file(`Hash ${hashValue} matches ${hashValueMatches} for file ${pathInDownload}`);
+        if (hashValueMatches) {
+          res();
+        } else {
+          rej(new Error('Hash value does not match'));
+        }
+      });
+    });
   },
   moveFileFromDownloadToCache(filePath, version) {
     return fs.move(module.exports.getPathInDownload(filePath, version), module.exports.getPathInCache(filePath, version), {overwrite: true});
