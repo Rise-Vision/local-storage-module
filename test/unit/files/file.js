@@ -196,6 +196,7 @@ describe("File", ()=>{
 
       return file.request(testFilePath, `${testSignedURL}/test-file.png`)
         .then(response=>file.writeToDisk(testFilePath, testVersion, response))
+        .then(() => assert.fail())
         .catch((err)=>{
           assert(err);
 
@@ -224,6 +225,7 @@ describe("File", ()=>{
 
       return file.request(testFilePath, `${testSignedURL}/test-file.png`)
         .then(response=>file.writeToDisk(testFilePath, testVersion, response))
+        .then(() => assert.fail())
         .catch((err)=>{
           assert(err);
 
