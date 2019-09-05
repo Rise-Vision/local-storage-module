@@ -190,7 +190,7 @@ describe("File", ()=>{
         .get("/test-file.png")
         .replyWithFile(200, "test-file.png", {"Content-length": "10"});
 
-      simple.mock(fileSystem, "moveFileFromDownloadToCache").rejectWith();
+      simple.mock(fileSystem, "moveFileFromDownloadToCache").rejectWith("error");
       simple.mock(fileSystem, "removeFromDownloadTotalSize");
       simple.mock(broadcastIPC, "broadcast");
 
