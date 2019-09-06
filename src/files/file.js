@@ -85,7 +85,8 @@ module.exports = {
       const localPath = fileSystem.getPathInCache(filePath, version);
 
       logger.all("downloaded file", {
-        file_path: filePath, fileSize, fileVersion: version, localPath
+        file_path: filePath,
+        event_details: {fileSize, version, localPath}
       });
     }
 
