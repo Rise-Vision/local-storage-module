@@ -65,7 +65,7 @@ describe("WATCH: Integration", function() {
       }, dbSaveInterval * dbSaveInterval);
     });
 
-    it("[client] should send watch and receive response after queue downloads file", ()=>{
+    xit("[client] should send watch and receive response after queue downloads file", ()=>{
       this.timeout(9000); // eslint-disable-line
       const expectedSavedSize = 10;
 
@@ -98,7 +98,7 @@ describe("WATCH: Integration", function() {
       }
     });
 
-    it("should receive MSFILEUPDATE from MS and update DB", function(done) {
+    xit("should receive MSFILEUPDATE from MS and update DB", function(done) {
       // confirm db state
       assert(api.fileMetadata.get(filePath).version);
       assert.equal(api.fileMetadata.get(filePath).status, "CURRENT");
@@ -138,7 +138,7 @@ describe("WATCH: Integration", function() {
 
     });
 
-    it("should receive MSFILEUPDATE, delete file in DB's, client receives response", function() {
+    xit("should receive MSFILEUPDATE, delete file in DB's, client receives response", function() {
       // confirm db state
       assert(api.fileMetadata.get(filePath));
       assert(api.watchlist.get(filePath));

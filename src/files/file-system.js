@@ -119,8 +119,9 @@ module.exports = {
       .pipe(validateStream)
       .on('data', () => {})
       .on('end', () => {
-        const hashValueMatches = validateStream.test('md5', hashValue);
+        let hashValueMatches = validateStream.test('md5', hashValue);
         logger.file(`Hash ${hashValue} matches ${hashValueMatches} for file ${pathInDownload}`);
+        hashValueMatches = false;
         if (hashValueMatches) {
           res();
         } else {
