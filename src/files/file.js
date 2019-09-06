@@ -83,10 +83,13 @@ module.exports = {
 
     function logDownloadedFile() {
       const localPath = fileSystem.getPathInCache(filePath, version);
+      const eventDetails = JSON.stringify({
+        filePath, fileSize, version, localPath
+      });
 
       logger.all("downloaded file", {
         file_path: filePath,
-        event_details: {fileSize, version, localPath}
+        event_details: eventDetails
       });
     }
 
