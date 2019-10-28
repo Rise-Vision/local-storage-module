@@ -75,7 +75,23 @@ module.exports = {
       return fileSystem.moveFileFromDownloadToCache(filePath, version)
       .then(() => fileSystem.removeFromDownloadTotalSize(fileSize));
     })
-    .catch(err => handleError(err));
+    .then(logDownloadedFile)
+    .catch(err => {
+      handleError(err);
+      throw err;
+    });
+
+    function logDownloadedFile() {
+      const localPath = fileSystem.getPathInCache(filePath, version);
+      const eventDetails = JSON.stringify({
+        filePath, fileSize, version, localPath
+      });
+
+      logger.all("downloaded file", {
+        file_path: filePath,
+        event_details: eventDetails
+      });
+    }
 
     function handleError(err) {
       logger.file(err && err.stack ? err.stack : err)

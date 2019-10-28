@@ -186,7 +186,7 @@ describe("File System", ()=> {
       mockfs.restore();
     });
 
-    it("should not delete anything if it available space is greather than threshold", () => {
+    it("should not delete anything if it available space is greater than threshold", () => {
       const tenGB = 10 * 1024 * 1024 * 1024;
       simple.mock(platform, "getFreeDiskSpace").resolveWith(tenGB);
       mockfs({
@@ -217,7 +217,7 @@ describe("File System", ()=> {
         });
     });
 
-    it("should delete least recently used file until available space is greather than threshold", () => {
+    it("should delete least recently used file until available space is greater than threshold", () => {
       simple.mock(fs, "remove").callOriginal();
 
       const halfGB = 512 * 1024 * 1024;

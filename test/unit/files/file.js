@@ -190,12 +190,13 @@ describe("File", ()=>{
         .get("/test-file.png")
         .replyWithFile(200, "test-file.png", {"Content-length": "10"});
 
-      simple.mock(fileSystem, "moveFileFromDownloadToCache").rejectWith();
+      simple.mock(fileSystem, "moveFileFromDownloadToCache").rejectWith("error");
       simple.mock(fileSystem, "removeFromDownloadTotalSize");
       simple.mock(broadcastIPC, "broadcast");
 
       return file.request(testFilePath, `${testSignedURL}/test-file.png`)
         .then(response=>file.writeToDisk(testFilePath, testVersion, response))
+        .then(() => assert.fail())
         .catch((err)=>{
           assert(err);
 
@@ -224,6 +225,7 @@ describe("File", ()=>{
 
       return file.request(testFilePath, `${testSignedURL}/test-file.png`)
         .then(response=>file.writeToDisk(testFilePath, testVersion, response))
+        .then(() => assert.fail())
         .catch((err)=>{
           assert(err);
 
