@@ -253,6 +253,29 @@ describe("watchlist - unit", () => {
       });
     });
 
+    it("rewatches local files and folders missing from remote watchlist when remote returns empty watchlist and version 0", () => {
+      const testEntries = [
+        {filePath: "bucket/file1", status: "CURRENT", version: "1"},
+        {filePath: "bucket/file2", status: "CURRENT", version: "2"},
+        {filePath: "bucket/file3", status: "CURRENT", version: "3"}
+      ];
+
+      simple.mock(db.fileMetadata, "get").callFn(filePath =>
+        testEntries.find(entry => entry.filePath === filePath)
+      );
+      simple.mock(db.watchlist, "allEntries").returnWith(testEntries);
+
+      const remoteWatchlist = {};
+
+      return watchlist.refresh(remoteWatchlist, "0")
+      .then(() => {
+        assert.equal(db.fileMetadata.put.called, true);
+
+        assert.equal(db.watchlist.setLastChanged.callCount, 1);
+        assert.equal(db.watchlist.setLastChanged.lastCall.args[0], 0);
+      });
+    });
+
     it("does not refresh anything if there is no remote watchlist provided", () => {
       const testEntries = [
         {filePath: "bucket/file1", status: "CURRENT", version: "1"},

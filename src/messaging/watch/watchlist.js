@@ -65,7 +65,7 @@ function refresh(watchlist, lastChanged) {
   const filePaths = Object.keys(watchlist);
   logger.file(`Received WATCHLIST-RESULT for ${lastChanged} with count: ${filePaths.length}`);
 
-  if (filePaths.length === 0) {
+  if (filePaths.length === 0 && lastChanged !== "0") {
     return Promise.resolve();
   }
 
