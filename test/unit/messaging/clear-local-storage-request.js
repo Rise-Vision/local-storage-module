@@ -22,12 +22,11 @@ describe("CLEAR-LOCAL-STORAGE-REQUEST - unit", ()=>{
   });
 
   it("clears DB", ()=>{
-
     clearLocalStorage.process();
-        assert(db.fileMetadata.clear.called);
-        assert(db.watchlist.clear.called);
 
-        assert(commonMessaging.broadcastMessage.called);
+    assert(db.fileMetadata.clear.called);
+    assert(db.watchlist.clear.called);
+    assert(commonMessaging.broadcastMessage.called);
   });
 
 });
