@@ -8,6 +8,7 @@ const messaging = require("../../../src/messaging/messaging");
 const add = require("../../../src/messaging/add/add");
 const deletion = require("../../../src/messaging/delete/delete");
 const update = require("../../../src/messaging/update/update");
+const clearLocalStorageRequest = require("../../../src/messaging/clear-local-storage-request");
 
 describe("Messaging - unit", ()=> {
   beforeEach(() => {
@@ -15,6 +16,7 @@ describe("Messaging - unit", ()=> {
     simple.mock(add, "process").resolveWith();
     simple.mock(deletion, "process").resolveWith();
     simple.mock(update, "process").resolveWith();
+    simple.mock(clearLocalStorageRequest, "process").resolveWith();
   });
 
   afterEach(() => simple.restore());
@@ -70,6 +72,25 @@ describe("Messaging - unit", ()=> {
         .then(() => {
           assert.equal(deletion.process.callCount, 1);
           assert.deepEqual(deletion.process.lastCall.args[0], message);
+
+          done();
+        });
+      }
+    });
+
+    messaging.init();
+  });
+
+  it("processes CLEAR-LOCAL-STORAGE-REQUEST", done => {
+    simple.mock(commonMessaging, "receiveMessages").resolveWith({
+      on: (type, handler) => {
+        assert.equal(type, "message");
+
+        const message = {msg: "CLEAR-LOCAL-STORAGE-REQUEST"}
+
+        handler(message)
+        .then(() => {
+          assert.equal(clearLocalStorageRequest.process.callCount, 1);
 
           done();
         });
