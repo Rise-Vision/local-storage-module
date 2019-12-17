@@ -6,6 +6,7 @@ const update = require("./update/update");
 const watch = require("./watch/watch");
 const watchlist = require("./watch/watchlist");
 const clearLocalStorageRequest = require('./clear-local-storage-request');
+const debugDataRequest = require('./debug-data-request');
 const logger = require("../logger");
 const db = require("../db/api");
 
@@ -49,7 +50,7 @@ const handleMSFileUpdate = (message) => {
 };
 
 const handleClearLocalStorageRequest = () => clearLocalStorageRequest.process();
-
+const handleDebugDataRequest = () => debugDataRequest.process();
 const handleUnwatchResult = () => db.expired.clear();
 
 const messageReceiveHandler = (message) => {
@@ -60,6 +61,8 @@ const messageReceiveHandler = (message) => {
   switch (topic.toUpperCase()) {
     case "CLEAR-LOCAL-STORAGE-REQUEST":
       return handleClearLocalStorageRequest();
+    case "DEBUG-DATA-REQUEST":
+      return handleDebugDataRequest();
     case "MSFILEUPDATE":
       return handleMSFileUpdate(message);
     case "WATCH":

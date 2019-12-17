@@ -24,6 +24,7 @@ function deleteAllDataFor(filePath) {
 }
 
 module.exports = {
+  getEntireDBObject: ()=>JSON.parse(database.serialize()),
   deleteAllDataFor,
   fileMetadata: {
     clear: ()=>clear("metadata"),

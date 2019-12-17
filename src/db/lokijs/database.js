@@ -91,5 +91,6 @@ module.exports = {
   getCollection(name) {
     return db.getCollection(name);
   },
+  serialize: ()=>db.serialize(),
   syncCacheMetadataWithFileSystem
 };
