@@ -9,6 +9,7 @@ const add = require("../../../src/messaging/add/add");
 const deletion = require("../../../src/messaging/delete/delete");
 const update = require("../../../src/messaging/update/update");
 const clearLocalStorageRequest = require("../../../src/messaging/clear-local-storage-request");
+const debugDataRequest = require("../../../src/messaging/debug-data-request");
 
 describe("Messaging - unit", ()=> {
   beforeEach(() => {
@@ -17,6 +18,7 @@ describe("Messaging - unit", ()=> {
     simple.mock(deletion, "process").resolveWith();
     simple.mock(update, "process").resolveWith();
     simple.mock(clearLocalStorageRequest, "process").resolveWith();
+    simple.mock(debugDataRequest, "process").resolveWith();
   });
 
   afterEach(() => simple.restore());
@@ -91,6 +93,25 @@ describe("Messaging - unit", ()=> {
         handler(message)
         .then(() => {
           assert.equal(clearLocalStorageRequest.process.callCount, 1);
+
+          done();
+        });
+      }
+    });
+
+    messaging.init();
+  });
+
+  it("processes DEBUG-DATA-REQUEST", done => {
+    simple.mock(commonMessaging, "receiveMessages").resolveWith({
+      on: (type, handler) => {
+        assert.equal(type, "message");
+
+        const message = {msg: "DEBUG-DATA-REQUEST"}
+
+        handler(message)
+        .then(() => {
+          assert.equal(debugDataRequest.process.callCount, 1);
 
           done();
         });
