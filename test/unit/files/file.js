@@ -76,10 +76,10 @@ describe("File", ()=>{
         })
     });
 
-    it("should not escape ' character on signed url", ()=>{
+    it("should not unencode %27 (apostrophe character) on signed url", ()=>{
       const mock = simple.mock(request, "get");
 
-      const pathWithApostrophe = "/test-'file'.jpg";
+      const pathWithApostrophe = "/test-%27file%27jpg";
       const testSignedURLWithApostrophe = `http://test-signed-url.com${pathWithApostrophe}`;
 
       file.request(testFilePath, testSignedURLWithApostrophe, 4, 0);

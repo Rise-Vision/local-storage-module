@@ -14,14 +14,8 @@ const requestRetries = 4;
 
 const requestFile = (signedURL) => {
 
-  // As per https://github.com/request/request/issues/2390 we need to manually undo the ' escape
-  const uri = urlParse(signedURL);
-  uri.pathname = uri.pathname.replace(/%27/g, "'")
-  uri.path = uri.path.replace(/%27/g, "'")
-  uri.href = uri.href.replace(/%27/g, "'")
-
   const options = {
-    uri,
+    uri: urlParse(signedURL),
     timeout: config.secondMillis * twoMinTimeout,
     resolveWithFullResponse: true,
     proxy: proxy.getProxyUri()
